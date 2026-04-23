@@ -1,0 +1,485 @@
+/* 農薬登録情報ブラウザ検索ツール スタイル
+ * Based on browser-primer-designer / custom 2-pane layout
+ */
+
+:root {
+  --bg: #fafafa;
+  --panel: #ffffff;
+  --border: #e4e4e7;
+  --text: #18181b;
+  --text-muted: #71717a;
+  --accent: #16a34a;
+  --accent-hover: #15803d;
+  --badge-bg: #f4f4f5;
+  --badge-text: #3f3f46;
+  --cat-insect: #f59e0b;     /* 殺虫剤 - orange */
+  --cat-insect-bg: #fef3c7;
+  --cat-fungus: #3b82f6;     /* 殺菌剤 - blue */
+  --cat-fungus-bg: #dbeafe;
+  --cat-herbicide: #10b981;  /* 除草剤 - green */
+  --cat-herbicide-bg: #d1fae5;
+  --status-active: #16a34a;
+  --status-active-bg: #dcfce7;
+  --status-inactive: #6b7280;
+  --status-inactive-bg: #f3f4f6;
+  --warn: #dc2626;
+  --warn-bg: #fee2e2;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #18181b;
+    --panel: #27272a;
+    --border: #3f3f46;
+    --text: #fafafa;
+    --text-muted: #a1a1aa;
+    --badge-bg: #3f3f46;
+    --badge-text: #d4d4d8;
+    --cat-insect-bg: #451a03;
+    --cat-fungus-bg: #1e3a8a;
+    --cat-herbicide-bg: #14532d;
+    --status-active-bg: #14532d;
+    --status-inactive-bg: #3f3f46;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.6;
+}
+
+/* ===== Header ===== */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow);
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.header-title .version {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-left: 6px;
+}
+
+.header-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.search-bar {
+  flex: 1;
+  max-width: 600px;
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 14px 8px 36px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search-input:focus {
+  border-color: var(--accent);
+}
+
+.search-bar::before {
+  content: "🔍";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.header-stats {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* ===== Main layout: 2-pane ===== */
+main {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 16px;
+  padding: 16px 20px;
+  height: calc(100vh - 61px);
+  overflow: hidden;
+}
+
+/* ===== Sidebar (filters) ===== */
+.sidebar {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  overflow-y: auto;
+  font-size: 13px;
+}
+
+.filter-group {
+  margin-bottom: 18px;
+}
+
+.filter-group:last-child { margin-bottom: 0; }
+
+.filter-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.filter-option input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.filter-option span {
+  flex: 1;
+}
+
+.filter-count {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+/* ===== Results panel ===== */
+.results-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.results-toolbar {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--panel);
+  position: sticky;
+  top: 0;
+}
+
+.results-count { font-weight: 600; color: var(--text); }
+
+.toolbar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+button {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+button:hover { background: var(--bg); }
+
+button.primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+button.primary:hover { background: var(--accent-hover); }
+
+/* ===== Result cards ===== */
+.result-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.result-card {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.1s;
+  background: var(--panel);
+}
+
+.result-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow);
+}
+
+.result-card.active {
+  border-color: var(--accent);
+  background: var(--status-active-bg);
+}
+
+.result-card.cancelled {
+  opacity: 0.65;
+  background: linear-gradient(90deg, var(--status-inactive-bg) 0%, var(--panel) 20%);
+  border-left: 3px solid var(--status-inactive);
+}
+
+.result-card.cancelled .result-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.result-title {
+  font-weight: 600;
+  font-size: 15px;
+  flex: 1;
+}
+
+.result-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.result-ingredients {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  background: var(--badge-bg);
+  color: var(--badge-text);
+  white-space: nowrap;
+}
+
+.badge.category-殺虫剤 { background: var(--cat-insect-bg); color: var(--cat-insect); font-weight: 600; }
+.badge.category-殺菌剤 { background: var(--cat-fungus-bg); color: var(--cat-fungus); font-weight: 600; }
+.badge.category-除草剤 { background: var(--cat-herbicide-bg); color: var(--cat-herbicide); font-weight: 600; }
+.badge.status-active { background: var(--status-active-bg); color: var(--status-active); }
+.badge.status-inactive { background: var(--status-inactive-bg); color: var(--status-inactive); }
+.badge.household { background: var(--warn-bg); color: var(--warn); }
+.badge.rac { background: #e0e7ff; color: #4338ca; font-family: monospace; font-weight: 600; }
+.badge.rac-out_of_scope { background: #f1f5f9; color: #64748b; font-size: 11px; font-weight: 500; cursor: help; }
+.badge.rac-legacy { background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 500; cursor: help; }
+.badge.rac-recent { background: #dcfce7; color: #166534; font-size: 11px; font-weight: 500; cursor: help; }
+.rac-reason { color: var(--muted, #64748b); font-size: 11px; margin-left: 4px; }
+
+@media (prefers-color-scheme: dark) {
+  .badge.rac { background: #312e81; color: #c7d2fe; }
+  .badge.rac-out_of_scope { background: #334155; color: #94a3b8; }
+  .badge.rac-legacy { background: #78350f; color: #fde68a; }
+  .badge.rac-recent { background: #14532d; color: #bbf7d0; }
+}
+
+.badge.ingredient {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  gap: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ===== Detail panel (overlay) ===== */
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.detail-overlay.open { display: flex; }
+
+.detail-panel {
+  background: var(--panel);
+  border-radius: 8px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 20px 24px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.detail-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0;
+  line-height: 1;
+}
+
+.detail-section {
+  margin: 14px 0;
+}
+
+.detail-section h3 {
+  font-size: 13px;
+  margin: 0 0 6px 0;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail-field {
+  display: flex;
+  gap: 8px;
+  margin: 3px 0;
+  font-size: 13px;
+}
+
+.detail-field .label {
+  min-width: 90px;
+  color: var(--text-muted);
+}
+
+.detail-field .value {
+  flex: 1;
+  word-break: break-word;
+}
+
+.app-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.app-table th, .app-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.app-table th {
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.app-table tbody tr:hover { background: var(--bg); }
+
+/* ===== Empty / loading ===== */
+.empty, .loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.loading::before {
+  content: "⏳";
+  display: block;
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.empty::before {
+  content: "🔎";
+  display: block;
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 720px) {
+  main {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .sidebar { max-height: 200px; }
+  header { flex-wrap: wrap; }
+  .header-stats { display: none; }
+}

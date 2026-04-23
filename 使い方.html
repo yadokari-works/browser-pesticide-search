@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>農薬検索ツール - 使い方</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --accent: #2563eb;
+    --bg: #ffffff;
+    --fg: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --code-bg: #f1f5f9;
+    --kbd-bg: #f8fafc;
+    --warn-bg: #fef3c7;
+    --warn-fg: #92400e;
+    --ok-bg: #dcfce7;
+    --ok-fg: #166534;
+    --info-bg: #dbeafe;
+    --info-fg: #1e40af;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f172a; --fg: #e2e8f0; --muted: #94a3b8;
+      --border: #334155; --code-bg: #1e293b; --kbd-bg: #334155;
+      --warn-bg: #78350f; --warn-fg: #fde68a;
+      --ok-bg: #14532d; --ok-fg: #bbf7d0;
+      --info-bg: #1e3a8a; --info-fg: #bfdbfe;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+    line-height: 1.7;
+    color: var(--fg);
+    background: var(--bg);
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  h1 {
+    font-size: 28px;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 10px;
+    margin-top: 0;
+  }
+  h2 {
+    font-size: 22px;
+    margin-top: 40px;
+    padding-left: 10px;
+    border-left: 4px solid var(--accent);
+  }
+  h3 {
+    font-size: 17px;
+    margin-top: 28px;
+    color: var(--accent);
+  }
+  p { margin: 10px 0; }
+  code {
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", "Consolas", "Menlo", monospace;
+    font-size: 0.92em;
+  }
+  kbd {
+    background: var(--kbd-bg);
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-family: "SF Mono", "Consolas", monospace;
+    font-size: 0.88em;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: var(--code-bg);
+    font-weight: 600;
+  }
+  ul, ol { margin: 10px 0; padding-left: 24px; }
+  li { margin: 4px 0; }
+  .callout {
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin: 18px 0;
+    border-left: 4px solid;
+  }
+  .callout.warn {
+    background: var(--warn-bg);
+    color: var(--warn-fg);
+    border-color: #f59e0b;
+  }
+  .callout.ok {
+    background: var(--ok-bg);
+    color: var(--ok-fg);
+    border-color: #22c55e;
+  }
+  .callout.info {
+    background: var(--info-bg);
+    color: var(--info-fg);
+    border-color: var(--accent);
+  }
+  .callout p { margin: 4px 0; }
+  .big-step {
+    font-size: 18px;
+    padding: 18px 22px;
+    background: var(--info-bg);
+    color: var(--info-fg);
+    border-radius: 10px;
+    margin: 20px 0;
+    font-weight: 600;
+  }
+  .big-step .num {
+    display: inline-block;
+    width: 28px; height: 28px;
+    line-height: 28px;
+    text-align: center;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    margin-right: 10px;
+    font-weight: 700;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin: 0 2px;
+  }
+  .b-rac { background: #e0e7ff; color: #4338ca; font-family: monospace; }
+  .b-out { background: #f1f5f9; color: #64748b; }
+  .b-legacy { background: #fef3c7; color: #92400e; }
+  .b-recent { background: #dcfce7; color: #166534; }
+  .toc {
+    background: var(--code-bg);
+    padding: 14px 20px 14px 40px;
+    border-radius: 8px;
+    margin: 20px 0 30px;
+  }
+  .toc ul { margin: 0; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
+  }
+</style>
+</head>
+<body>
+
+<h1>農薬検索ツール — 使い方</h1>
+<p>FAMIC 公開データと CropLife Japan の RAC コード表を統合したオフライン検索ツールです。
+商品名・成分名・RAC コード・作物名・病害虫名から双方向に引けます。</p>
+
+<div class="toc">
+  <strong>目次</strong>
+  <ul>
+    <li><a href="#start">1. 起動方法</a></li>
+    <li><a href="#search">2. 検索のしかた</a></li>
+    <li><a href="#filter">3. サイドバーで絞込</a></li>
+    <li><a href="#badge">4. RAC バッジの見方</a></li>
+    <li><a href="#export">5. エクスポート</a></li>
+    <li><a href="#update">6. データ更新</a></li>
+    <li><a href="#faq">7. よくある質問・トラブル</a></li>
+  </ul>
+</div>
+
+<h2 id="start">1. 起動方法</h2>
+
+<div class="callout warn">
+  <p><strong>ご利用前に毎回「データ更新」を実行することを推奨します。</strong></p>
+  <p>農薬登録情報は月初に FAMIC で更新されるため、古いデータのままだと新規登録剤や登録変更が反映されません。検索前に <code>データ更新.bat</code>（Windows）または <code>データ更新.command</code>（macOS）を一度ダブルクリックしてください（所要 1〜2 分、ネットワーク接続が必要）。詳細は <a href="#update">6. データ更新</a>。</p>
+</div>
+
+<div class="big-step">
+  <span class="num">1</span>
+  まず <code>データ更新.bat</code>（Win）/ <code>データ更新.command</code>（Mac）をダブルクリック
+</div>
+
+<div class="big-step">
+  <span class="num">2</span>
+  完了したら <code>build/これをクリック.html</code> をダブルクリック
+</div>
+
+<p>既定のブラウザで開きます。約 25 MB、初回読込は 1〜3 秒。<strong>起動後はネットワーク接続不要</strong>、検索内容は外部に送信されません。</p>
+
+<div class="callout info">
+  <p><strong>データ更新済みの場合はステップ 2 だけで OK。</strong> 同日に再度開く場合は更新不要です。</p>
+</div>
+
+<table>
+  <tr><th>OS</th><th>操作</th></tr>
+  <tr><td>Windows</td><td>エクスプローラで <code>build\これをクリック.html</code> をダブルクリック</td></tr>
+  <tr><td>macOS</td><td>Finder で <code>build/これをクリック.html</code> をダブルクリック</td></tr>
+</table>
+
+<hr>
+
+<h2 id="search">2. 検索のしかた</h2>
+
+<h3>上の検索バー: AND 検索</h3>
+<p>スペースで区切ると <strong>すべて満たす剤</strong>（AND 条件）に絞り込めます。</p>
+
+<table>
+  <tr><th>入力例</th><th>ヒット対象</th></tr>
+  <tr><td><code>イミダクロプリド</code></td><td>成分「イミダクロプリド」を含む全商品</td></tr>
+  <tr><td><code>アドマイヤー</code></td><td>商品名に「アドマイヤー」を含む剤</td></tr>
+  <tr><td><code>4A</code> または <code>IRAC 4A</code></td><td>IRAC コード 4A（ネオニコチノイド系）の全商品</td></tr>
+  <tr><td><code>M7</code></td><td>FRAC コード M7 の全殺菌剤</td></tr>
+  <tr><td><code>なす アブラムシ</code></td><td>なす × アブラムシ の両方に登録されている剤（AND）</td></tr>
+  <tr><td><code>イミダクロプリド キャベツ</code></td><td>イミダクロプリドを含み、かつキャベツ登録がある剤</td></tr>
+  <tr><td><code>4A なす</code></td><td>IRAC 4A ネオニコ系かつ、なすで使える剤</td></tr>
+  <tr><td><code>バイエル</code></td><td>会社名で絞り込み</td></tr>
+</table>
+
+<p>対象フィールド: <strong>商品名 / 成分名 / 会社名 / 種類名（失効剤）/ 作物名 / 病害虫名 / RAC コード</strong></p>
+
+<p><kbd>/</kbd> キーで検索ボックスにフォーカスします。</p>
+
+<hr>
+
+<h2 id="filter">3. サイドバーで絞込</h2>
+
+<p>検索バーの絞込に加えて、左サイドバーの条件が <strong>すべて AND</strong> で働きます。</p>
+
+<table>
+  <tr><th>項目</th><th>動作</th></tr>
+  <tr><td>用途</td><td>殺虫剤 / 殺菌剤 / 除草剤 のチェックボックス。複数可</td></tr>
+  <tr><td>登録状態</td><td>有効 / 失効 のチェックボックス。どちらも既定で ON</td></tr>
+  <tr><td>除外</td><td>「家庭向けを除外」（既定 ON） / 「混合剤のみ」</td></tr>
+  <tr><td>剤型</td><td>水和剤 / 粒剤 / フロアブル剤 / 水溶剤 / 粉剤 / ジャンボ剤 / ベイト剤 / その他 から選択</td></tr>
+  <tr><td>作物</td><td><strong>入力即時絞込</strong>。部分一致、ひらがな/カタカナ自動変換。1,093 種の候補</td></tr>
+  <tr><td>対象病害虫・雑草</td><td><strong>入力即時絞込</strong>。部分一致、1,328 種の候補</td></tr>
+</table>
+
+<div class="callout info">
+  <p><strong>入力欄のサジェスト</strong>: 作物名/病害虫名の欄は頻度順 Top 1,500 までオートコンプリート候補を表示します。</p>
+</div>
+
+<div class="callout warn">
+  <p><strong>作物/病害虫を入力すると失効剤は自動で隠れます。</strong> 失効剤には適用情報（作物・病害虫）が無いためです。失効剤も見るには、これらの欄を空にしてください。</p>
+</div>
+
+<hr>
+
+<h2 id="badge">4. RAC バッジの見方</h2>
+
+<p>成分名の右隣に以下のいずれかのバッジが付きます。</p>
+
+<table>
+  <tr><th>バッジ</th><th>意味</th><th>例</th></tr>
+  <tr>
+    <td><span class="badge b-rac">4A</span> <span class="badge b-rac">M7</span></td>
+    <td>CropLife Japan 公式の RAC コード</td>
+    <td>イミダクロプリド (4A) / ジネブ (M3)</td>
+  </tr>
+  <tr>
+    <td><span class="badge b-out">対象外</span></td>
+    <td>RAC 体系の対象外成分。マウスオーバーで理由表示</td>
+    <td>脂肪酸エステル (物理作用) / 燐酸第二鉄 (軟体動物剤) / 微生物製剤</td>
+  </tr>
+  <tr>
+    <td><span class="badge b-legacy">古典未分類</span></td>
+    <td>1960–90 年代登録で RAC コード未付与の古典剤</td>
+    <td>ダイムロン / ACN / DBEDC / ジエノクロル</td>
+  </tr>
+  <tr>
+    <td><span class="badge b-recent">新規未収録</span></td>
+    <td>2025–2026 新規登録で CropLife 表に未収録（次回更新で埋まる見込み）</td>
+    <td>シクロピラニル / シンメチリン / ジンプロピリダズ</td>
+  </tr>
+</table>
+
+<p>全 3,490 現行剤の <strong>全成分が分類済み (カバレッジ 100%)</strong> です。</p>
+
+<hr>
+
+<h2 id="export">5. エクスポート</h2>
+
+<p>検索結果を 4 形式でダウンロードできます。</p>
+
+<ul>
+  <li><strong>TSV</strong>: Excel にそのまま貼り付け可</li>
+  <li><strong>CSV</strong>: 文字コード UTF-8 (Excel で開く場合は「データ」→「テキストファイル」から UTF-8 指定で読み込み)</li>
+  <li><strong>Markdown</strong>: 報告書・メモ貼り付け用</li>
+  <li><strong>JSON</strong>: プログラムから再利用</li>
+</ul>
+
+<hr>
+
+<h2 id="update">6. データ更新</h2>
+
+<p>FAMIC は月初に、CropLife RAC 表は 2〜3 ヶ月ごとに更新されます。</p>
+
+<div class="big-step">
+  <span class="num">1</span>
+  Windows: <code>データ更新.bat</code> / macOS: <code>データ更新.command</code> をダブルクリック
+</div>
+
+<p>1〜2 分で最新データを取得し、<code>これをクリック.html</code> を再ビルドします。</p>
+
+<table>
+  <tr><th>前提</th><th>詳細</th></tr>
+  <tr><td>Python 3.8 以上</td><td>
+    macOS: 標準搭載（無ければ <code>xcode-select --install</code>）<br>
+    Windows: <a href="https://www.python.org/downloads/windows/">python.org</a> か Microsoft Store の "Python 3"。インストール時に <strong>"Add Python to PATH" にチェック</strong>
+  </td></tr>
+  <tr><td>ネットワーク接続</td><td>更新時のみ必要（検索時は不要）</td></tr>
+  <tr><td><code>openpyxl</code></td><td>初回起動時に自動インストール</td></tr>
+</table>
+
+<div class="callout warn">
+  <p><strong>データ更新後はブラウザのキャッシュを再読み込みしてください。</strong><br>
+  Windows: <kbd>Ctrl</kbd> + <kbd>F5</kbd> / macOS: <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd></p>
+</div>
+
+<hr>
+
+<h2 id="faq">7. よくある質問・トラブル</h2>
+
+<h3>Q. 作物名で検索したら失効剤が出なくなった</h3>
+<p>失効剤には適用情報（対象作物・病害虫）のデータが存在しないため、作物/病害虫で絞ると自動的に除外されます。失効剤も見たい場合は、作物/病害虫フィルタを空にしてください。</p>
+
+<h3>Q. エンドリン で検索したら「剤型: 乳剤」と出る、化合物名が出ない</h3>
+<p>剤型欄は <code>乳剤 / 粉剤 / 水和剤 / 粒剤 / フロアブル剤 / 水溶剤 / ジャンボ剤 / ベイト剤 / その他</code> の 9 分類に正規化されています。エンドリン等の化合物名は商品名または成分名の欄で確認できます。</p>
+
+<h3>Q. RAC コードが付いていない成分がある</h3>
+<p>RAC 未分類成分は理由バッジを表示します。上記「RAC バッジの見方」を参照してください。</p>
+
+<h3>Q. Windows で開くと文字化けする</h3>
+<p>HTML 自体は UTF-8 + <code>&lt;meta charset="UTF-8"&gt;</code> 宣言付きなので、どのブラウザでも文字化けしません。ファイル名（「これをクリック.html」「使い方.html」等の日本語名）が化ける場合は、配布時の ZIP 解凍ツールの問題です。対処は配布元に相談してください。</p>
+
+<h3>Q. データ更新.bat をダブルクリックすると一瞬でウィンドウが閉じる</h3>
+<p>Python 3 が入っていません。<code>py -3 --version</code> をコマンドプロンプトで実行して確認し、未インストールなら python.org からインストールしてください。</p>
+
+<h3>Q. 検索結果が多すぎる / 少なすぎる</h3>
+<p>スペース区切りで複数条件を AND で重ねられます。<code>なす アブラムシ イミダクロプリド</code> のように複数指定すると強力に絞り込めます。</p>
+
+<hr>
+
+<p style="color: var(--muted); font-size: 13px; text-align: center;">
+  農薬登録情報は <a href="https://www.acis.famic.go.jp/ddata/index2.htm">FAMIC 公開 CSV</a> および
+  <a href="https://www.croplifejapan.org/labo/mechanism.html">CropLife Japan RAC コード表</a> に基づきます。
+  データ著作権は各提供元に帰属します。
+</p>
+
+</body>
+</html>

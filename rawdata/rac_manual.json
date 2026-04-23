@@ -1,0 +1,70 @@
+{
+  "_schema": {
+    "description": "RAC コード未分類成分の手動ラベリング。build_data.py が読み込み rac_status/rac_reason フィールドとして付与する。",
+    "status_values": {
+      "out_of_scope": "RAC 体系の対象外（物理作用・生物製剤・軟体動物剤・動物薬・無機剤・燻蒸剤等）",
+      "legacy": "RAC 体系が分類対象にしていない古典合成剤",
+      "recent": "2020-2026 新規登録で CropLife 表に未収録（次回更新待ち）"
+    },
+    "last_updated": "2026-04-23",
+    "note": "CropLife 2025.06 版に基づく。一部の recent/legacy は文献上 RAC コード候補があるが、CropLife 公式確定でないため手動コード付与はしない。"
+  },
+  "ingredients": {
+    "ペラルゴン酸": {"status": "out_of_scope", "reason": "天然脂肪酸（物理作用）"},
+    "ペラルゴン酸カリウム塩": {"status": "out_of_scope", "reason": "天然脂肪酸塩（物理作用）"},
+    "脂肪酸グリセリド(虫)": {"status": "out_of_scope", "reason": "脂肪酸エステル（物理作用）"},
+    "ソルビタン脂肪酸エステル(殺虫)": {"status": "out_of_scope", "reason": "界面活性剤・脂肪酸エステル（物理作用）"},
+    "オレイン酸ナトリウム": {"status": "out_of_scope", "reason": "脂肪酸石鹸（物理作用）"},
+    "ポリグリセリン脂肪酸エステル": {"status": "out_of_scope", "reason": "脂肪酸エステル（物理作用）"},
+    "プロピレングリコールモノ脂肪酸エステル": {"status": "out_of_scope", "reason": "脂肪酸エステル（物理作用）"},
+    "グリセリン酢酸脂肪酸エステル": {"status": "out_of_scope", "reason": "脂肪酸エステル（物理作用）"},
+    "グリセリンクエン酸脂肪酸エステル": {"status": "out_of_scope", "reason": "脂肪酸エステル（物理作用）"},
+    "カプリン酸グリセリル": {"status": "out_of_scope", "reason": "脂肪酸エステル（物理作用）"},
+    "調合油": {"status": "out_of_scope", "reason": "鉱物油（物理被覆）"},
+    "なたね油": {"status": "out_of_scope", "reason": "植物油（物理被覆）"},
+    "デンプン": {"status": "out_of_scope", "reason": "デンプン系粘着剤（物理捕獲）"},
+    "ヒドロキシプロピル化リン酸架橋デンプン": {"status": "out_of_scope", "reason": "加工デンプン（物理作用）"},
+    "ポリブテン": {"status": "out_of_scope", "reason": "粘着剤（物理捕獲）"},
+    "d-リモネン": {"status": "out_of_scope", "reason": "天然テルペン（物理・忌避作用）"},
+    "還元澱粉糖化物": {"status": "out_of_scope", "reason": "糖系（物理作用）"},
+    "くん液蒸留酢酸": {"status": "out_of_scope", "reason": "木酢液・有機酸（物理作用）"},
+    "二酸化炭素": {"status": "out_of_scope", "reason": "燻蒸・物理作用"},
+
+    "非病原性リゾビウム ビティス": {"status": "out_of_scope", "reason": "微生物農薬（細菌）"},
+    "青枯病菌感染性バクテリオファージRKP180": {"status": "out_of_scope", "reason": "微生物農薬（ファージ）"},
+    "発芽スイートルーピン抽出たんぱく質": {"status": "out_of_scope", "reason": "植物抽出物"},
+    "ヤマウチアシボソトゲダニ": {"status": "out_of_scope", "reason": "天敵（捕食性ダニ）"},
+    "ボーベリア ブロンニアティ": {"status": "out_of_scope", "reason": "微生物農薬（糸状菌）"},
+    "パスツーリア ペネトランス": {"status": "out_of_scope", "reason": "微生物農薬（細菌）"},
+    "バーティシリウム レカニ": {"status": "out_of_scope", "reason": "微生物農薬（糸状菌, 現分類 Lecanicillium muscarium）"},
+
+    "メタアルデヒド": {"status": "out_of_scope", "reason": "軟体動物剤（IRAC 対象外）"},
+    "燐酸第二鉄": {"status": "out_of_scope", "reason": "軟体動物剤（IRAC 対象外）"},
+
+    "酒石酸モランテル": {"status": "out_of_scope", "reason": "動物用駆虫薬系"},
+    "塩酸レバミゾール": {"status": "out_of_scope", "reason": "動物用駆虫薬系"},
+    "ネマデクチン": {"status": "out_of_scope", "reason": "動物用線虫駆除剤（マクロライド系）"},
+
+    "塩素酸ナトリウム": {"status": "out_of_scope", "reason": "無機酸化剤"},
+    "シアン酸ナトリウム": {"status": "out_of_scope", "reason": "無機除草剤"},
+    "酸化亜鉛": {"status": "out_of_scope", "reason": "無機殺菌剤"},
+    "金属銀": {"status": "out_of_scope", "reason": "金属殺菌剤（銀イオン）"},
+
+    "ヨウ化メチル": {"status": "out_of_scope", "reason": "燻蒸剤（検疫用）"},
+
+    "ダイムロン": {"status": "legacy", "reason": "1993年登録、RAC 未付与"},
+    "カルブチレート": {"status": "legacy", "reason": "1993年登録、RAC 未付与"},
+    "テトラピオン": {"status": "legacy", "reason": "1969年登録（フルプロパネート）、CropLife 未収録"},
+    "ACN": {"status": "legacy", "reason": "1968年登録、古典除草剤"},
+    "エトベンザニド": {"status": "legacy", "reason": "1995年登録、CropLife 未収録"},
+    "ナプロパミド": {"status": "legacy", "reason": "文献上 HRAC 15 相当、CropLife 未収録"},
+    "DBEDC": {"status": "legacy", "reason": "1969年登録、銅錯体系"},
+    "ジエノクロル": {"status": "legacy", "reason": "1987年登録、古典塩素系殺虫剤"},
+
+    "シクロピラニル": {"status": "recent", "reason": "2026年登録、CropLife 2025.06 未収録"},
+    "ランコトリオンナトリウム塩": {"status": "recent", "reason": "2020-2022年登録、CropLife 未収録"},
+    "シンメチリン": {"status": "recent", "reason": "2025年登録、CropLife 2025.06 未収録"},
+    "ジンプロピリダズ": {"status": "recent", "reason": "2026年登録、CropLife 2025.06 未収録"},
+    "フルエンスルホン": {"status": "recent", "reason": "2017年登録、CropLife 未収録"}
+  }
+}
