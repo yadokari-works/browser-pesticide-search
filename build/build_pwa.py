@@ -4,14 +4,14 @@ PWA (Progressive Web App) ビルダ。
 
 build_bundled.py の出力 (build/これをクリック.html) をベースに、
 Service Worker + Web App Manifest + Apple Touch Icon を加えて
-完全オフライン動作する PWA を pwa/ ディレクトリに生成する。
+完全オフライン動作する PWA を docs/ ディレクトリに生成する。
 
 生成物:
-  pwa/index.html             — PWA エントリ (manifest + SW 登録 + Apple meta タグ追加済)
-  pwa/sw.js                  — Service Worker (HTML を install 時にキャッシュ)
-  pwa/manifest.webmanifest   — Web App Manifest
-  pwa/icon-{192,512}.png     — PWA アイコン
-  pwa/apple-touch-icon.png   — iOS ホーム画面アイコン (180x180)
+  docs/index.html             — PWA エントリ (manifest + SW 登録 + Apple meta タグ追加済)
+  docs/sw.js                  — Service Worker (HTML を install 時にキャッシュ)
+  docs/manifest.webmanifest   — Web App Manifest
+  docs/icon-{192,512}.png     — PWA アイコン
+  docs/apple-touch-icon.png   — iOS ホーム画面アイコン (180x180)
 
 使い方:
   python3 build/build_pwa.py
@@ -34,7 +34,7 @@ except ImportError:
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 BUILD = PROJECT_ROOT / "build"
 SRC_HTML = BUILD / "これをクリック.html"
-OUT_DIR = PROJECT_ROOT / "pwa"
+OUT_DIR = PROJECT_ROOT / "docs"  # GitHub Pages の制約上 /docs を使用
 
 APP_NAME = "農薬簡易検索"
 APP_SHORT = "農薬検索"

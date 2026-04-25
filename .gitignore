@@ -42,4 +42,4 @@ ios/DerivedData/
 **/xcuserdata/
 **/*.xcuserstate
 
-# pwa/ は GitHub Pages の対象なので含める (除外しない)
+# docs/ は GitHub Pages のソースなので含める (除外しない)
