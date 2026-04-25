@@ -41,3 +41,5 @@ ios/build/
 ios/DerivedData/
 **/xcuserdata/
 **/*.xcuserstate
+
+# pwa/ は GitHub Pages の対象なので含める (除外しない)
