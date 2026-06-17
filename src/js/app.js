@@ -39,6 +39,7 @@ const state = {
     statuses: new Set(DEFAULT_FILTERS.statuses),
   },
   currentQuery: "",
+  racSystem: null, // null=自動(全系統) | "I"|"F"|"H" = IRAC/FRAC/HRAC に限定
   currentResults: [],
   currentGroups: [],
   selectedFormulations: null,
@@ -159,6 +160,26 @@ function renderFilters() {
     })
   );
 
+  const racSysDiv = $("#filter-rac-system");
+  const RAC_SYSTEMS = [
+    { value: "", label: "自動 (全系統)" },
+    { value: "I", label: "IRAC (殺虫)" },
+    { value: "F", label: "FRAC (殺菌)" },
+    { value: "H", label: "HRAC (除草)" },
+  ];
+  racSysDiv.innerHTML = RAC_SYSTEMS.map(s => `
+    <label class="filter-option">
+      <input type="radio" name="rac-system" value="${s.value}" ${(state.racSystem || "") === s.value ? "checked" : ""}>
+      <span>${s.label}</span>
+    </label>
+  `).join("");
+  racSysDiv.querySelectorAll("input").forEach(rb =>
+    rb.addEventListener("change", e => {
+      state.racSystem = e.target.value || null;
+      updateResults();
+    })
+  );
+
   const statusDiv = $("#filter-statuses");
   const statusCounts = { 有効: 0, 失効: 0 };
   for (const p of state.db.products) {
@@ -238,7 +259,7 @@ function renderFilters() {
 }
 
 function updateResults() {
-  let results = search(state.currentQuery, state.index);
+  let results = search(state.currentQuery, state.index, state.racSystem);
   results = applyFilters(results, state.filters);
   state.currentResults = results;
   state.currentGroups = groupByTypeName(results);
