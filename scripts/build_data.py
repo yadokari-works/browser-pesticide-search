@@ -19,6 +19,7 @@ Output:
 
 import csv
 import json
+import re
 import sys
 import unicodedata
 from pathlib import Path
@@ -53,12 +54,40 @@ def _pick_famic_csv(suffix_digit: str) -> Path:
     return candidates[-1]  # アルファベット順 = 日付順の最新
 
 
+def _famic_date_from_path(path: Path) -> str:
+    """R0806100.csv → '2026-06-10'  (令和YY年MM月DD日 → 西暦 ISO 形式)"""
+    m = re.match(r"R(\d{2})(\d{2})(\d{2})\d\.csv", path.name)
+    if not m:
+        return "不明"
+    year = 2018 + int(m.group(1))
+    return f"{year}-{m.group(2)}-{m.group(3)}"
+
+
+def _sikkou_date_from_path(path: Path) -> str:
+    """sikkounouyaku_20260531.xls → '2026-05-31'"""
+    m = re.match(r"sikkounouyaku_(\d{4})(\d{2})(\d{2})\.xls", path.name)
+    if not m:
+        return "不明"
+    return f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+
+
+def _pick_sikkou_xls() -> Path:
+    """失効農薬一覧 .xls はファイル名の日付 (sikkounouyaku_YYYYMMDD.xls) が
+    更新ごとに変わるため、最新を自動検出する。失効剤データは任意項目なので、
+    見つからない場合は存在しないパスを返し、load_cancelled_pesticides() の
+    存在チェックでスキップさせる（FAMIC本体と違い sys.exit はしない）。"""
+    candidates = sorted((RAW_DIR / "sikkou").glob("sikkounouyaku_*.xls"))
+    if not candidates:
+        return RAW_DIR / "sikkou" / "sikkounouyaku_not_found.xls"
+    return candidates[-1]  # ファイル名末尾が日付なのでアルファベット順 = 最新
+
+
 FAMIC_BASIC = _pick_famic_csv("0")
 FAMIC_APP1 = _pick_famic_csv("1")
 FAMIC_APP2 = _pick_famic_csv("2")
 RAC_XLSX = RAW_DIR / "mechanism_rac.xlsx"
 RAC_MANUAL = RAW_DIR / "rac_manual.json"
-SIKKOU_XLS = RAW_DIR / "sikkou" / "sikkounouyaku_20260331.xls"
+SIKKOU_XLS = _pick_sikkou_xls()
 
 TARGET_CATEGORIES = {"殺虫剤", "殺菌剤", "除草剤"}
 
@@ -566,14 +595,16 @@ def build():
             category_counts[cat] += 1
 
     today = datetime.now().strftime("%Y-%m-%d")
+    famic_date = _famic_date_from_path(FAMIC_BASIC)
+    sikkou_date = _sikkou_date_from_path(SIKKOU_XLS) if SIKKOU_XLS.exists() else "不明"
 
     # メインDB（埋め込み用）
     main_output = {
         "schema_version": "1.0",
         "generated_at": today,
         "sources": {
-            "famic": "2026-04-08",
-            "famic_cancelled": "2026-03-31",
+            "famic": famic_date,
+            "famic_cancelled": sikkou_date,
             "rac": "2025-06 (CropLife Japan)",
         },
         "stats": {

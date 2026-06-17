@@ -35,6 +35,8 @@ venv/
 rawdata/famic/*.csv
 rawdata/famic_*.zip
 rawdata/mechanism_rac.xlsx
+rawdata/sikkou/*.xls
+rawdata/sikkou_*.zip
 
 # iOS / Xcode ビルド成果物
 ios/build/
