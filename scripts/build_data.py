@@ -150,6 +150,16 @@ def apply_category_override(type_name, categories):
 
 
 # 失効剤の旧農薬成分名からカテゴリを推定する補助テーブル（殺虫/殺菌/除草 が種類名に含まれない場合用）
+# 2026-06-17: 上位頻度の失効剤ルート約150件をWebSearchで個別調査し、確信度高/中で
+# 同定できたものを追加（出典: 環境省・FAMIC農薬抄録・Wikipedia等）。線虫防除剤・
+# 軟体動物防除剤・殺ダニ専用剤は、現行データ(ピリダベン等)で「殺虫剤」に分類されて
+# いる実例を確認した上で「殺虫剤」に含めている。確信を持てなかった項目（PMP, CYP,
+# 有機ひ素, BEBP, CVMP, TUZ, CMP, DCPA, CPA, BCPE, チアジアジン, DAPA, ESBP, ETM,
+# CPAS, APC, ジクロン, フェナジンオキシド, DPC, ESP, 蛋白加水分解物, EPBP, 粘着,
+# CNA, アルカリ, 果実防腐, テミビンホス, DAEP, ベスロジン, ジオキサン系有機りん,
+# FABA, マイトメート, 硫酸亜鉛, クロラムフェニコール, サリチオン, DCPA, MBCP, CVP,
+# カーバノレート, ホルモチオン, スルフェン酸系, 有機ニッケル, アンスラキノン 等）は
+# 追加せず、従来どおり除外を維持する。
 LEGACY_CATEGORY_HINTS = {
     "殺虫剤": [
         "DDT", "BHC", "ひ酸鉛", "ヒ酸鉛", "ひ酸石灰", "ヒ酸石灰",
@@ -158,6 +168,15 @@ LEGACY_CATEGORY_HINTS = {
         "ニコチン", "エチオン", "ダイアジノン", "カルバリル", "ディプテレックス",
         "グラヤノトキシン", "ハイトロキシド", "シアン化水素", "クロルピクリン",
         "EPN", "MPP", "DEP", "DMTP", "松脂合剤",
+        "NAC", "MTMC", "BPMC", "MPMC", "DDVP", "PHC", "XMC",
+        "ヘプタクロル", "プロパホス", "ピリダフェンチオン", "シクロプロトリン",
+        "ディルドリン", "TEPP", "クロルベンジレート", "CYAP", "シラフルオフェン",
+        "エチルチオメトン", "ベンゾエピン", "クロルピリホス", "クロルピリホスメチル",
+        "アラマイト", "酸化フェンブタスズ", "フェニソブロモレート", "ホサロン",
+        "ベンスルタップ", "ピラクロホス", "メチルジメトン", "チオメトン",
+        "ピリミホスメチル", "テロドリン", "モノクロトホス", "MNFA", "メカルバム",
+        "クロフェンテジン", "ケルセン", "CPCBS", "クロルプロピレート",
+        "DBCP", "EDB", "なめくじ駆除", "浮塵子駆除",
     ],
     "殺菌剤": [
         "ボルドー", "石灰ボルドー", "銅", "硫酸銅", "塩化第二銅",
@@ -165,6 +184,11 @@ LEGACY_CATEGORY_HINTS = {
         "硫黄", "石灰硫黄", "ダコニール", "チウラム", "TMTD",
         "キャプタン", "マンネブ", "ジネブ", "マンゼブ", "ベノミル",
         "ストレプトマイシン", "オキシテトラサイクリン", "テレ剤",
+        "ポリオキシン", "PCNB", "イミノクタジン酢酸塩", "ジクロシメット",
+        "フェナリモル", "チアベンダゾール", "フェノキサニル", "ホルムアルデヒド",
+        "ジクロメジン", "ダイホルタン", "シクロヘキシミド", "ビンクロゾリン",
+        "メチラム", "ピリフェノックス", "ポリカーバメート", "ファーバム",
+        "IBP", "EDDP", "ブラストサイジンS",
     ],
     "除草剤": [
         "2,4-D", "2.4-D", "MCP", "MCPA", "MCPB",
@@ -172,6 +196,9 @@ LEGACY_CATEGORY_HINTS = {
         "アトラジン", "シマジン", "プロパジン",
         "ピクロラム", "ダイカンバ", "ディカンバ",
         "クロルスルフロン", "テブチウロン",
+        "ベンタゾン", "DNBP", "ビフェノックス", "ビアラホス", "スルファミン酸塩",
+        "グリホサートトリメシウム塩", "PCP", "メフェナセット", "CNP",
+        "エンドタール二ナトリウム塩",
     ],
 }
 
@@ -203,15 +230,45 @@ def classify_formulation(product_name, raw_formulation):
     return "その他"
 
 
-def pick_categories_with_legacy(type_name, product_name):
+def build_ingredient_category_hints(basic_records):
+    """
+    現行剤の用途データから 成分名→カテゴリ集合 の対応表を動的生成する。
+    失効剤の種類名/商品名には用途(殺虫/殺菌/除草)が明記されないことが多く、
+    LEGACY_CATEGORY_HINTS (戦前〜昭和期の旧成分名のみ収録) では現代の成分名
+    (フサライド、ベンスルフロンメチル等) を取り逃して失効剤がサイレントに
+    除外される問題があった。現行剤側で成分名↔用途が既に判明しているため、
+    それを失効剤のカテゴリ推定に再利用する。
+    戻り値: ({成分名: {カテゴリ, ...}}, 成分名を長い順に並べたリスト)
+    """
+    votes = defaultdict(set)
+    for b in basic_records.values():
+        cats = apply_category_override(b["type_name"], pick_categories(b["category"]))
+        if not cats:
+            continue
+        for ing in b["ingredients_raw"]:
+            name = ing["name"]
+            if len(name) >= 2:
+                votes[name].update(cats)
+    names_by_length = sorted(votes.keys(), key=len, reverse=True)
+    return votes, names_by_length
+
+
+def pick_categories_with_legacy(type_name, product_name, ingredient_hints=None, ingredient_names_by_length=None):
     """
     通常の pick_categories で拾えない失効剤を、成分名ヒントで救済する。
+    1. 現行剤から動的生成した成分名ヒント (現代の成分名をカバー)
+    2. 旧農薬成分名ヒント (現行剤に存在しない歴史的成分用、LEGACY_CATEGORY_HINTS)
     """
     cats = pick_categories(type_name + " " + product_name)
     if cats:
         return cats
-    # 旧農薬成分名ヒント
     combined = norm(type_name) + " " + norm(product_name)
+
+    if ingredient_hints and ingredient_names_by_length:
+        for name in ingredient_names_by_length:
+            if name in combined:
+                return sorted(ingredient_hints[name])
+
     found = []
     for cat, hints in LEGACY_CATEGORY_HINTS.items():
         for hint in hints:
@@ -511,6 +568,9 @@ def build():
     cancelled_raw = load_cancelled_pesticides()
     print(f"  失効: {len(cancelled_raw)} 剤")
 
+    ingredient_hints, ingredient_names_by_length = build_ingredient_category_hints(basic)
+    print(f"  失効剤カテゴリ推定用 成分名ヒント: {len(ingredient_hints)} 成分 (現行剤から動的生成)")
+
     print("\nMerging...")
     products = []
     applications_by_reg = {}
@@ -557,16 +617,22 @@ def build():
         if reg_no in apps:
             applications_by_reg[str(reg_no)] = apps[reg_no]
 
-    # 失効剤を追加（成分情報無し、種類名＋商品名＋旧農薬成分ヒントからカテゴリ推定）
+    # 失効剤を追加（成分情報無し、種類名＋商品名＋成分名ヒントからカテゴリ推定）
     active_reg_nos = {p["reg_no"] for p in products}
+    cancelled_dropped = []  # カテゴリ推定不能で除外した剤 (サイレント失敗防止のため記録)
     for c in cancelled_raw:
         if c["reg_no"] in active_reg_nos:
             continue  # 現役剤と重複はスキップ
 
-        cats = pick_categories_with_legacy(c["type_name"], c["product_name"])
+        cats = pick_categories_with_legacy(
+            c["type_name"], c["product_name"], ingredient_hints, ingredient_names_by_length
+        )
         cats = apply_category_override(c["type_name"], cats)
         if not cats:
-            continue  # 殺虫/殺菌/除草 のいずれにも属さないもの（殺そ剤、植調剤等）は除外
+            # 殺虫/殺菌/除草 のいずれにも属さないもの（殺そ剤、植調剤等）に加え、
+            # ヒントが無く分類不能なものもここに来る。後者を見逃さないよう記録して出力する。
+            cancelled_dropped.append(c)
+            continue
 
         household = is_household(c["product_name"], c["type_name"])
         if household:
@@ -647,6 +713,22 @@ def build():
     print(f"Main : {OUT_MAIN.name}  {main_kb:.1f} KB  ({main_kb/1024:.2f} MB)")
     print(f"Apps : {OUT_APPS.name}  {apps_kb:.1f} KB  ({apps_kb/1024:.2f} MB)")
     print(f"\nStats: {json.dumps(main_output['stats'], ensure_ascii=False, indent=2)}")
+
+    # 失効剤のうちカテゴリ推定不能で除外したものを記録 (サイレント失敗防止)。
+    # 殺そ剤・展着剤・植調剤など正規の対象外も含まれるため、件数のみで合否判定はしない。
+    # 内容は監査用に毎回ファイルへ書き出し、ヒント表のカバレッジ漏れを追跡可能にする。
+    dropped_path = RAW_DIR / "sikkou" / "unclassified_dropped.json"
+    with open(dropped_path, "w", encoding="utf-8") as f:
+        json.dump(
+            [
+                {"reg_no": c["reg_no"], "type_name": c["type_name"], "product_name": c["product_name"]}
+                for c in cancelled_dropped
+            ],
+            f,
+            ensure_ascii=False,
+            indent=2,
+        )
+    print(f"\n失効剤カテゴリ推定不能で除外: {len(cancelled_dropped)} 件 (詳細: {dropped_path})")
 
 
 if __name__ == "__main__":

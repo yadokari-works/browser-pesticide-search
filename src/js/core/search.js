@@ -88,6 +88,12 @@ function tokenMatches(token, entry, racSystem) {
     if (pool.some(c => c === racTarget || c.startsWith(racTarget))) {
       return true;
     }
+    // 系統が明示指定されている場合 (ラジオボタン選択 or "IRAC 4A" 等のプレフィックス) は
+    // RAC コード一致のみで判定を確定させ、商品名等への通常テキスト一致にフォールスルーしない。
+    // ("自動" でプレフィックス無しの場合は従来通りテキスト一致もフォールバックとして許容)
+    if (sys) {
+      return false;
+    }
   }
 
   const nt = normalize(trimmed);
