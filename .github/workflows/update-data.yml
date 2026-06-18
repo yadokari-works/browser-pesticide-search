@@ -24,7 +24,7 @@ jobs:
           node-version: "20"
 
       - name: 依存インストール
-        run: pip install openpyxl pillow
+        run: pip install openpyxl pillow xlrd
 
       - name: FAMIC + CropLife データ取得・JSON再生成・シングルHTML再ビルド
         run: python3 scripts/update_data.py
