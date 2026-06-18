@@ -1,0 +1,54 @@
+name: FAMICデータ自動更新
+
+on:
+  schedule:
+    # 毎週月曜 03:00 JST (= 日曜 18:00 UTC)
+    - cron: "0 18 * * 0"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 依存インストール
+        run: pip install openpyxl pillow
+
+      - name: FAMIC + CropLife データ取得・JSON再生成・シングルHTML再ビルド
+        run: python3 scripts/update_data.py
+
+      - name: 検索ロジック品質ゲート (21件、1件でも失敗したら停止)
+        run: node scripts/test_search.mjs
+
+      - name: PWA再生成 (docs/)
+        run: python3 build/build_pwa.py
+
+      - name: 変更検出
+        id: diff
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: コミット & push
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "famic-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git commit -m "chore: FAMICデータ自動更新 ($(date -u +%Y-%m-%d))"
+          git push
