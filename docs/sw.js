@@ -2,7 +2,7 @@
 // 1. CACHE 名にバージョンを埋め込み、新版デプロイ時に古い CACHE を強制破棄
 // 2. index.html (HTML) は network-first で常に最新を取得 (オフライン時のみキャッシュ)
 // 3. 静的アセット (アイコン等) は cache-first
-const VERSION = "1.3.0";
+const VERSION = "1.4.0";
 const CACHE = `pesticide-search-${VERSION}`;
 const ASSETS = [
   "./",

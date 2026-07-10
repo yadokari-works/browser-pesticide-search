@@ -29,8 +29,16 @@ export function applyFilters(products, filters) {
     if (filters.excludeHousehold && p.household) return false;
     if (filters.formulations && !filters.formulations.has(p.formulation)) return false;
     if (filters.mixOnly && p.ingredients.length < 2) return false;
-    if (cropQ && !(p._crops_norm || "").includes(cropQ)) return false;
-    if (pestQ && !(p._pests_norm || "").includes(pestQ)) return false;
+    // 作物と病害虫を同時指定した場合は「同一適用行」での共起を要求する。
+    // (別々の行で 作物→別病害虫 / 別作物→病害虫 に登録があるだけの商品を除外)
+    if (cropQ && pestQ) {
+      const pairs = p._app_pairs || [];
+      const co = pairs.some(e => e.crop.includes(cropQ) && e.pest.includes(pestQ));
+      if (!co) return false;
+    } else {
+      if (cropQ && !(p._crops_norm || "").includes(cropQ)) return false;
+      if (pestQ && !(p._pests_norm || "").includes(pestQ)) return false;
+    }
     return true;
   });
 }

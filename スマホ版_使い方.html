@@ -75,6 +75,13 @@
   .hero .lbl .pill{background:var(--green); color:#fff; border-radius:6px; padding:1px 8px; font-size:11px; margin-left:6px;}
   .hero .sub{font-size:12.5px; color:var(--sub); margin:6px 0 0; line-height:1.6;}
   .hero .sub b{color:var(--green-d);}
+  .qr-block{display:flex; align-items:center; gap:14px; margin:14px 0 4px;}
+  .qr-frame{flex:0 0 auto; width:132px; height:132px; background:#fff; border:1px solid var(--line);
+    border-radius:14px; padding:10px; display:flex; align-items:center; justify-content:center;}
+  .qr-img{display:block; width:112px; height:112px; object-fit:contain;}
+  .qr-caption{margin:0; color:var(--sub); font-size:12.5px; line-height:1.6;}
+  .qr-caption b{color:var(--green-d);}
+  @media (max-width:420px){.qr-block{align-items:flex-start}.qr-frame{width:120px;height:120px;padding:8px}.qr-img{width:104px;height:104px}}
   .warn-url{
     background:#fff7ed; border:1px solid #fed7aa; border-radius:12px; padding:12px 14px; margin:8px 0 4px;
   }
@@ -115,7 +122,13 @@
 
   <div class="hero">
     <p class="lbl">📱 アプリのアドレスはこれ1つだけ<span class="pill">これを開く</span></p>
-    <code class="url">https://hirschmannielladiversa-bot.github.io/browser-pesticide-search/</code>
+    <code class="url">https://yadokari-works.github.io/browser-pesticide-search/</code>
+    <div class="qr-block">
+      <div class="qr-frame">
+        <img class="qr-img" src="browser-pesticide-search-qr.png" alt="農薬簡易検索アプリのQRコード">
+      </div>
+      <p class="qr-caption"><b>QRコードから開く場合</b><br>スマホのカメラで読み取って、このアプリを開けます。</p>
+    </div>
     <p class="sub">見分け方：<b>「github.io」（アイオー）</b>が付いている方がアプリです。<br>
     「github.<b>com</b>」（コム）はGitHubの開発ページなので、開いてもアプリは出ません。</p>
   </div>
@@ -126,7 +139,7 @@
       <div>アプリを開く<small>iPhoneは Safari／Androidは Chrome で開く</small></div>
     </div>
     <p style="margin:6px 0 2px;">上のアドレスを、お使いのブラウザで開きます（タップで全選択→コピー）。</p>
-    <code class="url">https://hirschmannielladiversa-bot.github.io/browser-pesticide-search/</code>
+    <code class="url">https://yadokari-works.github.io/browser-pesticide-search/</code>
     <div class="note">
       <b>ブラウザに注意：</b> iPhoneは必ず <b>Safari</b>、Androidは <b>Chrome</b> で開いてください。これ以外のブラウザだと「ホーム画面に追加」がうまく出ないことがあります。
     </div>
@@ -216,7 +229,7 @@
   </section>
 
   <footer>
-    農薬簡易検索 Ver. 1.3.0 ／ データ出典：FAMIC・CropLife<br>
+    農薬簡易検索 Ver. 1.4.0 ／ データ出典：FAMIC・CropLife<br>
     オフライン対応 PWA（iPhone / Android 対応）／ データは毎週自動更新
   </footer>
 

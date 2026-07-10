@@ -39,6 +39,7 @@ const state = {
     statuses: new Set(DEFAULT_FILTERS.statuses),
   },
   currentQuery: "",
+  searchMode: "and", // "and"=全トークン一致 | "or"=いずれか一致
   racSystem: null, // null=自動(全系統) | "I"|"F"|"H" = IRAC/FRAC/HRAC に限定
   currentResults: [],
   currentGroups: [],
@@ -86,25 +87,35 @@ function attachCropsPests(products, applications) {
     const entries = applications[String(p.reg_no)] || [];
     const crops = new Set();
     const pests = new Set();
+    // 適用行ごとに作物欄・病害虫欄を分離保持 (作物×病害虫 同時指定時の共起判定用)
+    const pairs = [];
     for (const a of entries) {
+      const cparts = [];
       if (a.crop) {
         for (const expanded of expandSearchableCrops(a.crop)) {
-          crops.add(normalize(expanded));
+          const n = normalize(expanded);
+          crops.add(n);
+          cparts.push(n);
         }
         cropCount.set(a.crop, (cropCount.get(a.crop) || 0) + 1);
       }
       if (a.place) {
         for (const expanded of expandSearchableCrops(a.place)) {
-          crops.add(normalize(expanded));
+          const n = normalize(expanded);
+          crops.add(n);
+          cparts.push(n);
         }
       }
-      if (a.pest) {
-        pests.add(normalize(a.pest));
+      const pestNorm = a.pest ? normalize(a.pest) : "";
+      if (pestNorm) {
+        pests.add(pestNorm);
         pestCount.set(a.pest, (pestCount.get(a.pest) || 0) + 1);
       }
+      pairs.push({ crop: cparts.join("|"), pest: pestNorm });
     }
     p._crops_norm = [...crops].join("|");
     p._pests_norm = [...pests].join("|");
+    p._app_pairs = pairs;
   }
   state.cropSuggestions = [...cropCount.entries()].sort((a, b) => b[1] - a[1]);
   state.pestSuggestions = [...pestCount.entries()].sort((a, b) => b[1] - a[1]);
@@ -259,7 +270,7 @@ function renderFilters() {
 }
 
 function updateResults() {
-  let results = search(state.currentQuery, state.index, state.racSystem);
+  let results = search(state.currentQuery, state.index, state.racSystem, state.searchMode);
   results = applyFilters(results, state.filters);
   state.currentResults = results;
   state.currentGroups = groupByTypeName(results);
@@ -509,6 +520,16 @@ searchInput.addEventListener("input", e => {
     state.currentQuery = e.target.value;
     updateResults();
   }, 150);
+});
+
+// AND / OR 検索モード切替 (検索バー横のセグメントトグル)
+document.querySelectorAll("#search-mode input[name='search-mode']").forEach(rb => {
+  rb.checked = rb.value === state.searchMode;
+  rb.addEventListener("change", e => {
+    if (!e.target.checked) return;
+    state.searchMode = e.target.value;
+    updateResults();
+  });
 });
 
 detailOverlay.addEventListener("click", e => {
