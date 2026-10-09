@@ -2,7 +2,7 @@
  * 農薬検索アプリ メインエントリ
  */
 
-import { buildIndex, search } from "./core/search.js";
+import { buildIndex, search, buildRowCondition, hasRowCondition, filterApplications } from "./core/search.js";
 import { applyFilters, DEFAULT_FILTERS, countFormulations } from "./core/filter.js";
 import { normalize, expandSearchableCrops, splitRacCode, stripCompanyFromName } from "./core/normalize.js";
 import { exportTSV, exportCSV, exportMarkdown, exportJSON, download } from "./io/export.js";
@@ -40,6 +40,8 @@ const state = {
   },
   currentQuery: "",
   searchMode: "and", // "and"=全トークン一致 | "or"=いずれか一致
+  appScope: "specified", // 適用表の表示範囲: "specified"=指定した作物・病害虫の行のみ | "all"=剤の登録すべて
+  detailRegNo: null, // 詳細に表示中の商品 (表示範囲の切替で再描画するため)
   racSystem: null, // null=自動(全系統) | "I"|"F"|"H" = IRAC/FRAC/HRAC に限定
   currentResults: [],
   currentGroups: [],
@@ -304,7 +306,10 @@ function renderFilters() {
 }
 
 function updateResults() {
-  let results = search(state.currentQuery, state.index, state.racSystem, state.searchMode);
+  let results = search(state.currentQuery, state.index, state.racSystem, state.searchMode, {
+    crop: state.filters.crop,
+    pest: state.filters.pest,
+  });
   results = applyFilters(results, state.filters);
   state.currentResults = results;
   state.currentGroups = groupByTypeAndIngredients(results);
@@ -508,9 +513,30 @@ function showGroupProductApplications(regNo) {
   detailContent.querySelectorAll(".group-product-row").forEach(r => {
     r.classList.toggle("selected", parseInt(r.dataset.reg, 10) === regNo);
   });
-  const apps = getApplicationsFor(regNo) || [];
+  state.detailRegNo = regNo;
+  const allApps = getApplicationsFor(regNo) || [];
+  // 「指定した作物・病害虫のみ」のとき、検索ボックスとサイドバーで指定した作物・病害虫の行に絞る
+  const cond = buildRowCondition(
+    state.currentQuery, state.index && state.index.lexicon, state.searchMode,
+    { crop: state.filters.crop, pest: state.filters.pest }
+  );
+  const narrowed = state.appScope === "specified" && hasRowCondition(cond);
+  const apps = narrowed ? filterApplications(allApps, cond) : allApps;
+  const condParts = [];
+  if (state.filters.crop) condParts.push(`作物: ${state.filters.crop}`);
+  if (state.filters.pest) condParts.push(`病害虫: ${state.filters.pest}`);
+  for (const t of [...cond.crops, ...cond.pests, ...cond.either]) condParts.push(t);
+  const scopeNote = narrowed
+    ? `<p style="font-size:12px; color: var(--text-muted); margin: 0 0 8px;">
+         指定した条件 (${escapeHtml([...new Set(condParts)].join(" / "))}) に該当する行のみを表示しています
+         (${apps.length} / ${allApps.length} 行)。サイドバーの「適用情報の表示範囲」で全登録に切り替えられます。
+       </p>`
+    : "";
+  const emptyMessage = narrowed && allApps.length > 0
+    ? `指定した条件に該当する適用行はありません (全登録 ${allApps.length} 行は、サイドバーの「適用情報の表示範囲」で表示できます)`
+    : `適用情報なし (失効剤には適用情報がありません)`;
   const appTableHtml = apps.length === 0
-    ? `<div class="empty" style="padding:20px;">適用情報なし (失効剤には適用情報がありません)</div>`
+    ? `<div class="empty" style="padding:20px;">${escapeHtml(emptyMessage)}</div>`
     : `
       <table class="app-table">
         <thead>
@@ -533,7 +559,7 @@ function showGroupProductApplications(regNo) {
       </table>
     `;
   target.innerHTML = `
-    <h3>${escapeHtml(p.product_name)} の適用 (${apps.length})</h3>
+    <h3>${escapeHtml(p.product_name)} の適用 (${narrowed ? `${apps.length} / ${allApps.length}` : allApps.length})</h3>
     <div class="result-meta" style="margin-bottom: 8px;">
       <span>${escapeHtml(p.company)}</span><span>·</span>
       <span>第${p.reg_no}号</span><span>·</span>
@@ -542,6 +568,7 @@ function showGroupProductApplications(regNo) {
       ${p.expire_date ? `<span>·</span><span>失効 ${escapeHtml(p.expire_date)}</span>` : ""}
       ${p.household ? `<span class="badge household">家庭向け</span>` : ""}
     </div>
+    ${scopeNote}
     ${appTableHtml}
   `;
 }
@@ -575,6 +602,18 @@ document.querySelectorAll("#search-mode input[name='search-mode']").forEach(rb =
     if (!e.target.checked) return;
     state.searchMode = e.target.value;
     updateResults();
+  });
+});
+
+// 適用情報の表示範囲 (指定した作物・病害虫のみ / 剤の登録すべて)
+document.querySelectorAll("#filter-app-scope input[name='app-scope']").forEach(rb => {
+  rb.checked = rb.value === state.appScope;
+  rb.addEventListener("change", e => {
+    if (!e.target.checked) return;
+    state.appScope = e.target.value;
+    if (state.detailRegNo != null && detailOverlay.classList.contains("open")) {
+      showGroupProductApplications(state.detailRegNo);
+    }
   });
 });
 

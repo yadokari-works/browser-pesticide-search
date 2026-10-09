@@ -136,13 +136,40 @@ function classifyNonApp(token, entry, racSystem) {
   return "maybe";
 }
 
-/** OR 用: 1トークンが商品のどこか (商品レベル or 作物 or 病害虫) に一致するか */
-function tokenMatchesAnywhere(token, entry, racSystem) {
+/**
+ * 同一の適用行に作物・病害虫が共起するか。空文字の側は条件なし。
+ * サイドバー指定の判定に使うため、作物は作物欄、病害虫は病害虫欄だけを見る
+ * (病害虫名 "ナシヒメシンクイ" が作物 "なし" に部分一致して誤ヒットするのを防ぐ)。
+ */
+function rowHas(entry, cropQ, pestQ) {
+  return entry.app_entries.some(e =>
+    (!cropQ || e.crop.includes(cropQ)) && (!pestQ || e.pest.includes(pestQ))
+  );
+}
+
+/**
+ * OR 用: 1トークンが商品のどこか (商品レベル or 作物 or 病害虫) に一致するか。
+ * サイドバーで作物 (または病害虫) が指定されている場合、病害虫語 (または作物語) は
+ * 「その指定と同一の適用行」で成立したときだけ一致とする。
+ *   例: 作物=なし、"黒星病 炭疽病" (OR) → なしの適用行に黒星病か炭疽病がある商品
+ */
+function tokenMatchesAnywhere(token, entry, racSystem, lex, scope) {
   const r = classifyNonApp(token, entry, racSystem);
   if (r === "yes") return true;
   if (r === "no") return false;
   const nt = normalize(token.trim());
-  return !!nt && (entry.norm_crops.includes(nt) || entry.norm_pests.includes(nt));
+  if (!nt) return false;
+  const inCrops = entry.norm_crops.includes(nt);
+  const inPests = entry.norm_pests.includes(nt);
+  if (!inCrops && !inPests) return false;
+
+  const cw = lex.cropWords.has(nt);
+  const pw = lex.pestWords.has(nt);
+  const asPest = (pw && !cw) || (!cw && !pw && inPests && !inCrops);
+  const asCrop = (cw && !pw) || (!cw && !pw && inCrops && !inPests);
+  if (scope.crop && asPest) return rowHas(entry, scope.crop, nt);
+  if (scope.pest && asCrop) return rowHas(entry, nt, scope.pest);
+  return true;
 }
 
 /**
@@ -157,9 +184,10 @@ function tokenMatchesAnywhere(token, entry, racSystem) {
  *   しても作物として扱える。
  * @param {{cropWords:Set<string>, pestWords:Set<string>}} lex コーパス語彙
  */
-function matchesAnd(entry, tokens, racSystem, lex) {
+function matchesAnd(entry, tokens, racSystem, lex, scope) {
   const cropTokens = [];
   const pestTokens = [];
+  const ambiguous = new Set();
   for (const t of tokens) {
     const r = classifyNonApp(t.text, entry, t.sys || racSystem);
     if (r === "yes") continue;      // 商品レベルで充足
@@ -178,7 +206,7 @@ function matchesAnd(entry, tokens, racSystem, lex) {
     else if (pestWord && !cropWord) pestTokens.push(nt);
     else if (isCropField && !isPestField) cropTokens.push(nt);
     else if (isPestField && !isCropField) pestTokens.push(nt);
-    else { cropTokens.push(nt); pestTokens.push(nt); }  // 判別不能 → どちらの役割でも許容
+    else { cropTokens.push(nt); pestTokens.push(nt); ambiguous.add(nt); }  // 判別不能 → どちらの役割でも許容
   }
   // 作物×病害虫ペアが「同一適用行」に共起することを要求。
   // 作物名が病害虫欄の括弧内 (例 "うどんこ病(ぶどう)") にある場合も拾えるよう、
@@ -191,6 +219,19 @@ function matchesAnd(entry, tokens, racSystem, lex) {
         (e.crop.includes(p) || e.pest.includes(p))
       );
       if (!ok) return false;
+    }
+  }
+  // サイドバーで作物を指定している場合、検索語の病害虫は「その作物の適用行」ごとに
+  // 成立していなければならない (病害虫が複数でも、各病害虫が指定作物に登録されている)。
+  // 病害虫を指定している場合の、検索語の作物も同様。
+  if (scope.crop) {
+    for (const p of pestTokens) {
+      if (!ambiguous.has(p) && !rowHas(entry, scope.crop, p)) return false;
+    }
+  }
+  if (scope.pest) {
+    for (const c of cropTokens) {
+      if (!ambiguous.has(c) && !rowHas(entry, c, scope.pest)) return false;
     }
   }
   return true;
@@ -208,8 +249,11 @@ const RAC_PREFIX_TO_SYS = { IRAC: "I", FRAC: "F", HRAC: "H" };
  * @param {"and"|"or"} [mode="and"] トークン結合方法。
  *   "and" = 全トークンに一致する商品のみ (既定)。
  *   "or"  = いずれかのトークンに一致する商品。
+ * @param {{crop?:string, pest?:string}} [scope] サイドバーで指定された作物・病害虫。
+ *   検索語の病害虫は指定作物と、検索語の作物は指定病害虫と、同一の適用行で
+ *   成立することを要求する (商品全体にそれぞれ別々に登録があるだけでは一致としない)。
  */
-export function search(query, index, racSystem, mode) {
+export function search(query, index, racSystem, mode, scope) {
   const q = (query || "").trim();
   if (!q) return index.map(e => e.product);
 
@@ -234,11 +278,74 @@ export function search(query, index, racSystem, mode) {
   // OR 検索: いずれかのトークンに一致すれば採用。
   // AND 検索: 全トークン一致。ただし作物×病害虫は同一適用行での共起を要求 (matchesAnd)。
   const lex = index.lexicon || EMPTY_LEX;
+  const sc = { crop: normalize((scope && scope.crop) || ""), pest: normalize((scope && scope.pest) || "") };
   const combine = mode === "or"
-    ? (entry) => tokens.some(t => tokenMatchesAnywhere(t.text, entry, t.sys || racSystem))
-    : (entry) => matchesAnd(entry, tokens, racSystem, lex);
+    ? (entry) => tokens.some(t => tokenMatchesAnywhere(t.text, entry, t.sys || racSystem, lex, sc))
+    : (entry) => matchesAnd(entry, tokens, racSystem, lex, sc);
 
   return index.filter(combine).map(e => e.product);
+}
+
+/**
+ * 結果の適用表を「指定した作物・病害虫の行だけ」に絞るための条件を作る。
+ * サイドバーの作物・病害虫は常に必須。検索語のうち作物名・病害虫名として
+ * コーパス語彙にある語を、AND なら「作物群・病害虫群のそれぞれに該当」、
+ * OR なら「いずれかに該当」として扱う。商品名・成分名などの語は行の絞り込みに使わない。
+ * @param {{cropWords:Set<string>, pestWords:Set<string>}} lex コーパス語彙 (index.lexicon)
+ */
+export function buildRowCondition(query, lex, mode, scope) {
+  const L = lex || EMPTY_LEX;
+  const crops = [];
+  const pests = [];
+  const either = [];
+  const has = (set, nt) => set.has(nt) || [...set].some(w => w.includes(nt));
+  for (const raw of (query || "").trim().split(/[\s　]+/).filter(Boolean)) {
+    if (/^(IRAC|FRAC|HRAC)$/i.test(raw)) continue;
+    const nt = normalize(raw);
+    if (!nt) continue;
+    const cw = has(L.cropWords, nt);
+    const pw = has(L.pestWords, nt);
+    if (cw && pw) either.push(nt);
+    else if (cw) crops.push(nt);
+    else if (pw) pests.push(nt);
+  }
+  return {
+    mode: mode === "or" ? "or" : "and",
+    crops, pests, either,
+    scopeCrop: normalize((scope && scope.crop) || ""),
+    scopePest: normalize((scope && scope.pest) || ""),
+  };
+}
+
+/** 行を絞る条件が 1 つでもあるか (無ければ全登録をそのまま表示する) */
+export function hasRowCondition(cond) {
+  return !!(cond && (cond.crops.length || cond.pests.length || cond.either.length ||
+    cond.scopeCrop || cond.scopePest));
+}
+
+/** 適用行 (FAMIC 適用部の配列) を条件で絞り込む。条件が無ければそのまま返す */
+export function filterApplications(apps, cond) {
+  if (!hasRowCondition(cond)) return apps;
+  const groups = [["crops", cond.crops], ["pests", cond.pests], ["either", cond.either]]
+    .filter(([, list]) => list.length);
+  return apps.filter(a => {
+    const crop = [
+      ...(a.crop ? expandSearchableCrops(a.crop) : []),
+      ...(a.place ? expandSearchableCrops(a.place) : []),
+    ].map(normalize).join("|");
+    const pest = a.pest ? normalize(a.pest) : "";
+    if (cond.scopeCrop && !crop.includes(cond.scopeCrop)) return false;
+    if (cond.scopePest && !pest.includes(cond.scopePest)) return false;
+    if (groups.length === 0) return true;
+    const hit = {
+      crops: cond.crops.some(t => crop.includes(t)),
+      pests: cond.pests.some(t => pest.includes(t)),
+      either: cond.either.some(t => crop.includes(t) || pest.includes(t)),
+    };
+    return cond.mode === "or"
+      ? groups.some(([k]) => hit[k])
+      : groups.every(([k]) => hit[k]);
+  });
 }
 
 /** 互換用: 旧 detectType を参照する呼出しがあれば簡易応答 */

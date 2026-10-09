@@ -202,6 +202,102 @@ for (const tc of sidebarCases) {
     (res.length === 0 ? " /* 0件 */" : ""));
 }
 
+// ===== サイドバー作物 × 検索語の病害虫 (同一適用行) =====
+// 例: 作物=なし、検索 "黒星病 炭疽病" で、なしに黒星病の登録はあるが炭疽病は別作物にしか無い剤
+// (商品全体では両方に登録がある) を出してはいけない。正解は検索を使わず全商品から独立に算出する。
+console.log();
+console.log("--- サイドバー作物 × 検索語の病害虫 (同一適用行) ---");
+const scopeFilters = (crop, pest) => ({
+  ...DEFAULT_FILTERS,
+  categories: new Set(DEFAULT_FILTERS.categories),
+  statuses: new Set(["有効"]),
+  crop: crop || "", pest: pest || "",
+});
+// 作物欄だけ / 病害虫欄だけを見て、指定作物の行に pestN があるか (厳密)
+const rowHas = (p, cropN, pestN) =>
+  (p._app_pairs || []).some(e => e.crop.includes(cropN) && e.pest.includes(pestN));
+
+const scopeCases = [
+  { crop: "なし", pests: ["黒星病", "炭疽病"] },
+  { crop: "りんご", pests: ["斑点落葉病", "うどんこ病"] },
+  { crop: "きゅうり", pests: ["うどんこ病", "べと病"] },
+];
+for (const tc of scopeCases) {
+  for (const mode of ["and", "or"]) {
+    const q = tc.pests.join(" ");
+    const f = scopeFilters(tc.crop, "");
+    const got = applyFilters(search(q, index, null, mode, { crop: tc.crop }), f)
+      .map(p => p.reg_no).sort((a, b) => a - b);
+    const cropN = normalizeMod(tc.crop);
+    const test = p => {
+      const hits = tc.pests.map(x => rowHas(p, cropN, normalizeMod(x)));
+      return mode === "and" ? hits.every(Boolean) : hits.some(Boolean);
+    };
+    const truth = applyFilters(db.products, f).filter(test).map(p => p.reg_no).sort((a, b) => a - b);
+    const missing = truth.filter(x => !got.includes(x));
+    const extra = got.filter(x => !truth.includes(x));
+    const ok = truth.length > 0 && missing.length === 0 && extra.length === 0;
+    if (ok) pass++; else fail++;
+    console.log(`${ok ? "✓" : "✗"} 作物=${tc.crop} 検索="${q}" ${mode.toUpperCase()} → ${got.length} 件 (正解 ${truth.length} 件)` +
+      (ok ? "" : ` /* 漏れ ${missing.length} / 余分 ${extra.length} */`));
+  }
+}
+
+// サイドバーの病害虫 × 検索語の作物 (対称のケース)
+{
+  const f = scopeFilters("", "うどんこ病");
+  const got = applyFilters(search("ぶどう りんご", index, null, "or", { pest: "うどんこ病" }), f)
+    .map(p => p.reg_no).sort((a, b) => a - b);
+  const pestN = normalizeMod("うどんこ病");
+  const truth = applyFilters(db.products, f)
+    .filter(p => rowHas(p, normalizeMod("ぶどう"), pestN) || rowHas(p, normalizeMod("りんご"), pestN))
+    .map(p => p.reg_no).sort((a, b) => a - b);
+  const ok = truth.length > 0 && got.length === truth.length && got.every((x, i) => x === truth[i]);
+  if (ok) pass++; else fail++;
+  console.log(`${ok ? "✓" : "✗"} 病害虫=うどんこ病 検索="ぶどう りんご" OR → ${got.length} 件 (正解 ${truth.length} 件)`);
+}
+
+// ===== 適用表の表示範囲 (指定した作物・病害虫のみ / 剤の登録すべて) =====
+console.log();
+console.log("--- 適用表の表示範囲 ---");
+{
+  const { buildRowCondition, hasRowCondition, filterApplications } = await import("../src/js/core/search.js");
+  const f = scopeFilters("なし", "");
+  const hits = applyFilters(search("黒星病 炭疽病", index, null, "and", { crop: "なし" }), f);
+  let allOk = hits.length > 0, narrowedSome = 0;
+  for (const p of hits) {
+    const apps = applications[String(p.reg_no)] || [];
+    const cond = buildRowCondition("黒星病 炭疽病", index.lexicon, "and", { crop: "なし" });
+    const rows = filterApplications(apps, cond);
+    const cropN = normalizeMod("なし");
+    // 絞り込み後の全行が「作物=なし」かつ病害虫が 黒星病 か 炭疽病 であること
+    const rowOk = rows.length > 0 && rows.every(a => {
+      const crop = [...(a.crop ? expandSearchableCrops(a.crop) : []), ...(a.place ? expandSearchableCrops(a.place) : [])]
+        .map(normalizeMod).join("|");
+      const pest = normalizeMod(a.pest || "");
+      return crop.includes(cropN) && (pest.includes(normalizeMod("黒星病")) || pest.includes(normalizeMod("炭疽病")));
+    });
+    if (!rowOk) allOk = false;
+    if (rows.length < apps.length) narrowedSome++;
+  }
+  if (allOk && narrowedSome > 0) pass++; else fail++;
+  console.log(`${allOk && narrowedSome > 0 ? "✓" : "✗"} 作物=なし "黒星病 炭疽病": ${hits.length} 商品すべてで、絞り込み後の行が条件に一致 (行数が減った商品 ${narrowedSome} 件)`);
+
+  // 条件が何も無ければ全登録をそのまま返す (「剤の登録すべて」相当・無指定時)
+  const p0 = db.products.find(p => (applications[String(p.reg_no)] || []).length > 3);
+  const apps0 = applications[String(p0.reg_no)];
+  const noCond = buildRowCondition("", index.lexicon, "and", {});
+  const same = !hasRowCondition(noCond) && filterApplications(apps0, noCond) === apps0;
+  if (same) pass++; else fail++;
+  console.log(`${same ? "✓" : "✗"} 条件なしのとき適用行は絞り込まれない (全 ${apps0.length} 行)`);
+
+  // 商品名・成分名だけの検索語は、行の絞り込み条件にしない
+  const nameOnly = buildRowCondition("イミダクロプリド アドマイヤー", index.lexicon, "and", {});
+  const noNarrow = !hasRowCondition(nameOnly);
+  if (noNarrow) pass++; else fail++;
+  console.log(`${noNarrow ? "✓" : "✗"} 成分名・商品名の検索語だけでは適用行を絞らない`);
+}
+
 console.log();
 console.log(`Result: ${pass} pass / ${fail} fail`);
 if (fail > 0) process.exit(1);

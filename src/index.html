@@ -13,7 +13,7 @@
      padding: 14px 20px; font-size: 20pt; font-weight: 700; line-height: 1.3;">
   農薬簡易検索アプリ
   <span style="font-size: 13pt; color: var(--text-muted); font-weight: 500; margin-left: 10px;">
-    Ver. 1.5.1
+    Ver. 1.6.0
   </span>
 </div>
 
@@ -27,7 +27,7 @@
 </div>
 
 <header>
-  <h1 class="header-title">農薬検索 <span class="version">Ver. 1.5.1</span></h1>
+  <h1 class="header-title">農薬検索 <span class="version">Ver. 1.6.0</span></h1>
   <div class="search-bar">
     <input id="search-input" class="search-input" type="text"
            placeholder="種類名 / 商品名 / 成分名 / 作物名 / 病害虫名 / RACコード をスペース区切りで検索 (/ キーでフォーカス)"
@@ -103,6 +103,24 @@
       <input type="text" id="filter-pest" class="search-input" list="pest-suggestions"
              placeholder="病害虫/雑草名で絞込 (例: アブラムシ)" style="padding: 6px 8px; font-size:12px;">
       <datalist id="pest-suggestions"></datalist>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title">適用情報の表示範囲</div>
+      <div id="filter-app-scope" role="radiogroup" aria-label="適用情報の表示範囲">
+        <label class="filter-option">
+          <input type="radio" name="app-scope" value="specified" checked>
+          <span>指定した作物・病害虫のみ</span>
+        </label>
+        <label class="filter-option">
+          <input type="radio" name="app-scope" value="all">
+          <span>剤の登録すべて</span>
+        </label>
+      </div>
+      <p style="margin:6px 0 0; font-size:11px; color: var(--text-muted); line-height:1.4;">
+        商品の詳細に出る適用表の行を切り替えます。作物・病害虫を指定していないときは、どちらでも全登録を表示します。
+        作物をここで指定すると、検索ボックスの病害虫はその作物に登録があるものだけが対象になります。
+      </p>
     </div>
 
     <div class="filter-group" style="font-size:11px; color: var(--text-muted); line-height:1.5;">
