@@ -1,0 +1,16 @@
+{
+  "name": "農薬簡易検索",
+  "short_name": "農薬検索",
+  "description": "FAMIC + CropLife 統合のオフライン農薬検索ツール",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#16a34a",
+  "background_color": "#fafafa",
+  "lang": "ja",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
