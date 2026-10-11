@@ -210,7 +210,7 @@ def main() -> int:
     run_step(7, 7, "シングルHTML 再生成 (build_bundled.py)",
              [sys.executable, str(BUILD_DIR / "build_bundled.py")])
 
-    bundled = BUILD_DIR / "pesticide_search_bundled.html"
+    bundled = BUILD_DIR / "これをクリック.html"
     if bundled.exists():
         size_mb = bundled.stat().st_size / 1024 / 1024
         log("")

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 FAMIC の農薬登録情報 (現行登録 + 失効農薬) と CropLife Japan の RAC コード表を統合し、商品名・成分名・作物・病害虫・IRAC/FRAC/HRAC コードで検索する静的ブラウザアプリ。npm やバンドラは使わず、Python スクリプトで JSON を生成し、単一 HTML に埋め込んで配布する。配布形態は 3 つ: 単一 HTML (`build/これをクリック.html`)、GitHub Pages の PWA (`docs/`)、iOS アプリ (`ios/`、WKWebView で同梱 HTML を表示するだけのラッパー)。
 
-ユーザー向けの説明は `使い方.md`、変更履歴は `更新履歴.md`。`scripts/update_data.py` の完了ログと `データ更新.command` / `.bat` の案内には、旧ファイル名 `pesticide_search_bundled.html` が残っている (実際の出力は `build/これをクリック.html`)。
+ユーザー向けの説明は `使い方.md`、変更履歴は `更新履歴.md`。`データ更新.bat` は CP932 で書かれているため、UTF-8 として編集しない。
 
 ## コマンド
 

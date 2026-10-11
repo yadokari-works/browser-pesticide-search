@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 シングルHTML バンドラ。
-CSS, JS, JSON を src/index.html にインライン化して build/pesticide_search_bundled.html を生成。
+CSS, JS, JSON を src/index.html にインライン化して build/これをクリック.html を生成。
 
 JS は ES module 形式だが、バンドル時に import/export を除去して 1 つの IIFE に結合する。
 """
