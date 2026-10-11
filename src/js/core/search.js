@@ -5,7 +5,7 @@
  * - 全て正規化後の部分一致
  */
 
-import { normalize, normalizeRacQuery, expandSearchableCrops, splitRacCode } from "./normalize.js";
+import { normalize, normalizeRacQuery, expandSearchableCrops, splitRacCode, applicationCropMembers, membersHave } from "./normalize.js";
 
 /**
  * 検索インデックス構築
@@ -18,12 +18,19 @@ export function buildIndex(products, applications) {
   // クエリ語の役割 (作物 or 病害虫) を、その商品内の部分一致だけに頼らず判定するために使う。
   //   例: "なす" は作物語彙に存在する → たとえある商品で病害虫名 "ヨメナスジハモグリバエ" に
   //       部分一致しても、作物トークンとして扱える。
+  // 作物群の所属作物 (例 非結球あぶらな科葉菜類 → こまつな) も作物語として扱う。
   const cropWords = new Set();
   const pestWords = new Set();
+  const seenMembers = new Set();
   for (const k in apps) {
     for (const a of apps[k]) {
       if (a.crop) for (const c of expandSearchableCrops(a.crop)) cropWords.add(normalize(c));
       if (a.place) for (const c of expandSearchableCrops(a.place)) cropWords.add(normalize(c));
+      for (const s of applicationCropMembers(a)) {
+        if (seenMembers.has(s)) continue;
+        seenMembers.add(s);
+        for (const m of s) cropWords.add(m);
+      }
       if (a.pest) pestWords.add(normalize(a.pest));
     }
   }
@@ -48,9 +55,11 @@ export function buildIndex(products, applications) {
     // 作物名・病害虫名
     // - norm_crops / norm_pests: 商品全体で dedup 結合 (OR 検索・トークン分類用)
     // - app_entries: 適用行ごとに crop/pest を分離保持 (AND の作物×病害虫 共起判定用)
+    // - crop_members / app_entries[].members: 作物群の所属作物の Set (完全一致で照合する)
     const entries = apps[String(p.reg_no)] || [];
     const cropSet = new Set();
     const pestSet = new Set();
+    const memberSets = new Set();
     const app_entries = [];
     for (const a of entries) {
       const cparts = [];
@@ -60,9 +69,11 @@ export function buildIndex(products, applications) {
       if (a.place) {
         for (const c of expandSearchableCrops(a.place)) { const n = normalize(c); cropSet.add(n); cparts.push(n); }
       }
+      const members = applicationCropMembers(a);
+      for (const s of members) memberSets.add(s);
       const pestNorm = a.pest ? normalize(a.pest) : "";
       if (pestNorm) pestSet.add(pestNorm);
-      app_entries.push({ crop: cparts.join("|"), pest: pestNorm });
+      app_entries.push({ crop: cparts.join("|"), pest: pestNorm, members });
     }
     const norm_crops = [...cropSet].join("|");
     const norm_pests = [...pestSet].join("|");
@@ -75,6 +86,7 @@ export function buildIndex(products, applications) {
       norm_type: normalize(p.type_name),
       norm_crops,
       norm_pests,
+      crop_members: [...memberSets],
       app_entries,
       rac_codes: racCodes,
       reg_no: p.reg_no,
@@ -140,11 +152,17 @@ function classifyNonApp(token, entry, racSystem) {
  * 同一の適用行に作物・病害虫が共起するか。空文字の側は条件なし。
  * サイドバー指定の判定に使うため、作物は作物欄、病害虫は病害虫欄だけを見る
  * (病害虫名 "ナシヒメシンクイ" が作物 "なし" に部分一致して誤ヒットするのを防ぐ)。
+ * 作物欄が作物群の行は、所属作物との完全一致でも成立する。
  */
 function rowHas(entry, cropQ, pestQ) {
   return entry.app_entries.some(e =>
-    (!cropQ || e.crop.includes(cropQ)) && (!pestQ || e.pest.includes(pestQ))
+    (!cropQ || e.crop.includes(cropQ) || membersHave(e.members, cropQ)) && (!pestQ || e.pest.includes(pestQ))
   );
+}
+
+/** 商品のいずれかの適用行の作物欄に nt があるか (作物群の所属作物は完全一致) */
+function cropsHave(entry, nt) {
+  return entry.norm_crops.includes(nt) || membersHave(entry.crop_members, nt);
 }
 
 /**
@@ -159,7 +177,7 @@ function tokenMatchesAnywhere(token, entry, racSystem, lex, scope) {
   if (r === "no") return false;
   const nt = normalize(token.trim());
   if (!nt) return false;
-  const inCrops = entry.norm_crops.includes(nt);
+  const inCrops = cropsHave(entry, nt);
   const inPests = entry.norm_pests.includes(nt);
   if (!inCrops && !inPests) return false;
 
@@ -195,7 +213,7 @@ function matchesAnd(entry, tokens, racSystem, lex, scope) {
     // "maybe": 作物・病害虫側で存在を確認
     const nt = normalize(t.text.trim());
     if (!nt) return false;
-    const isCropField = entry.norm_crops.includes(nt);
+    const isCropField = cropsHave(entry, nt);
     const isPestField = entry.norm_pests.includes(nt);
     if (!isCropField && !isPestField) return false;  // どこにも無い → 不成立
 
@@ -211,13 +229,12 @@ function matchesAnd(entry, tokens, racSystem, lex, scope) {
   // 作物×病害虫ペアが「同一適用行」に共起することを要求。
   // 作物名が病害虫欄の括弧内 (例 "うどんこ病(ぶどう)") にある場合も拾えるよう、
   // 各適用行の crop/pest を結合したテキストで両トークンの有無を見る。
+  // 作物欄が作物群の行は、所属作物との完全一致でも作物があるとみなす。
+  const inRow = (e, t) => e.crop.includes(t) || e.pest.includes(t) || membersHave(e.members, t);
   for (const c of cropTokens) {
     for (const p of pestTokens) {
       if (c === p) continue;
-      const ok = entry.app_entries.some(e =>
-        (e.crop.includes(c) || e.pest.includes(c)) &&
-        (e.crop.includes(p) || e.pest.includes(p))
-      );
+      const ok = entry.app_entries.some(e => inRow(e, c) && inRow(e, p));
       if (!ok) return false;
     }
   }
@@ -333,14 +350,16 @@ export function filterApplications(apps, cond) {
       ...(a.crop ? expandSearchableCrops(a.crop) : []),
       ...(a.place ? expandSearchableCrops(a.place) : []),
     ].map(normalize).join("|");
+    const members = applicationCropMembers(a);
+    const cropHas = t => crop.includes(t) || membersHave(members, t);
     const pest = a.pest ? normalize(a.pest) : "";
-    if (cond.scopeCrop && !crop.includes(cond.scopeCrop)) return false;
+    if (cond.scopeCrop && !cropHas(cond.scopeCrop)) return false;
     if (cond.scopePest && !pest.includes(cond.scopePest)) return false;
     if (groups.length === 0) return true;
     const hit = {
-      crops: cond.crops.some(t => crop.includes(t)),
+      crops: cond.crops.some(cropHas),
       pests: cond.pests.some(t => pest.includes(t)),
-      either: cond.either.some(t => crop.includes(t) || pest.includes(t)),
+      either: cond.either.some(t => cropHas(t) || pest.includes(t)),
     };
     return cond.mode === "or"
       ? groups.some(([k]) => hit[k])

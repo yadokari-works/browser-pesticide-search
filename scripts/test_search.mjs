@@ -12,7 +12,7 @@ const DB_PATH = path.join(__dirname, "..", "src", "data", "pesticides.json");
 
 const { buildIndex, search, detectType } = await import("../src/js/core/search.js");
 const { applyFilters, DEFAULT_FILTERS } = await import("../src/js/core/filter.js");
-const { normalize: normalizeMod, expandSearchableCrops } = await import("../src/js/core/normalize.js");
+const { normalize: normalizeMod, expandSearchableCrops, cropGroupMembers, applicationCropMembers, membersHave } = await import("../src/js/core/normalize.js");
 
 const db = JSON.parse(fs.readFileSync(DB_PATH, "utf-8"));
 
@@ -125,6 +125,7 @@ console.log("--- 作物×病害虫 共起 (AND) ---");
 // 指定商品が、指定作物×病害虫を「同一適用行」に持つか (ground truth 判定)。
 // 作物名が病害虫欄の括弧内 (例 "うどんこ病(ぶどう)") にある場合も共起とみなすため、
 // 各行の crop/place/pest を結合したテキストで両語の有無を見る。
+// 作物欄が作物群の行は、所属作物との完全一致でも作物があるとみなす。
 function hasCoOccurrence(product, cropNorm, pestNorm) {
   const entries = applications[String(product.reg_no)] || [];
   return entries.some(a => {
@@ -133,7 +134,8 @@ function hasCoOccurrence(product, cropNorm, pestNorm) {
     if (a.place) parts.push(...expandSearchableCrops(a.place));
     if (a.pest) parts.push(a.pest);
     const text = parts.map(normalizeMod).join("|");
-    return text.includes(cropNorm) && text.includes(pestNorm);
+    const cropOk = text.includes(cropNorm) || membersHave(applicationCropMembers(a), cropNorm);
+    return cropOk && text.includes(pestNorm);
   });
 }
 
@@ -141,6 +143,7 @@ const coCases = [
   { crop: "ぶどう", pest: "うどんこ病" },
   { crop: "なす", pest: "アブラムシ" },
   { crop: "きゅうり", pest: "うどんこ病" },
+  { crop: "こまつな", pest: "アブラムシ" },  // 作物群 (非結球あぶらな科葉菜類) の行も含む
 ];
 
 for (const tc of coCases) {
@@ -166,16 +169,19 @@ console.log();
 console.log("--- サイドバー 作物×病害虫 フィルタ (共起) ---");
 for (const p of db.products) {
   const entries = applications[String(p.reg_no)] || [];
-  const crops = new Set(), pests = new Set(), pairs = [];
+  const crops = new Set(), pests = new Set(), memberSets = new Set(), pairs = [];
   for (const a of entries) {
     const cparts = [];
     if (a.crop) for (const c of expandSearchableCrops(a.crop)) { const n = normalizeMod(c); crops.add(n); cparts.push(n); }
     if (a.place) for (const c of expandSearchableCrops(a.place)) { const n = normalizeMod(c); crops.add(n); cparts.push(n); }
+    const members = applicationCropMembers(a);
+    for (const m of members) memberSets.add(m);
     const pn = a.pest ? normalizeMod(a.pest) : "";
     if (pn) pests.add(pn);
-    pairs.push({ crop: cparts.join("|"), pest: pn });
+    pairs.push({ crop: cparts.join("|"), pest: pn, members });
   }
   p._crops_norm = [...crops].join("|");
+  p._crop_members = [...memberSets];
   p._pests_norm = [...pests].join("|");
   p._app_pairs = pairs;
 }
@@ -183,6 +189,7 @@ for (const p of db.products) {
 const sidebarCases = [
   { crop: "ぶどう", pest: "うどんこ病" },
   { crop: "なす", pest: "アブラムシ" },
+  { crop: "こまつな", pest: "アブラムシ" },
 ];
 for (const tc of sidebarCases) {
   const res = applyFilters(db.products, {
@@ -193,7 +200,8 @@ for (const tc of sidebarCases) {
   const cropN = normalizeMod(tc.crop), pestN = normalizeMod(tc.pest);
   // 返却全件が「crop欄にcrop かつ 同一行のpest欄にpest」を持つこと
   const violators = res.filter(p =>
-    !(p._app_pairs || []).some(e => e.crop.includes(cropN) && e.pest.includes(pestN))
+    !(p._app_pairs || []).some(e =>
+      (e.crop.includes(cropN) || membersHave(e.members, cropN)) && e.pest.includes(pestN))
   );
   const ok = violators.length === 0 && res.length > 0;
   if (ok) pass++; else fail++;
@@ -215,12 +223,14 @@ const scopeFilters = (crop, pest) => ({
 });
 // 作物欄だけ / 病害虫欄だけを見て、指定作物の行に pestN があるか (厳密)
 const rowHas = (p, cropN, pestN) =>
-  (p._app_pairs || []).some(e => e.crop.includes(cropN) && e.pest.includes(pestN));
+  (p._app_pairs || []).some(e =>
+    (e.crop.includes(cropN) || membersHave(e.members, cropN)) && e.pest.includes(pestN));
 
 const scopeCases = [
   { crop: "なし", pests: ["黒星病", "炭疽病"] },
   { crop: "りんご", pests: ["斑点落葉病", "うどんこ病"] },
   { crop: "きゅうり", pests: ["うどんこ病", "べと病"] },
+  { crop: "こまつな", pests: ["アブラムシ", "コナガ"] },
 ];
 for (const tc of scopeCases) {
   for (const mode of ["and", "or"]) {
@@ -275,7 +285,7 @@ console.log("--- 適用表の表示範囲 ---");
       const crop = [...(a.crop ? expandSearchableCrops(a.crop) : []), ...(a.place ? expandSearchableCrops(a.place) : [])]
         .map(normalizeMod).join("|");
       const pest = normalizeMod(a.pest || "");
-      return crop.includes(cropN) && (pest.includes(normalizeMod("黒星病")) || pest.includes(normalizeMod("炭疽病")));
+      return (crop.includes(cropN) || membersHave(applicationCropMembers(a), cropN)) && (pest.includes(normalizeMod("黒星病")) || pest.includes(normalizeMod("炭疽病")));
     });
     if (!rowOk) allOk = false;
     if (rows.length < apps.length) narrowedSome++;
@@ -296,6 +306,88 @@ console.log("--- 適用表の表示範囲 ---");
   const noNarrow = !hasRowCondition(nameOnly);
   if (noNarrow) pass++; else fail++;
   console.log(`${noNarrow ? "✓" : "✗"} 成分名・商品名の検索語だけでは適用行を絞らない`);
+}
+
+// ===== 作物群 (例 非結球あぶらな科葉菜類) =====
+// 作物群で登録された剤は、所属する作物名 (こまつな等) の検索でも出なければならない。
+// "を除く" で除外された作物では出してはいけない。所属作物とは完全一致で照合する。
+console.log();
+console.log("--- 作物群 ---");
+{
+  const memberCases = [
+    { crop: "非結球あぶらな科葉菜類", has: ["こまつな", "チンゲンサイ", "ケール", "ルッコラ", "からしな", "京菜"], not: ["はくさい", "キャベツ"] },
+    { crop: "非結球あぶらな科葉菜類(チンゲンサイを除く)", has: ["こまつな"], not: ["チンゲンサイ"] },
+    { crop: "非結球あぶらな科葉菜類(なばな類を除く)", has: ["こまつな"], not: ["なばな類", "オータムポエム"] },
+    { crop: "豆類(未成熟、ただし、えだまめ、さやいんげんを除く)", has: ["さやえんどう"], not: ["えだまめ", "さやいんげん", "だいず"] },
+    { crop: "野菜類(えだまめ、豆類(種実、ただし、らっかせいを除く)、かんしょを除く)", has: ["らっかせい", "トマト"], not: ["だいず", "あずき", "えだまめ", "かんしょ"] },
+    { crop: "野菜類(施設栽培、ただし、トマト、ミニトマトを除く)", has: ["なす", "おうぎ"], not: ["トマト", "ミニトマト"] },
+    { crop: "かんきつ(温州みかんを除く)", has: ["レモン"], not: ["みかん", "温州みかん"] },
+    { crop: "樹木類(まつを除く)", has: ["しらかし"], not: ["あかまつ", "くろまつ"] },
+    { crop: "野菜類(とうがらし類を除く)", has: ["なす"], not: ["とうがらし", "甘長とうがらし"] },
+    { crop: "うり類(漬物用)", has: [], not: ["メロン", "すいか"] },  // 分類表に無い区分は展開しない
+    { crop: "とうもろこし(子実)", has: [], not: ["未成熟とうもろこし"] },
+  ];
+  for (const tc of memberCases) {
+    const s = cropGroupMembers(tc.crop);
+    const missing = tc.has.filter(x => !s.has(normalizeMod(x)));
+    const extra = tc.not.filter(x => s.has(normalizeMod(x)));
+    const ok = missing.length === 0 && extra.length === 0;
+    if (ok) pass++; else fail++;
+    console.log(`${ok ? "✓" : "✗"} ${tc.crop} → ${s.size} 作物` +
+      (missing.length ? ` /* 含まれない: ${missing.join(",")} */` : "") +
+      (extra.length ? ` /* 除外されていない: ${extra.join(",")} */` : ""));
+  }
+
+  // 適用作物が「非結球あぶらな科葉菜類」そのものの剤は、所属作物の検索で全件出る
+  const groupName = normalizeMod("非結球あぶらな科葉菜類");
+  const groupProducts = applyFilters(db.products, baseFilters()).filter(p =>
+    (applications[String(p.reg_no)] || []).some(a => normalizeMod(a.crop || "") === groupName));
+  for (const q of ["こまつな", "チンゲンサイ", "ケール", "ルッコラ", "からしな"]) {
+    for (const mode of ["and", "or"]) {
+      const got = regSet(run(q, mode));
+      const missing = groupProducts.filter(p => !got.has(p.reg_no));
+      const ok = groupProducts.length > 0 && missing.length === 0;
+      if (ok) pass++; else fail++;
+      console.log(`${ok ? "✓" : "✗"} "${q}" ${mode.toUpperCase()} に 非結球あぶらな科葉菜類 登録の ${groupProducts.length} 商品がすべて含まれる` +
+        (missing.length ? ` /* 漏れ ${missing.length}: 例 ${missing[0].product_name} */` : ""));
+    }
+  }
+
+  // 架空の 3 剤で、除外と部分一致を確かめる (実データの剤は別の行で はくさい 等の登録も持つため)
+  //   A: 非結球あぶらな科葉菜類 / B: 非結球あぶらな科葉菜類(チンゲンサイを除く) / C: はくさい
+  const mk = (reg_no, name) => ({ reg_no, product_name: name, company: "", type_name: name, ingredients: [], categories: ["殺虫剤"] });
+  const fakeProducts = [mk(1, "架空A"), mk(2, "架空B"), mk(3, "架空C")];
+  const fakeApps = {
+    1: [{ crop: "非結球あぶらな科葉菜類", pest: "アブラムシ類" }],
+    2: [{ crop: "非結球あぶらな科葉菜類(チンゲンサイを除く)", pest: "アブラムシ類" }],
+    3: [{ crop: "はくさい", pest: "アブラムシ類" }],
+  };
+  const fakeIndex = buildIndex(fakeProducts, fakeApps);
+  const names = (q, mode) => search(q, fakeIndex, null, mode).map(p => p.product_name).sort().join(",");
+  const fakeCases = [
+    { q: "こまつな", want: "架空A,架空B" },
+    { q: "チンゲンサイ", want: "架空A" },          // B は除外
+    { q: "はくさい", want: "架空C" },              // 所属作物 "非結球はくさい" への部分一致では A/B を出さない
+    { q: "非結球はくさい", want: "架空A,架空B" },
+    { q: "チンゲンサイ アブラムシ", want: "架空A", modes: ["and"] },  // OR はアブラムシだけで全剤が一致する
+  ];
+  for (const tc of fakeCases) {
+    for (const mode of tc.modes || ["and", "or"]) {
+      const got = names(tc.q, mode);
+      const ok = got === tc.want;
+      if (ok) pass++; else fail++;
+      console.log(`${ok ? "✓" : "✗"} 架空データ "${tc.q}" ${mode.toUpperCase()} → ${got || "(なし)"}${ok ? "" : ` /* 期待 ${tc.want} */`}`);
+    }
+  }
+
+  // 適用表の絞り込みでも、作物群の行が残る
+  const { buildRowCondition, filterApplications } = await import("../src/js/core/search.js");
+  const cond = buildRowCondition("こまつな", index.lexicon, "and", {});
+  const p1 = groupProducts[0];
+  const rows = filterApplications(applications[String(p1.reg_no)], cond);
+  const okRows = rows.length > 0 && rows.some(a => normalizeMod(a.crop || "") === groupName);
+  if (okRows) pass++; else fail++;
+  console.log(`${okRows ? "✓" : "✗"} 適用表を "こまつな" で絞ると ${p1.product_name} の 非結球あぶらな科葉菜類 の行が残る (${rows.length} 行)`);
 }
 
 console.log();

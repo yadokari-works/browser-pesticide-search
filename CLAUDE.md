@@ -18,6 +18,7 @@ python3 scripts/update_data.py
 python3 scripts/build_data.py          # rawdata/ → src/data/pesticides.json, applications.json
 python3 scripts/verify_data.py         # 統計・整合性レポート (失敗しても止めない)
 python3 scripts/check_rac_status.py    # RAC 表の版・未分類成分を確認 (--strict で警告時 exit 1, --offline)
+python3 scripts/build_crop_groups.py   # 作物分類表 PDF → src/js/core/crop_groups.js (分類表の改正時だけ手動で実行。要 pdfplumber)
 
 # ビルド (必ずこの順。build_pwa は build/これをクリック.html を入力にする)
 python3 build/build_bundled.py         # src/ を 1 ファイルにインライン化 → build/これをクリック.html
@@ -35,7 +36,7 @@ ios/rebuild_install.sh
 
 テストに単体実行の仕組みは無い。1 ケースだけ確かめたいときは、`test_search.mjs` と同じように `src/js/core/*.js` を import する小さなスクリプトを書いて実行する。`app.js` は DOM に依存するため Node から import できない。
 
-依存: Python 3 (`openpyxl`, `pillow`, `xlrd`)、Node。`xlrd` が無いと失効農薬の `.xls` は警告 1 行だけでスキップされ、`pesticides.json` が現行剤だけに縮む。
+依存: Python 3 (`openpyxl`, `pillow`, `xlrd`。`build_crop_groups.py` だけ `pdfplumber`)、Node。`xlrd` が無いと失効農薬の `.xls` は警告 1 行だけでスキップされ、`pesticides.json` が現行剤だけに縮む。
 
 ## アーキテクチャ
 
@@ -48,7 +49,7 @@ ios/rebuild_install.sh
 
 RAC コードは CropLife の表を優先し、表に無い成分は `rawdata/rac_manual.json` で補う (`rac_code` か、`rac_status` = `out_of_scope` / `legacy` / `recent`)。`rac_code` は `"UN(I*), M2(F*)"` のような複合表記を含み、`normalize.js` の `splitRacCode` が IRAC/FRAC/HRAC に振り分ける。
 
-生成物 (`src/data/*.json`、`build/これをクリック.html`、`docs/*`、`ios/App/Resources/これをクリック.html`) は手で編集しない。ソースを直して再生成する。
+生成物 (`src/data/*.json`、`src/js/core/crop_groups.js`、`build/これをクリック.html`、`docs/*`、`ios/App/Resources/これをクリック.html`) は手で編集しない。ソースを直して再生成する。
 
 ### バンドルの制約
 
@@ -62,15 +63,16 @@ RAC コードは CropLife の表を優先し、表に無い成分は `rawdata/ra
 
 ### 検索の流れ (`src/js/core/` と `app.js`)
 
-1. `normalize()`: NFKC → ひらがなをカタカナに → 大文字化 → 空白除去。同義語辞書や読み仮名変換は無い。
-2. `buildIndex()`: 商品ごとに正規化済みの各欄と、適用行ごとの `{crop, pest}` (`app_entries`) を持つ。コーパス全体の作物語・病害虫語の語彙 (`index.lexicon`) も作る。作物名の `(…を除く)` は `expandSearchableCrops` が括弧の前だけを残す。
+1. `normalize()`: NFKC → ひらがなをカタカナに → 大文字化 → 空白除去。同義語辞書や読み仮名変換は無い (作物群の所属作物の別名だけは下記の対応表にある)。
+2. `buildIndex()`: 商品ごとに正規化済みの各欄と、適用行ごとの `{crop, pest, members}` (`app_entries`) を持つ。コーパス全体の作物語・病害虫語の語彙 (`index.lexicon`) も作る。作物名の `(…を除く)` は `expandSearchableCrops` が括弧の前 (「、ただし、」の前の条件は残す) だけを残す。
+   - 適用作物が作物群 (「非結球あぶらな科葉菜類」「野菜類(施設栽培)」など) のときは、`cropGroupMembers` が所属作物と別名の Set を返し (`crop_groups.js` が出典。除外は除く)、`members` / `crop_members` に持つ。所属作物は**完全一致**で照合し、作物欄の文字列は従来どおり部分一致。作物欄を照合する箇所 (`search.js`、`filter.js`、`filterApplications`) はすべて両方を見る。
 3. `search()`: 空白で分割し、`IRAC` / `FRAC` / `HRAC` 単独の語は直後の語の系統指定として扱う。
    - AND では、作物の語と病害虫の語の組が**同じ適用行**に共起することを要求する。語の役割は語彙で判定する。
    - サイドバーの作物・病害虫 (`scope`) を指定すると、検索語の病害虫や作物もその指定と同じ適用行で成立しなければならない。
 4. `applyFilters()`: 用途、登録状態 (既定は有効・失効の両方)、家庭向けの除外、屋号付きの除外 (既定 ON)、剤型、混合剤、サイドバーの作物×病害虫の共起。
 5. `app.js` の `groupByTypeAndIngredients()`: 種類名と成分構成 (成分名 + 濃度) でカードにまとめる。
 
-`app.js` は、`attachCropsPests` (`_crops_norm` / `_app_pairs`) と `attachBrandedFlags` (`_branded`、同じ種類名・同じ成分構成の中で他商品名を末尾に含む商品) で、商品オブジェクトに派生欄を付ける。`filter.js` はこれらの欄を前提にしている。テストでフィルタを再現するときは、この付与処理も再現する必要がある。
+`app.js` は、`attachCropsPests` (`_crops_norm` / `_crop_members` / `_app_pairs`) と `attachBrandedFlags` (`_branded`、同じ種類名・同じ成分構成の中で他商品名を末尾に含む商品) で、商品オブジェクトに派生欄を付ける。`filter.js` はこれらの欄を前提にしている。テストでフィルタを再現するときは、この付与処理も再現する必要がある。
 
 詳細の適用表は `buildRowCondition` / `filterApplications` で、指定した作物・病害虫の行だけに絞って表示する。
 

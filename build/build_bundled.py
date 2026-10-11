@@ -18,6 +18,7 @@ OUT = BUILD / "これをクリック.html"
 
 # 結合する JS の順序（依存関係順）
 JS_ORDER = [
+    "js/core/crop_groups.js",
     "js/core/normalize.js",
     "js/core/search.js",
     "js/core/filter.js",

@@ -4,7 +4,7 @@
 
 import { buildIndex, search, buildRowCondition, hasRowCondition, filterApplications } from "./core/search.js";
 import { applyFilters, DEFAULT_FILTERS, countFormulations } from "./core/filter.js";
-import { normalize, expandSearchableCrops, splitRacCode, stripCompanyFromName } from "./core/normalize.js";
+import { normalize, expandSearchableCrops, splitRacCode, stripCompanyFromName, applicationCropMembers } from "./core/normalize.js";
 import { exportTSV, exportCSV, exportMarkdown, exportJSON, download } from "./io/export.js";
 import { loadApplications, getApplicationsFor } from "./io/applications.js";
 
@@ -90,7 +90,9 @@ function attachCropsPests(products, applications) {
     const entries = applications[String(p.reg_no)] || [];
     const crops = new Set();
     const pests = new Set();
+    const memberSets = new Set();
     // 適用行ごとに作物欄・病害虫欄を分離保持 (作物×病害虫 同時指定時の共起判定用)
+    // members は作物欄が作物群のときの所属作物 (filter.js で完全一致で照合する)
     const pairs = [];
     for (const a of entries) {
       const cparts = [];
@@ -109,14 +111,17 @@ function attachCropsPests(products, applications) {
           cparts.push(n);
         }
       }
+      const members = applicationCropMembers(a);
+      for (const s of members) memberSets.add(s);
       const pestNorm = a.pest ? normalize(a.pest) : "";
       if (pestNorm) {
         pests.add(pestNorm);
         pestCount.set(a.pest, (pestCount.get(a.pest) || 0) + 1);
       }
-      pairs.push({ crop: cparts.join("|"), pest: pestNorm });
+      pairs.push({ crop: cparts.join("|"), pest: pestNorm, members });
     }
     p._crops_norm = [...crops].join("|");
+    p._crop_members = [...memberSets];
     p._pests_norm = [...pests].join("|");
     p._app_pairs = pairs;
   }

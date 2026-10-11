@@ -7,7 +7,7 @@
  * - 混合剤のみ
  */
 
-import { normalize } from "./normalize.js";
+import { normalize, membersHave } from "./normalize.js";
 
 export const DEFAULT_FILTERS = {
   categories: new Set(["殺虫剤", "殺菌剤", "除草剤"]),
@@ -34,12 +34,14 @@ export function applyFilters(products, filters) {
     if (filters.mixOnly && p.ingredients.length < 2) return false;
     // 作物と病害虫を同時指定した場合は「同一適用行」での共起を要求する。
     // (別々の行で 作物→別病害虫 / 別作物→病害虫 に登録があるだけの商品を除外)
+    // 作物欄が作物群の行は、所属作物との完全一致でも作物が一致したとみなす。
     if (cropQ && pestQ) {
       const pairs = p._app_pairs || [];
-      const co = pairs.some(e => e.crop.includes(cropQ) && e.pest.includes(pestQ));
+      const co = pairs.some(e =>
+        (e.crop.includes(cropQ) || membersHave(e.members, cropQ)) && e.pest.includes(pestQ));
       if (!co) return false;
     } else {
-      if (cropQ && !(p._crops_norm || "").includes(cropQ)) return false;
+      if (cropQ && !(p._crops_norm || "").includes(cropQ) && !membersHave(p._crop_members, cropQ)) return false;
       if (pestQ && !(p._pests_norm || "").includes(pestQ)) return false;
     }
     return true;

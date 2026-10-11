@@ -4,7 +4,10 @@
  * - ひらがな → カタカナ
  * - 大文字統一
  * - 全角英数 → 半角
+ * - 適用作物名の分解と作物群の展開
  */
+
+import { CROP_GROUPS, CROP_ALIASES } from "./crop_groups.js";
 
 function hiraToKata(str) {
   return str.replace(/[ぁ-ゖ]/g, ch =>
@@ -35,22 +38,169 @@ export function normalizeRacQuery(str) {
   return s.replace(/^(IRAC|FRAC|HRAC)/, "");
 }
 
+/** "、" で区切る。ただし括弧の内側の "、" では区切らない ("うり類(漬物用)" などを壊さない) */
+function splitTopLevel(str) {
+  const out = [];
+  let depth = 0, cur = "";
+  for (const ch of str) {
+    if (ch === "(") depth++;
+    else if (ch === ")") depth = Math.max(0, depth - 1);
+    if (ch === "、" && depth === 0) { if (cur.trim()) out.push(cur.trim()); cur = ""; }
+    else cur += ch;
+  }
+  if (cur.trim()) out.push(cur.trim());
+  return out;
+}
+
+/**
+ * 適用作物名を {base, qualifier, excludes} に分解する (括弧は NFKC で半角にそろえる)。
+ * 例: "かんきつ(みかんを除く)"                     → base かんきつ, excludes [みかん]
+ *     "豆類(未成熟、ただし、えだまめを除く)"        → base 豆類, qualifier 未成熟, excludes [えだまめ]
+ *     "野菜類(施設栽培)"                           → base 野菜類, qualifier 施設栽培
+ *     "うり科野菜(すいか、うり類(漬物用)を除く)"    → base うり科野菜, excludes [すいか, うり類(漬物用)]
+ */
+function parseCropName(crop) {
+  const t = String(crop).normalize("NFKC").trim();
+  const i = t.indexOf("(");
+  const plain = { base: t, qualifier: "", excludes: [] };
+  if (i <= 0 || !t.endsWith(")")) return plain;
+  const inner = t.slice(i + 1, -1);
+  let depth = 0;
+  for (const ch of inner) {
+    if (ch === "(") depth++;
+    else if (ch === ")" && --depth < 0) return plain;  // "西洋芝(ベントグラス)(生産圃場)" のような並びは分解しない
+  }
+  const base = t.slice(0, i).trim();
+  if (!/(除く|のぞく)$/.test(inner)) return { base, qualifier: inner, excludes: [] };
+  // 括弧の外側にある "ただし、" で条件と除外を分ける
+  // ("野菜類(…、豆類(種実、ただし、らっかせいを除く)、かんしょを除く)" の内側の "ただし" では分けない)
+  let cut = -1;
+  depth = 0;
+  for (let k = 0; k < inner.length; k++) {
+    const ch = inner[k];
+    if (ch === "(") depth++;
+    else if (ch === ")") depth--;
+    else if (depth === 0 && inner.startsWith("ただし、", k)) { cut = k; break; }
+  }
+  const qualifier = cut >= 0 ? inner.slice(0, cut).replace(/、$/, "").trim() : "";
+  const excludes = splitTopLevel((cut >= 0 ? inner.slice(cut + 4) : inner).replace(/を(除く|のぞく)$/, ""));
+  return { base, qualifier, excludes };
+}
+
 /**
  * 作物名を検索インデックス用に展開する。
  * "(○○を除く)" / "（○○を除く）" を含む場合は括弧手前のメイン作物名のみ返す
- * (除外指定された作物は検索ヒットさせない)。
- * 例: "かんきつ(みかんを除く)" → ["かんきつ"]
- *     "ねぎ(根深ねぎ)"        → ["ねぎ(根深ねぎ)"]  (「除く」無しは原文)
+ * (除外指定された作物は検索ヒットさせない)。"、ただし、" の前の条件は残す。
+ * 例: "かんきつ(みかんを除く)"               → ["かんきつ"]
+ *     "豆類(未成熟、ただし、えだまめを除く)"  → ["豆類(未成熟)"]
+ *     "ねぎ(根深ねぎ)"                       → ["ねぎ(根深ねぎ)"]  (「除く」無しは原文)
  */
 export function expandSearchableCrops(crop) {
   if (!crop) return [];
   const s = String(crop);
-  const m = s.match(/^(.*?)[（(]([^（()）]*)[)）]\s*$/);
-  if (m && /(除く|のぞく)/.test(m[2])) {
-    const base = m[1].trim();
-    return base ? [base] : [];
+  const { base, qualifier, excludes } = parseCropName(s);
+  if (!excludes.length) return [s];
+  const head = qualifier ? `${base}(${qualifier})` : base;
+  return head ? [head] : [];
+}
+
+// 作物群名 (正規化済み) → 含まれる作物名 (正規化済み) の配列
+const GROUP_MEMBERS = new Map(
+  Object.entries(CROP_GROUPS).map(([g, names]) => [normalize(g), names.map(normalize)])
+);
+// 作物群名の後ろの括弧のうち、含まれる作物を狭めない条件 (栽培方法など)。
+// これ以外の括弧 (例 "うり類(漬物用)" "とうもろこし(子実)") は作物群の一部だけを指すため展開しない。
+const CONDITION_QUALIFIERS = new Set(
+  ["施設栽培", "露地栽培", "苗木", "秋播", "秋播栽培", "ポット・プランター等の容器栽培"].map(normalize)
+);
+const memberCache = new Map();
+const NO_MEMBERS = new Set();
+
+function groupFor(base, qualifier) {
+  const b = normalize(base), q = normalize(qualifier);
+  if (!q) return GROUP_MEMBERS.get(b) || null;
+  return GROUP_MEMBERS.get(normalize(`${base}(${qualifier})`))  // 豆類(種実) など
+    || (GROUP_MEMBERS.has(b) && GROUP_MEMBERS.get(q))            // 芝(日本芝) → 日本芝
+    || (CONDITION_QUALIFIERS.has(q) && GROUP_MEMBERS.get(b))     // 野菜類(施設栽培) → 野菜類
+    || null;
+}
+
+// 作物名 (正規化済み) → 別名 (正規化済み) の配列、と その逆引き
+const ALIASES = new Map(
+  Object.entries(CROP_ALIASES).map(([n, words]) => [normalize(n), words.map(normalize)])
+);
+const ALIAS_TO_NAME = new Map();
+for (const [n, words] of ALIASES) for (const w of words) ALIAS_TO_NAME.set(w, n);
+
+/**
+ * "を除く" に書かれた語 e が指す作物名 (正規化済み) を out に集める。
+ * 除外漏れは「除外された作物の検索で剤が出る」誤表示になるため、迷う場合は広めに除く。
+ */
+function collectExcluded(e, members, out) {
+  const ne = normalize(e);
+  out.add(ne);
+  const name = ALIAS_TO_NAME.get(ne);
+  if (name) out.add(name);                                    // 温州みかん → みかん
+  const sub = cropGroupMembers(e);                            // 除外が作物群 ("豆類(種実、ただし、…を除く)" も)
+  for (const m of sub) out.add(m);
+  if (sub.size || name || members.includes(ne)) return;
+  for (const m of GROUP_MEMBERS.get(ne + "類") || []) out.add(m);  // まつ → まつ類
+  const t = String(e).normalize("NFKC").trim();
+  const i = t.indexOf("(");
+  if (i > 0) collectExcluded(t.slice(0, i), members, out);    // まつ(生立木) → まつ、小麦(秋播) → 小麦
+  if (/類$/.test(ne)) {
+    // 分類表に無い旧作物群名 (例 "とうがらし類"): 名前がそれで終わる作物群
+    // (ピーマン及びとうがらし類) の所属作物と、"類" を除いた語を含む作物を除く
+    const stem = ne.slice(0, -1);
+    for (const [g, ms] of GROUP_MEMBERS) if (g.endsWith(ne)) for (const m of ms) out.add(m);
+    for (const m of members) if (stem && m.includes(stem)) out.add(m);
   }
-  return [s];
+}
+
+/**
+ * 適用作物が作物群 (例 "非結球あぶらな科葉菜類") のとき、そこに含まれる作物名とその別名を
+ * 正規化して Set で返す。"を除く" で除外された作物 (除外が作物群ならその所属作物も) は含めない。
+ * 作物群でなければ空の Set。
+ * 検索語との照合は部分一致でなく完全一致で行う (例: "はくさい" で検索したとき、
+ * 所属作物 "非結球はくさい" に部分一致して 非結球あぶらな科葉菜類 の剤が出るのを防ぐ)。
+ * 出典は crop_groups.js の冒頭を参照。分類表に載っていない作物は拾えない。
+ */
+export function cropGroupMembers(crop) {
+  if (!crop) return NO_MEMBERS;
+  const s = String(crop);
+  let set = memberCache.get(s);
+  if (set) return set;
+  memberCache.set(s, NO_MEMBERS);  // 自己参照する除外があっても無限再帰しないように
+  const { base, qualifier, excludes } = parseCropName(s);
+  const members = groupFor(base, qualifier);
+  if (!members) {
+    set = NO_MEMBERS;
+  } else {
+    const excluded = new Set();
+    for (const e of excludes) collectExcluded(e, members, excluded);
+    set = new Set();
+    for (const m of members) {
+      if (excluded.has(m)) continue;
+      set.add(m);
+      for (const w of ALIASES.get(m) || []) if (!excluded.has(w)) set.add(w);
+    }
+  }
+  memberCache.set(s, set);
+  return set;
+}
+
+/** 適用行の作物欄・使用場所欄のうち作物群のものについて、所属作物の Set を配列で返す */
+export function applicationCropMembers(a) {
+  const out = [];
+  for (const s of [cropGroupMembers(a.crop), cropGroupMembers(a.place)]) if (s.size) out.push(s);
+  return out;
+}
+
+/** cropGroupMembers の Set の配列のどれかに q (正規化済み) があるか */
+export function membersHave(sets, q) {
+  if (!sets) return false;
+  for (const s of sets) if (s.has(q)) return true;
+  return false;
 }
 
 /**
