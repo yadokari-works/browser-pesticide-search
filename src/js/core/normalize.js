@@ -4,7 +4,7 @@
  * - ひらがな → カタカナ
  * - 大文字統一
  * - 全角英数 → 半角
- * - 適用作物名の分解と作物群の展開
+ * - 適用作物名の分解と、作物群・別名の展開
  */
 
 import { CROP_GROUPS, CROP_ALIASES } from "./crop_groups.js";
@@ -189,14 +189,57 @@ export function cropGroupMembers(crop) {
   return set;
 }
 
-/** 適用行の作物欄・使用場所欄のうち作物群のものについて、所属作物の Set を配列で返す */
+const aliasCache = new Map();
+
+/**
+ * 適用作物が作物群でない作物 (例 "みずな" "みかん(施設栽培)") のとき、その作物の別名
+ * (分類表の「作物名に含まれる別名、地方名、品種名等の例」) を正規化して Set で返す。
+ * 別名で検索したとき、正式名で登録された行も一致させるために使う (例: 京菜 → みずな、
+ * さつまいも → かんしょ)。作物欄の括弧 (栽培条件など) は問わず、括弧ごとの作物名
+ * ("アマランサス(茎葉)") に別名があればそちらを使う。"(…を除く)" で除外された語と、
+ * その語の別名は含めない (例 "なばな類(オータムポエムを除く)")。該当しなければ空の Set。
+ * 照合は cropGroupMembers と同じく完全一致で行う。
+ */
+export function cropAliasSet(crop) {
+  if (!crop) return NO_MEMBERS;
+  const s = String(crop);
+  let set = aliasCache.get(s);
+  if (set) return set;
+  const { base, qualifier, excludes } = parseCropName(s);
+  const words = (qualifier && ALIASES.get(normalize(`${base}(${qualifier})`)))
+    || ALIASES.get(normalize(base));
+  if (!words) {
+    set = NO_MEMBERS;
+  } else {
+    const excluded = new Set();
+    for (const e of excludes) {
+      const ne = normalize(e);
+      excluded.add(ne);
+      for (const w of ALIASES.get(ne) || []) excluded.add(w);
+    }
+    set = new Set(words.filter(w => !excluded.has(w)));
+    if (!set.size) set = NO_MEMBERS;
+  }
+  aliasCache.set(s, set);
+  return set;
+}
+
+/**
+ * 適用行の作物欄・使用場所欄それぞれについて、その欄の作物名で引ける語の Set を配列で返す。
+ * 作物群なら所属作物とその別名 (cropGroupMembers)、作物群でなければその作物の別名 (cropAliasSet)。
+ */
 export function applicationCropMembers(a) {
   const out = [];
-  for (const s of [cropGroupMembers(a.crop), cropGroupMembers(a.place)]) if (s.size) out.push(s);
+  for (const v of [a.crop, a.place]) {
+    if (!v) continue;
+    const g = cropGroupMembers(v);
+    const s = g.size ? g : cropAliasSet(v);
+    if (s.size) out.push(s);
+  }
   return out;
 }
 
-/** cropGroupMembers の Set の配列のどれかに q (正規化済み) があるか */
+/** applicationCropMembers の Set の配列のどれかに q (正規化済み) があるか */
 export function membersHave(sets, q) {
   if (!sets) return false;
   for (const s of sets) if (s.has(q)) return true;

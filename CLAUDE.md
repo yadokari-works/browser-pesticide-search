@@ -31,6 +31,7 @@ node scripts/test_search.mjs
 cd src && python3 -m http.server 8765
 
 # iOS: 最新の build/これをクリック.html を ios/App/Resources/ にコピーして実機に再インストール
+# (Git 管理外のローカルスクリプト。clone した環境には無い)
 ios/rebuild_install.sh
 ```
 
@@ -63,11 +64,13 @@ RAC コードは CropLife の表を優先し、表に無い成分は `rawdata/ra
 
 ### 検索の流れ (`src/js/core/` と `app.js`)
 
-1. `normalize()`: NFKC → ひらがなをカタカナに → 大文字化 → 空白除去。同義語辞書や読み仮名変換は無い (作物群の所属作物の別名だけは下記の対応表にある)。
-2. `buildIndex()`: 商品ごとに正規化済みの各欄と、適用行ごとの `{crop, pest, members}` (`app_entries`) を持つ。コーパス全体の作物語・病害虫語の語彙 (`index.lexicon`) も作る。作物名の `(…を除く)` は `expandSearchableCrops` が括弧の前 (「、ただし、」の前の条件は残す) だけを残す。
-   - 適用作物が作物群 (「非結球あぶらな科葉菜類」「野菜類(施設栽培)」など) のときは、`cropGroupMembers` が所属作物と別名の Set を返し (`crop_groups.js` が出典。除外は除く)、`members` / `crop_members` に持つ。所属作物は**完全一致**で照合し、作物欄の文字列は従来どおり部分一致。作物欄を照合する箇所 (`search.js`、`filter.js`、`filterApplications`) はすべて両方を見る。
+1. `normalize()`: NFKC → ひらがなをカタカナに → 大文字化 → 空白除去。同義語辞書や読み仮名変換は無い (作物の別名だけは下記の対応表にある)。
+2. `buildIndex()`: 商品ごとに正規化済みの各欄と、適用行ごとの `{crop, pest, members}` (`app_entries`) を持つ。コーパス全体の語彙 (`index.lexicon`) も作る。作物名の `(…を除く)` は `expandSearchableCrops` が括弧の前 (「、ただし、」の前の条件は残す) だけを残す。
+   - `applicationCropMembers` が、作物欄で引ける語の Set を `members` / `crop_members` に持たせる。作物群 (「非結球あぶらな科葉菜類」「野菜類(施設栽培)」など) なら `cropGroupMembers` が所属作物とその別名を、作物群でない作物 (「みずな」「かんしょ」など) なら `cropAliasSet` がその作物の別名を返す (`crop_groups.js` が出典。除外とその別名は除く)。members は**完全一致**で照合し、作物欄の文字列は従来どおり部分一致。作物欄を照合する箇所 (`search.js`、`filter.js`、`filterApplications`) はすべて両方を見る。
+   - 語彙は 3 つに分ける: `cropWords` (作物欄に実際に書かれた作物名だけ)、`virtualCropWords` (所属作物・別名)、`pestWords`。病害虫名を括弧の外の「、・」で区切った各語は `pestHeads` に持つ。
 3. `search()`: 空白で分割し、`IRAC` / `FRAC` / `HRAC` 単独の語は直後の語の系統指定として扱う。
    - AND では、作物の語と病害虫の語の組が**同じ適用行**に共起することを要求する。語の役割は語彙で判定する。
+   - `cropFlags`: 病害虫名の頭にも現れる語 (「アザミ」→ アザミウマ類、「クロウリ」→ クロウリハムシ。`cropWords` と完全一致する語は除く) は、作物の指定 (`scope.crop`、または AND で他の語が作物と確定する) があれば作物欄と一切一致させない (members とも、作物名の部分一致とも)。作物の指定が無ければ作物としても一致させる。所属作物・別名を `cropWords` に混ぜると「なす アザミ」が作物 2 語と判定され、1.7.0 でこの回帰が起きた。
    - サイドバーの作物・病害虫 (`scope`) を指定すると、検索語の病害虫や作物もその指定と同じ適用行で成立しなければならない。
 4. `applyFilters()`: 用途、登録状態 (既定は有効・失効の両方)、家庭向けの除外、屋号付きの除外 (既定 ON)、剤型、混合剤、サイドバーの作物×病害虫の共起。
 5. `app.js` の `groupByTypeAndIngredients()`: 種類名と成分構成 (成分名 + 濃度) でカードにまとめる。
@@ -86,4 +89,4 @@ RAC コードは CropLife の表を優先し、表に無い成分は `rawdata/ra
 
 - バージョンの正本は `VERSION`。`sw.js` はビルド時に `VERSION` から生成される。ただし手書きの表記も合わせて更新する: `src/index.html` (2 箇所)、`更新履歴.md`、`docs/manual.html`、`スマホ版_使い方.html`、`ios/README.md`。その後 `build_bundled.py` → `build_pwa.py` の順で再生成する。
 - `.git/hooks/commit-msg` は Conventional Commits 形式 (`feat|fix|docs|chore|...(scope): ...`) を強制する。
-- `.git/hooks/pre-commit` は 5MB を超えるファイルを拒否する。例外は `docs/index.html` と `src/data/*.json` だけなので、`build/これをクリック.html` (約 28MB) を含むコミットは `git commit --no-verify` が必要になる。
+- `.git/hooks/pre-commit` は 5MB を超えるファイル (例外は `docs/index.html` と `src/data/*.json`) と、秘密情報らしき文字列を拒否する。ただし Git は日本語のファイル名を引用符付きの 8 進エスケープで渡す (`core.quotepath` が既定のまま) ため、フックの `[ -f "$f" ]` が偽になり、`build/これをクリック.html` (約 30MB) などの日本語名のファイルはサイズ検査を素通りする。そのため `--no-verify` を付けなくてもコミットできる。フックは `.git/hooks/` にあるローカルのもので、Git 管理外。

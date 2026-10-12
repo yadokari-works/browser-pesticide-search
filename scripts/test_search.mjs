@@ -390,6 +390,133 @@ console.log("--- 作物群 ---");
   console.log(`${okRows ? "✓" : "✗"} 適用表を "こまつな" で絞ると ${p1.product_name} の 非結球あぶらな科葉菜類 の行が残る (${rows.length} 行)`);
 }
 
+// ===== 別名と、病害虫名の頭にも現れる語 =====
+// - 別名 (京菜 → みずな) は、作物群の行だけでなく正式名で登録された行にも一致する。
+// - 病害虫名の頭にも現れる語 (アザミ → アザミウマ類) は、作物名と一緒に指定したときは病害虫として扱う
+//   ("なす アザミ" に、なすのアザミウマ類の登録が無い剤を出さない)。
+// 正解は、検索の関数を使わず適用行の文字列と crop_groups.js の表から求める。
+console.log();
+console.log("--- 別名と、病害虫名の頭にも現れる語 ---");
+{
+  const { CROP_GROUPS, CROP_ALIASES } = await import("../src/js/core/crop_groups.js");
+  // 正規化 (normalize.js と同じ手順をここで書き直したもの)
+  const norm = s => String(s || "").normalize("NFKC")
+    .replace(/[ぁ-ゖ]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60)).toUpperCase().replace(/\s+/g, "");
+
+  // 表のデータ: 別名は、どの作物名とも (ひらがな・カタカナの違いを除いて) 重ならない。注記の語は別名にしない
+  {
+    const memberKeys = new Set(Object.values(CROP_GROUPS).flat().map(norm));
+    const clash = Object.entries(CROP_ALIASES).flatMap(([k, ws]) => ws.filter(w => memberKeys.has(norm(w))).map(w => `${k}:${w}`));
+    const notes = ["移植", "直播", "肥大茎", "のむかご"].filter(w => Object.values(CROP_ALIASES).flat().includes(w));
+    const mukago = (CROP_ALIASES["やまのいも(むかご)"] || []).includes("ジネンジョのむかご");
+    const ok = clash.length === 0 && notes.length === 0 && mukago;
+    if (ok) pass++; else fail++;
+    console.log(`${ok ? "✓" : "✗"} 別名は作物名と重ならず、注記の語を含まない` +
+      (clash.length ? ` /* 重なり: ${clash.join(",")} */` : "") + (notes.length ? ` /* 注記: ${notes.join(",")} */` : "") +
+      (mukago ? "" : " /* ジネンジョのむかご が無い */"));
+  }
+
+  // 別名で検索すると、正式名で直接登録された剤がすべて出る (検索 AND/OR、サイドバーの作物指定)
+  const aliasCases = [["京菜", "みずな"], ["さつまいも", "かんしょ"], ["ターサイ", "タアサイ"], ["温州みかん", "みかん"], ["のらぼうな", "なばな類"]];
+  for (const [alias, formal] of aliasCases) {
+    const okAlias = (CROP_ALIASES[formal] || []).includes(alias);
+    const direct = applyFilters(db.products, baseFilters())
+      .filter(p => (applications[String(p.reg_no)] || []).some(a => norm(a.crop) === norm(formal)));
+    const viaSearch = { and: regSet(run(alias, "and")), or: regSet(run(alias, "or")) };
+    const viaSide = regSet(applyFilters(db.products, { ...baseFilters(), crop: alias }));
+    const miss = [viaSearch.and, viaSearch.or, viaSide].map(s => direct.filter(p => !s.has(p.reg_no)).length);
+    const ok = okAlias && direct.length > 0 && miss.every(x => x === 0);
+    if (ok) pass++; else fail++;
+    console.log(`${ok ? "✓" : "✗"} 別名 "${alias}" に、作物欄が "${formal}" の ${direct.length} 剤がすべて含まれる` +
+      (ok ? "" : ` /* 表の別名 ${okAlias} / 漏れ AND ${miss[0]} OR ${miss[1]} サイドバー ${miss[2]} */`));
+  }
+
+  // 作物名 + 病害虫名の頭にも現れる語: 結果は「指定作物の行に、その語を含む病害虫がある剤」と一致する
+  // (作物群の行は、表の所属作物に指定作物があれば作物の行とみなす。作物群名と括弧の解釈は表どおりの完全一致だけ見る)
+  const groupHas = (field, crop) => {
+    const base = String(field || "").normalize("NFKC").replace(/\(.*$/, "");
+    return (CROP_GROUPS[base] || []).some(m => norm(m) === norm(crop));
+  };
+  const cropRowHas = (p, crop, pestWord) => (applications[String(p.reg_no)] || []).some(a =>
+    ([a.crop, a.place].some(f => f && norm(f).includes(norm(crop))) || groupHas(a.crop, crop) || groupHas(a.place, crop)) &&
+    norm(a.pest).includes(norm(pestWord)));
+  const stemCases = [
+    { q: "なす アザミ", crop: "なす", word: "アザミ" },
+    { q: "きゅうり クロウリ", crop: "きゅうり", word: "クロウリ" },
+    { q: "アザミ", scope: "なす", crop: "なす", word: "アザミ" },
+    { q: "キクイモ", scope: "とうもろこし", crop: "とうもろこし", word: "キクイモ" },
+  ];
+  for (const tc of stemCases) {
+    for (const mode of tc.scope ? ["and", "or"] : ["and"]) {
+      const f = tc.scope ? scopeFilters(tc.scope, "") : baseFilters();
+      const got = applyFilters(search(tc.q, index, null, mode, { crop: tc.scope || "" }), f);
+      // 余分: 指定作物の行にその語を含む病害虫が無い剤 (作物群の行の除外は見ないため、件数の一致ではなく余分 0 を見る)
+      const extra = got.filter(p => !cropRowHas(p, tc.crop, tc.word));
+      const ok = extra.length === 0;
+      if (ok) pass++; else fail++;
+      console.log(`${ok ? "✓" : "✗"} ${tc.scope ? `作物=${tc.scope} ` : ""}"${tc.q}" ${mode.toUpperCase()} → ${got.length} 件、すべて ${tc.crop} の行に ${tc.word}… の病害虫がある` +
+        (ok ? "" : ` /* 無関係 ${extra.length} 件: 例 ${extra[0].product_name} */`));
+    }
+  }
+
+  // 架空データで、語の役割と除外を確かめる
+  //   A: 花き類・観葉植物 (所属作物に アザミ) × 灰色かび病  B: なす × アザミウマ類
+  //   C: なす × 灰色かび病 と 花き類・観葉植物 × 灰色かび病  D: みずな × アブラムシ類
+  //   E: アマランサス(茎葉) × アブラムシ類  F: 稲 × いもち病  G: 直播水稲 × ノビエ
+  //   H: なばな類(オータムポエムを除く) × アブラムシ類
+  const mk = (reg_no, name) => ({ reg_no, product_name: name, company: "", type_name: name, ingredients: [], categories: ["殺虫剤"] });
+  const fakeApps = {
+    11: [{ crop: "花き類・観葉植物", pest: "灰色かび病" }],
+    12: [{ crop: "なす", pest: "アザミウマ類" }],
+    13: [{ crop: "なす", pest: "灰色かび病" }, { crop: "花き類・観葉植物", pest: "灰色かび病" }],
+    14: [{ crop: "みずな", pest: "アブラムシ類" }],
+    15: [{ crop: "アマランサス(茎葉)", pest: "アブラムシ類" }],
+    16: [{ crop: "稲", pest: "いもち病" }],
+    17: [{ crop: "直播水稲", pest: "ノビエ" }],
+    18: [{ crop: "なばな類(オータムポエムを除く)", pest: "アブラムシ類" }],
+  };
+  const names = { 11: "A", 12: "B", 13: "C", 14: "D", 15: "E", 16: "F", 17: "G", 18: "H" };
+  const fakeIndex = buildIndex(Object.keys(fakeApps).map(k => mk(Number(k), names[k])), fakeApps);
+  const got = (q, mode, scope) => search(q, fakeIndex, null, mode, scope).map(p => p.product_name).sort().join(",");
+  const cases2 = [
+    { q: "アザミ", want: "A,B,C" },                        // 作物の指定が無ければ、作物 (花き類の所属) と病害虫の両方
+    { q: "なす アザミ", want: "B", modes: ["and"] },       // 作物と一緒なら病害虫 (C は なす と 花き類 の登録があるだけ)
+    { q: "アザミ", want: "B", scope: { crop: "なす" } },    // サイドバーの作物と一緒でも病害虫
+    { q: "京菜", want: "D" },                               // 別名は正式名の行にも一致する
+    { q: "京菜 アブラムシ", want: "D", modes: ["and"] },
+    { q: "はげいとう", want: "A,C" },                       // アマランサス(茎葉) の別名 ハゲイトウ は使わない (花き類の はげいとう と同じ語)
+    { q: "直播", want: "G" },                               // 稲の注記 (移植、直播) は別名にしない
+    { q: "水稲", want: "F,G" },
+    { q: "オータムポエム", want: "" },                      // 除外された別名では一致しない
+    { q: "のらぼうな", want: "H" },
+  ];
+  for (const tc of cases2) {
+    for (const mode of tc.modes || ["and", "or"]) {
+      const g = got(tc.q, mode, tc.scope);
+      const ok = g === tc.want;
+      if (ok) pass++; else fail++;
+      console.log(`${ok ? "✓" : "✗"} 架空データ ${tc.scope ? `作物=${tc.scope.crop} ` : ""}"${tc.q}" ${mode.toUpperCase()} → ${g || "(なし)"}${ok ? "" : ` /* 期待 ${tc.want || "(なし)"} */`}`);
+    }
+  }
+
+  // 適用表の絞り込みも同じ規則: "なす アザミ" では なす のアザミウマ類の行だけ、"京菜" では みずな の行が残る
+  const { buildRowCondition, filterApplications } = await import("../src/js/core/search.js");
+  const rowsOf = (q, reg, scope = {}) => filterApplications(fakeApps[reg], buildRowCondition(q, fakeIndex.lexicon, "and", scope))
+    .map(a => `${a.crop}×${a.pest}`).join(",");
+  const rowCases = [
+    { q: "なす アザミ", reg: 13, want: "" },   // C: なす の行は灰色かび病、花き類の行は作物 なす でない
+    { q: "なす アザミ", reg: 12, want: "なす×アザミウマ類" },
+    { q: "京菜", reg: 14, want: "みずな×アブラムシ類" },
+    { q: "アザミ", reg: 13, want: "花き類・観葉植物×灰色かび病", scope: { crop: "" } },
+  ];
+  for (const tc of rowCases) {
+    const g = rowsOf(tc.q, tc.reg, tc.scope);
+    const ok = g === tc.want;
+    if (ok) pass++; else fail++;
+    console.log(`${ok ? "✓" : "✗"} 適用表 "${tc.q}" ${names[tc.reg]} → ${g || "(行なし)"}${ok ? "" : ` /* 期待 ${tc.want || "(行なし)"} */`}`);
+  }
+}
+
 console.log();
 console.log(`Result: ${pass} pass / ${fail} fail`);
 if (fail > 0) process.exit(1);

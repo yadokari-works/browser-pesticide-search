@@ -29,7 +29,7 @@ jobs:
       - name: FAMIC + CropLife データ取得・JSON再生成・シングルHTML再ビルド
         run: python3 scripts/update_data.py
 
-      - name: 検索ロジック品質ゲート (21件、1件でも失敗したら停止)
+      - name: 検索ロジック品質ゲート (1件でも失敗したら停止)
         run: node scripts/test_search.mjs
 
       - name: PWA再生成 (docs/)
