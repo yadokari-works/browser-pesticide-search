@@ -517,6 +517,44 @@ console.log("--- 別名と、病害虫名の頭にも現れる語 ---");
   }
 }
 
+// ===== 括弧が並ぶ作物名 =====
+// "うり類(漬物用)(しろうり、とうがんを除く)" のように括弧が並んでも、除外の括弧は取り除き、
+// 除外された作物 (しろうり) の検索に一致させない。除外の括弧が前にある場合 (きのこ類) も同じ。
+console.log();
+console.log("--- 括弧が並ぶ作物名 ---");
+{
+  const expandCases = [
+    ["うり類(漬物用)(しろうり、とうがんを除く)", "うり類(漬物用)"],
+    ["きのこ類(えのきたけ、しいたけ、なめこ、ひらたけを除く)(菌床栽培)", "きのこ類(菌床栽培)"],
+    ["西洋芝(ベントグラス)(生産圃場)", "西洋芝(ベントグラス)(生産圃場)"],
+    ["豆類(種実)(施設栽培)", "豆類(種実)(施設栽培)"],
+    ["てんさい(ALS阻害剤耐性)(移植栽培)", "てんさい(ALS阻害剤耐性)(移植栽培)"],
+  ];
+  for (const [crop, want] of expandCases) {
+    const g = expandSearchableCrops(crop).map(c => c.normalize("NFKC")).join(",");
+    const ok = g === want;
+    if (ok) pass++; else fail++;
+    console.log(`${ok ? "✓" : "✗"} ${crop} → ${g}${ok ? "" : ` /* 期待 ${want} */`}`);
+  }
+
+  // 実データの適用表: 除外された作物で絞ったとき、その行は残らない
+  const { buildRowCondition, filterApplications } = await import("../src/js/core/search.js");
+  const rowCases = [
+    { reg: "18500", q: "しろうり", crop: "うり類(漬物用)(しろうり、とうがんを除く)" },  // カスケード乳剤
+    { reg: "21075", q: "しいたけ", crop: "きのこ類(えのきたけ、しいたけ、なめこ、ひらたけを除く)(菌床栽培)" },  // きのこ用ベンレート水和剤
+  ];
+  for (const tc of rowCases) {
+    const apps = applications[tc.reg] || [];
+    const present = apps.some(a => (a.crop || "").normalize("NFKC") === tc.crop);
+    const rows = filterApplications(apps, buildRowCondition(tc.q, index.lexicon, "and", {}));
+    const leaked = rows.some(a => (a.crop || "").normalize("NFKC") === tc.crop);
+    const ok = present && !leaked;
+    if (ok) pass++; else fail++;
+    console.log(`${ok ? "✓" : "✗"} 適用表を "${tc.q}" で絞ると「${tc.crop}」の行は残らない` +
+      (present ? "" : " /* データにその行が無い */"));
+  }
+}
+
 console.log();
 console.log(`Result: ${pass} pass / ${fail} fail`);
 if (fail > 0) process.exit(1);

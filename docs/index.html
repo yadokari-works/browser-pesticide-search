@@ -605,7 +605,7 @@ window.APPLICATIONS = {"schema_version":"1.0","generated_at":"2026-10-11","appli
      padding: 14px 20px; font-size: 20pt; font-weight: 700; line-height: 1.3;">
   農薬簡易検索アプリ
   <span style="font-size: 13pt; color: var(--text-muted); font-weight: 500; margin-left: 10px;">
-    Ver. 1.7.1
+    Ver. 1.7.2
   </span>
 </div>
 
@@ -619,7 +619,7 @@ window.APPLICATIONS = {"schema_version":"1.0","generated_at":"2026-10-11","appli
 </div>
 
 <header>
-  <h1 class="header-title">農薬検索 <span class="version">Ver. 1.7.1</span></h1>
+  <h1 class="header-title">農薬検索 <span class="version">Ver. 1.7.2</span></h1>
   <div class="search-bar">
     <input id="search-input" class="search-input" type="text"
            placeholder="種類名 / 商品名 / 成分名 / 作物名 / 病害虫名 / RACコード をスペース区切りで検索 (/ キーでフォーカス)"
@@ -3654,24 +3654,59 @@ function splitTopLevel(str) {
  *     "豆類(未成熟、ただし、えだまめを除く)"        → base 豆類, qualifier 未成熟, excludes [えだまめ]
  *     "野菜類(施設栽培)"                           → base 野菜類, qualifier 施設栽培
  *     "うり科野菜(すいか、うり類(漬物用)を除く)"    → base うり科野菜, excludes [すいか, うり類(漬物用)]
+ * 括弧が並ぶ作物名は、除外の括弧だけを取り除いた残りを base にする (作物群としては展開しない)。
+ *     "うり類(漬物用)(しろうり、とうがんを除く)"     → base うり類(漬物用), excludes [しろうり, とうがん]
+ *     "きのこ類(しいたけ、なめこを除く)(菌床栽培)"   → base きのこ類(菌床栽培), excludes [しいたけ, なめこ]
+ *     "西洋芝(ベントグラス)(生産圃場)"               → base 西洋芝(ベントグラス)(生産圃場) (原文のまま)
  */
 function parseCropName(crop) {
   const t = String(crop).normalize("NFKC").trim();
-  const i = t.indexOf("(");
   const plain = { base: t, qualifier: "", excludes: [] };
-  if (i <= 0 || !t.endsWith(")")) return plain;
-  const inner = t.slice(i + 1, -1);
-  let depth = 0;
-  for (const ch of inner) {
-    if (ch === "(") depth++;
-    else if (ch === ")" && --depth < 0) return plain;  // "西洋芝(ベントグラス)(生産圃場)" のような並びは分解しない
+  const parts = topLevelGroups(t);
+  if (!parts) return plain;
+  const { base, groups } = parts;
+  if (groups.length === 1) {
+    const inner = groups[0];
+    if (!/(除く|のぞく)$/.test(inner)) return { base, qualifier: inner, excludes: [] };
+    return { base, ...splitExclusion(inner) };
   }
-  const base = t.slice(0, i).trim();
-  if (!/(除く|のぞく)$/.test(inner)) return { base, qualifier: inner, excludes: [] };
+  if (!groups.some(g => /(除く|のぞく)$/.test(g))) return plain;
+  let head = base;
+  const excludes = [];
+  for (const g of groups) {
+    if (!/(除く|のぞく)$/.test(g)) { head += `(${g})`; continue; }
+    const { qualifier, excludes: ex } = splitExclusion(g);
+    if (qualifier) head += `(${qualifier})`;
+    excludes.push(...ex);
+  }
+  return { base: head, qualifier: "", excludes };
+}
+
+/**
+ * "作物名(…)(…)" を、最初の括弧の前と、外側の括弧ごとの中身に分ける。
+ * 括弧の前が空、括弧の対応が崩れている、括弧の間や後ろに文字がある場合は null。
+ */
+function topLevelGroups(t) {
+  const i = t.indexOf("(");
+  if (i <= 0 || !t.endsWith(")")) return null;
+  const groups = [];
+  let depth = 0, cur = "";
+  for (const ch of t.slice(i)) {
+    if (ch === "(") { if (depth++ === 0) { cur = ""; continue; } }
+    else if (ch === ")") {
+      if (--depth < 0) return null;
+      if (depth === 0) { groups.push(cur); continue; }
+    } else if (depth === 0) return null;
+    cur += ch;
+  }
+  return depth === 0 ? { base: t.slice(0, i).trim(), groups } : null;
+}
+
+/** "を除く" で終わる括弧の中身を、"ただし、" の前の条件と除外される作物に分ける */
+function splitExclusion(inner) {
   // 括弧の外側にある "ただし、" で条件と除外を分ける
   // ("野菜類(…、豆類(種実、ただし、らっかせいを除く)、かんしょを除く)" の内側の "ただし" では分けない)
-  let cut = -1;
-  depth = 0;
+  let cut = -1, depth = 0;
   for (let k = 0; k < inner.length; k++) {
     const ch = inner[k];
     if (ch === "(") depth++;
@@ -3680,7 +3715,7 @@ function parseCropName(crop) {
   }
   const qualifier = cut >= 0 ? inner.slice(0, cut).replace(/、$/, "").trim() : "";
   const excludes = splitTopLevel((cut >= 0 ? inner.slice(cut + 4) : inner).replace(/を(除く|のぞく)$/, ""));
-  return { base, qualifier, excludes };
+  return { qualifier, excludes };
 }
 
 /**
