@@ -1,4 +1,4 @@
-# iOS アプリ版 — 農薬簡易検索 Ver. 1.7.2
+# iOS アプリ版 — 農薬簡易検索 Ver. 1.8.0
 
 自分の iPhone に「農薬簡易検索」アプリをインストールするための Xcode プロジェクトです。
 バンドル版 HTML を WKWebView で表示するシンプルなラッパーで、**追加課金ゼロ（無料の
@@ -76,7 +76,7 @@ ios/
     │   ├── PesticideSearchApp.swift   # @main エントリ
     │   └── ContentView.swift          # WKWebView ラッパー
     └── Resources/
-        ├── これをクリック.html          # バンドル版 (約 30 MB)
+        ├── これをクリック.html          # バンドル版 (約 33 MB)
         └── 使い方.html                  # 使い方ガイド
 ```
 
