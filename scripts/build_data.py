@@ -426,15 +426,33 @@ def load_manual_rac():
     return data.get("ingredients", {})
 
 
+# 成分名の名寄せで無視してよい語尾 (塩・水和物の表記ゆれ)。長い順に照合する
+_SALT_SUFFIXES = sorted(
+    ["ナトリウム塩", "カリウム塩", "アンモニウム塩", "カルシウム塩", "マグネシウム塩", "銅塩", "亜鉛塩",
+     "イソプロピルアミン塩", "ジメチルアミン塩", "塩酸塩", "硫酸塩", "酢酸塩", "水和物", "塩"],
+    key=len, reverse=True,
+)
+FUZZY_RAC_MATCHES = []  # 名寄せで付けたコード (build() がログに出す)
+
+
+def _strip_salt(name):
+    for suf in _SALT_SUFFIXES:
+        if name.endswith(suf) and len(name) - len(suf) >= 2:
+            return name[: -len(suf)]
+    return name
+
+
 def _lookup_rac_by_name(name, ing_master):
-    """成分名→RACコードのフォールバック検索。完全一致→部分一致の順。"""
+    """成分名→RACコードのフォールバック検索。完全一致、次に塩・水和物の語尾を除いた名前の一致。
+    部分一致は使わない (以前は "フマル酸" が "オキスポコナゾールフマル酸塩" の FRAC 3 になっていた)。"""
     if not name or not ing_master:
         return None
     if name in ing_master:
         return ing_master[name]
-    # 部分一致（塩・異性体表記ゆれ等。"グルホシネートPナトリウム塩" ⊃ "グルホシネート" 等）
+    stem = _strip_salt(name)
     for master_name, code in ing_master.items():
-        if master_name in name or name in master_name:
+        if _strip_salt(master_name) == stem:
+            FUZZY_RAC_MATCHES.append((name, master_name, code))
             return code
     return None
 
@@ -484,6 +502,44 @@ def merge_ingredients(basic_rec, rac_rec, ing_master=None, manual_map=None):
         for ing in basic_rec["ingredients_raw"]
         if ing["name"]
     ]
+
+
+RAC_SYS_OF_CATEGORY = {"殺虫剤": "I", "殺菌剤": "F", "除草剤": "H"}
+
+
+def tag_rac_systems(products):
+    """
+    用途が 2 つ以上の剤 (殺虫殺菌剤など) で、系統の印 "(I*)" などが無い RAC コードに、成分の系統の印を付ける。
+    印が無いと、画面 (splitRacCode) は商品の用途すべてにコードを振り分けるため、タネサンGT の
+    ダイアジノン 1B が IRAC と FRAC の両方に入り、"FRAC 1B" や "IRAC M3" の検索に出ていた。
+    成分の系統は、用途が 1 つだけの有効剤でその成分が使われている用途から決める。決まらない成分
+    (用途が 1 つの剤に無い、複数の用途で使われている) は印を付けず、従来どおり用途すべてに振り分ける。
+    戻り値: (印を付けた成分の数, {決まらなかった成分名: [商品名, ...]})
+    """
+    votes = defaultdict(set)
+    for p in products:
+        if p.get("status") != "有効" or len(p["categories"]) != 1:
+            continue
+        for ing in p["ingredients"]:
+            votes[ing["name"]].add(RAC_SYS_OF_CATEGORY[p["categories"][0]])
+    tagged = 0
+    undecided = defaultdict(list)
+    for p in products:
+        if len(p["categories"]) < 2:
+            continue
+        allowed = {RAC_SYS_OF_CATEGORY[c] for c in p["categories"]}
+        for ing in p["ingredients"]:
+            code = ing.get("rac_code")
+            if not code or re.search(r"\((I|F|H)\*\)", code):
+                continue
+            sys_ = votes.get(ing["name"], set()) & allowed
+            if len(sys_) != 1:
+                undecided[ing["name"]].append(p["product_name"])
+                continue
+            s = next(iter(sys_))
+            ing["rac_code"] = ", ".join(f"{c.strip()}({s}*)" for c in re.split(r"[,、]", code) if c.strip())
+            tagged += 1
+    return tagged, undecided
 
 
 def excel_serial_to_date(serial):
@@ -671,6 +727,17 @@ def build():
         cancelled_count += 1
         for cat in cats:
             category_counts[cat] += 1
+
+    tagged, undecided = tag_rac_systems(products)
+    print(f"\nRAC 系統の印を付けた成分 (用途が 2 つ以上の剤): {tagged}")
+    if undecided:
+        print(f"  系統が決まらず用途すべてに振り分ける成分: {len(undecided)} 種")
+        for name, names in sorted(undecided.items()):
+            print(f"    {name}: {len(names)} 商品 (例: {names[0]})")
+    if FUZZY_RAC_MATCHES:
+        print(f"  塩・水和物の語尾を除いた名寄せで付けた RAC コード: {len(set(FUZZY_RAC_MATCHES))} 件")
+        for name, master_name, code in sorted(set(FUZZY_RAC_MATCHES)):
+            print(f"    {name} ← {master_name} ({code})")
 
     today = datetime.now().strftime("%Y-%m-%d")
     famic_date = _famic_date_from_path(FAMIC_BASIC)

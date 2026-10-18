@@ -3,8 +3,8 @@
  */
 
 import { buildIndex, search, buildRowCondition, hasRowCondition, filterApplications } from "./core/search.js";
-import { applyFilters, DEFAULT_FILTERS, countFormulations } from "./core/filter.js";
-import { normalize, expandSearchableCrops, splitRacCode, stripCompanyFromName, applicationCropMembers } from "./core/normalize.js";
+import { applyFilters, DEFAULT_FILTERS, countFormulations, attachBrandedFlags, groupKeyOf } from "./core/filter.js";
+import { splitRacCode, stripCompanyFromName } from "./core/normalize.js";
 import { exportTSV, exportCSV, exportMarkdown, exportJSON, download } from "./io/export.js";
 import { loadApplications, getApplicationsFor } from "./io/applications.js";
 
@@ -71,9 +71,9 @@ async function init() {
     }
 
     const apps = await loadApplications();
-    attachCropsPests(state.db.products, apps);
-    attachBrandedFlags(state.db.products);
     state.index = buildIndex(state.db.products, apps);
+    attachCropsPests(state.index, apps);
+    attachBrandedFlags(state.db.products);
     renderHeader();
     renderFilters();
     updateResults();
@@ -83,77 +83,26 @@ async function init() {
   }
 }
 
-function attachCropsPests(products, applications) {
+/**
+ * サイドバーの絞り込み (filter.js) が使う派生欄を商品に付ける。適用行の正規化は buildIndex が
+ * 行ったもの (app_entries) をそのまま使い、作物・病害虫の候補の件数を数える。
+ */
+function attachCropsPests(index, applications) {
   const cropCount = new Map();
   const pestCount = new Map();
-  for (const p of products) {
-    const entries = applications[String(p.reg_no)] || [];
-    const crops = new Set();
-    const pests = new Set();
-    const memberSets = new Set();
-    // 適用行ごとに作物欄・病害虫欄を分離保持 (作物×病害虫 同時指定時の共起判定用)
-    // members は作物欄が作物群のときの所属作物 (filter.js で完全一致で照合する)
-    const pairs = [];
-    for (const a of entries) {
-      const cparts = [];
-      if (a.crop) {
-        for (const expanded of expandSearchableCrops(a.crop)) {
-          const n = normalize(expanded);
-          crops.add(n);
-          cparts.push(n);
-        }
-        cropCount.set(a.crop, (cropCount.get(a.crop) || 0) + 1);
-      }
-      if (a.place) {
-        for (const expanded of expandSearchableCrops(a.place)) {
-          const n = normalize(expanded);
-          crops.add(n);
-          cparts.push(n);
-        }
-      }
-      const members = applicationCropMembers(a);
-      for (const s of members) memberSets.add(s);
-      const pestNorm = a.pest ? normalize(a.pest) : "";
-      if (pestNorm) {
-        pests.add(pestNorm);
-        pestCount.set(a.pest, (pestCount.get(a.pest) || 0) + 1);
-      }
-      pairs.push({ crop: cparts.join("|"), pest: pestNorm, members });
+  for (const entry of index) {
+    const p = entry.product;
+    p._crops_norm = entry.norm_crops;
+    p._crop_members = entry.crop_members;
+    p._pests_norm = entry.norm_pests;
+    p._app_pairs = entry.app_entries;
+    for (const a of applications[String(p.reg_no)] || []) {
+      if (a.crop) cropCount.set(a.crop, (cropCount.get(a.crop) || 0) + 1);
+      if (a.pest) pestCount.set(a.pest, (pestCount.get(a.pest) || 0) + 1);
     }
-    p._crops_norm = [...crops].join("|");
-    p._crop_members = [...memberSets];
-    p._pests_norm = [...pests].join("|");
-    p._app_pairs = pairs;
   }
   state.cropSuggestions = [...cropCount.entries()].sort((a, b) => b[1] - a[1]);
   state.pestSuggestions = [...pestCount.entries()].sort((a, b) => b[1] - a[1]);
-}
-
-/**
- * 「屋号付き」商品 (同一処方・同一種類名の中で、他社の商品名をそのまま含む形の
- * 代理店/OEM 品) を検出し、p._branded に真偽値を立てる。
- * 例: 種類名+成分構成が同じグループ内で "クミアイダコニール1000" は
- *     "ダコニール1000" (同グループの別商品) を末尾に含む → 屋号付きと判定。
- * どの商品も他の商品名を含まないグループは何も除外しない (誤除外を避けるため)。
- */
-function attachBrandedFlags(products) {
-  const groups = new Map();
-  for (const p of products) {
-    const key = `${p.type_name || p.product_name}${ingredientSignature(p)}`;
-    let g = groups.get(key);
-    if (!g) { g = []; groups.set(key, g); }
-    g.push(p);
-  }
-  for (const g of groups.values()) {
-    for (const p of g) {
-      p._branded = g.some(q =>
-        q !== p &&
-        p.product_name !== q.product_name &&
-        p.product_name.length > q.product_name.length &&
-        p.product_name.endsWith(q.product_name)
-      );
-    }
-  }
 }
 
 function toReiwa(dateStr) {
@@ -321,14 +270,6 @@ function updateResults() {
   renderResults(state.currentGroups, results.length);
 }
 
-/** 成分構成 (成分名 + 濃度) の署名。同一種類名でも濃度違いは別グループにするために使う */
-function ingredientSignature(p) {
-  return (p.ingredients || [])
-    .map(i => `${i.name}\u001f${i.density || ""}`)
-    .sort()
-    .join("\u001e");
-}
-
 /**
  * 種類名 + 成分構成 (成分名・濃度) でグループ化する。
  * 種類名だけだと、ダコニール1000 (TPN 40%) / ダコニールエース (53%) /
@@ -340,7 +281,7 @@ function groupByTypeAndIngredients(products) {
   const map = new Map();
   for (const p of products) {
     const typeName = p.type_name || p.product_name;
-    const key = `${typeName}\u001d${ingredientSignature(p)}`;
+    const key = p._group || groupKeyOf(p);
     let g = map.get(key);
     if (!g) {
       g = { type_name: typeName, products: [] };

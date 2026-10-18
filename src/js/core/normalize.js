@@ -75,6 +75,14 @@ function parseCropName(crop) {
     return { base, ...splitExclusion(inner) };
   }
   if (!groups.some(g => /(除く|のぞく)$/.test(g))) return plain;
+  // 除外でない括弧が栽培条件 1 つだけなら、その括弧を条件として返す (作物群として展開できるように)
+  //     "きのこ類(しいたけ、なめこを除く)(菌床栽培)" → base きのこ類, qualifier 菌床栽培, excludes [しいたけ, なめこ]
+  const kept = groups.filter(g => !/(除く|のぞく)$/.test(g));
+  if (kept.length === 1 && CONDITION_QUALIFIERS.has(normalize(kept[0]))) {
+    const excludes = [];
+    for (const g of groups) if (g !== kept[0]) excludes.push(...splitExclusion(g).excludes);
+    return { base, qualifier: kept[0], excludes };
+  }
   let head = base;
   const excludes = [];
   for (const g of groups) {
@@ -146,7 +154,7 @@ const GROUP_MEMBERS = new Map(
 // 作物群名の後ろの括弧のうち、含まれる作物を狭めない条件 (栽培方法など)。
 // これ以外の括弧 (例 "うり類(漬物用)" "とうもろこし(子実)") は作物群の一部だけを指すため展開しない。
 const CONDITION_QUALIFIERS = new Set(
-  ["施設栽培", "露地栽培", "苗木", "秋播", "秋播栽培", "ポット・プランター等の容器栽培"].map(normalize)
+  ["施設栽培", "露地栽培", "苗木", "秋播", "秋播栽培", "ポット・プランター等の容器栽培", "菌床栽培"].map(normalize)
 );
 const memberCache = new Map();
 const NO_MEMBERS = new Set();
@@ -279,6 +287,83 @@ export function membersHave(sets, q) {
   if (!sets) return false;
   for (const s of sets) if (s.has(q)) return true;
   return false;
+}
+
+/**
+ * "名前(…)(…)…" を外側の括弧ごとに分ける (括弧は NFKC で半角にそろえる)。
+ * 例: "一年生雑草(イネ科を除く)" → [{text: 一年生雑草, paren: false}, {text: イネ科を除く, paren: true}]
+ */
+function parenSegments(t) {
+  const out = [];
+  let depth = 0, cur = "";
+  for (const ch of t) {
+    if (ch === "(") {
+      if (depth++ === 0) { if (cur) out.push({ text: cur, paren: false }); cur = ""; continue; }
+    } else if (ch === ")" && depth > 0) {
+      if (--depth === 0) { out.push({ text: cur, paren: true }); cur = ""; continue; }
+    }
+    cur += ch;
+  }
+  if (cur) out.push({ text: cur, paren: depth > 0 });
+  return out;
+}
+
+/**
+ * 病害虫名から、"を除く" で終わる括弧を取り除いた検索用の名前を返す。
+ * 除外された雑草・病害虫や地域の検索で、その行が一致しないようにするため (表示には原文を使う)。
+ * 例: "一年生イネ科雑草(スズメノカタビラを除く)" → "一年生イネ科雑草"
+ *     "ミズガヤツリ(北海道を除く)"               → "ミズガヤツリ"
+ *     "苗立枯病(ピシウム菌)"                     → "苗立枯病(ピシウム菌)" (除外でない括弧は残す)
+ */
+export function searchablePest(pest) {
+  if (!pest) return "";
+  const t = String(pest).normalize("NFKC");
+  if (!/(除く|のぞく)/.test(t)) return t;
+  return parenSegments(t)
+    .filter(g => !(g.paren && /(除く|のぞく)$/.test(g.text)))
+    .map(g => g.paren ? `(${g.text})` : g.text)
+    .join("");
+}
+
+/** 病害虫名の、除外でない括弧の中身 ("幹腐病(うめ)" → "うめ")。作物名が病害虫欄の括弧に書かれた行のため */
+function pestParenText(pest) {
+  if (!pest) return "";
+  const t = String(pest).normalize("NFKC");
+  if (!t.includes("(")) return "";
+  return parenSegments(t)
+    .filter(g => g.paren && !/(除く|のぞく)$/.test(g.text))
+    .map(g => g.text)
+    .join("|");
+}
+
+/**
+ * 適用行 1 行を照合用に正規化する。検索 (search.js) とサイドバーの絞り込み (filter.js) が共用する。
+ * - crop: 作物欄・使用場所欄を expandSearchableCrops で展開して正規化し "|" で結合
+ * - members: 作物欄で引ける語の Set の配列 (applicationCropMembers)
+ * - pest: 除外の括弧を取り除いた病害虫名 (searchablePest) を正規化したもの
+ * - paren: 病害虫欄の除外でない括弧の中身を正規化したもの
+ */
+export function appEntry(a) {
+  const cparts = [];
+  for (const v of [a.crop, a.place]) {
+    if (v) for (const c of expandSearchableCrops(v)) cparts.push(normalize(c));
+  }
+  return {
+    crop: cparts.join("|"),
+    members: applicationCropMembers(a),
+    pest: a.pest ? normalize(searchablePest(a.pest)) : "",
+    paren: a.pest ? normalize(pestParenText(a.pest)) : "",
+  };
+}
+
+/** 適用行 (appEntry) の作物欄に q (正規化済み) があるか (所属作物・別名は完全一致) */
+export function entryHasCrop(e, q) {
+  return e.crop.includes(q) || membersHave(e.members, q);
+}
+
+/** 適用行 (appEntry) の病害虫欄 (除外の括弧を除く) に q (正規化済み) があるか */
+export function entryHasPest(e, q) {
+  return e.pest.includes(q);
 }
 
 /**
