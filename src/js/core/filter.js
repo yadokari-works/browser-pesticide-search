@@ -7,7 +7,7 @@
  * - 混合剤のみ
  */
 
-import { normalize, membersHave, entryHasCrop, entryHasPest } from "./normalize.js";
+import { normalize, entryHasCrop, entryHasPest, cropsMayHave, searchablePest } from "./normalize.js";
 
 export const DEFAULT_FILTERS = {
   categories: new Set(["殺虫剤", "殺菌剤", "除草剤"]),
@@ -63,7 +63,8 @@ export function attachBrandedFlags(products) {
 
 export function applyFilters(products, filters) {
   const cropQ = filters.crop ? normalize(filters.crop) : "";
-  const pestQ = filters.pest ? normalize(filters.pest) : "";
+  // 病害虫は、候補から選んだ原文 ("…(…を除く)") でも一致するよう除外の括弧を除く
+  const pestQ = filters.pest ? normalize(searchablePest(filters.pest)) : "";
   const passed = products.filter(p => {
     // カテゴリ: p.categories のいずれかが選択中なら通す
     const cats = p.categories || [p.category];  // 旧スキーマ互換
@@ -80,7 +81,7 @@ export function applyFilters(products, filters) {
     if (cropQ && pestQ) {
       if (!pairs.some(e => entryHasCrop(e, cropQ) && entryHasPest(e, pestQ))) return false;
     } else {
-      if (cropQ && !(((p._crops_norm || "").includes(cropQ) || membersHave(p._crop_members, cropQ)) &&
+      if (cropQ && !(cropsMayHave(p._crops_norm, p._crop_members, cropQ) &&
         pairs.some(e => entryHasCrop(e, cropQ)))) return false;
       if (pestQ && !(p._pests_norm || "").includes(pestQ)) return false;
     }

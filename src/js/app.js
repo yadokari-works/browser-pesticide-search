@@ -4,7 +4,7 @@
 
 import { buildIndex, search, buildRowCondition, hasRowCondition, filterApplications } from "./core/search.js";
 import { applyFilters, DEFAULT_FILTERS, countFormulations, attachBrandedFlags, groupKeyOf } from "./core/filter.js";
-import { splitRacCode, stripCompanyFromName } from "./core/normalize.js";
+import { splitRacCode, stripCompanyFromName, expandSearchableCrops, searchablePest } from "./core/normalize.js";
 import { exportTSV, exportCSV, exportMarkdown, exportJSON, download } from "./io/export.js";
 import { loadApplications, getApplicationsFor } from "./io/applications.js";
 
@@ -96,9 +96,13 @@ function attachCropsPests(index, applications) {
     p._crop_members = entry.crop_members;
     p._pests_norm = entry.norm_pests;
     p._app_pairs = entry.app_entries;
+    // 候補は "(…を除く)" を取り除いた名前で数える (原文を選ぶと、その語で一致する行が無く 0 件になるため)
     for (const a of applications[String(p.reg_no)] || []) {
-      if (a.crop) cropCount.set(a.crop, (cropCount.get(a.crop) || 0) + 1);
-      if (a.pest) pestCount.set(a.pest, (pestCount.get(a.pest) || 0) + 1);
+      if (a.crop) for (const c of expandSearchableCrops(a.crop)) cropCount.set(c, (cropCount.get(c) || 0) + 1);
+      if (a.pest) {
+        const n = searchablePest(a.pest);
+        pestCount.set(n, (pestCount.get(n) || 0) + 1);
+      }
     }
   }
   state.cropSuggestions = [...cropCount.entries()].sort((a, b) => b[1] - a[1]);

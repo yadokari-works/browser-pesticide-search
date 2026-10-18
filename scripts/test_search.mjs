@@ -659,6 +659,43 @@ console.log("--- レビュー指摘 (2026-10-18) ---");
   const explicit = run("FRAC 20 アミスター", "and").length;
   check(radio > 0 && explicit === 0, `FRAC を選んだまま "アミスター 20" → ${radio} 件 / "FRAC 20 アミスター" → ${explicit} 件`);
 
+  // 作物名の部分一致 (段階 1b): 分類表で別の作物とされる作物には当たらない。分類表が含める作物と、分類表に無い作物名には当たる
+  const cropRows = (p, pred) => (applications[String(p.reg_no)] || []).some(pred);
+  const cropOf = a => [a.crop, a.place].filter(Boolean).flatMap(v => expandSearchableCrops(v)).map(normalizeMod);
+  for (const [q, pest, wrong] of [["ちゃ", "アブラムシ", ["カボチャ", "チャービル"]], ["ねぎ", "アザミウマ", ["タマネギ"]], ["もも", "アブラムシ", ["スモモ"]]]) {
+    const res = run(`${q} ${pest}`, "and");
+    const pn = normalizeMod(pest);
+    // 一致した行 (作物が q を含み、病害虫が pest) が、すべて別の作物の行である剤
+    const bad = res.filter(p => {
+      const rows = (applications[String(p.reg_no)] || []).filter(a => truthPest(a).includes(pn));
+      const ok = rows.filter(a => !cropOf(a).every(c => wrong.some(w => c.startsWith(w) || c.includes(w))));
+      return ok.length === 0;
+    });
+    check(res.length > 0 && bad.length === 0, `"${q} ${pest}" → ${res.length} 件、${wrong.join("・")} の行だけで一致した剤 ${bad.length} 件` + (bad.length ? ` /* ${names(bad)} */` : ""));
+  }
+  // 読み (かな) と漢字の作物名は、作物欄では同じ行に一致する。1 語だけの検索では商品名なども照合するため、
+  // 差はその語を商品名・会社名・種類名・成分名に含む剤だけ (例: "いね" と サンケイネオBHC乳剤 の "イネ")
+  const productHas = (p, w) => [p.product_name, p.company, p.type_name, ...p.ingredients.map(i => i.name)]
+    .some(v => normalizeMod(v).includes(normalizeMod(w)));
+  for (const [kana, kanji] of [["こむぎ", "小麦"], ["いね", "稲"], ["いね いもち病", "稲 いもち病"], ["ちゃ", "茶"]]) {
+    const a = run(kana, "and"), b = run(kanji, "and");
+    const as = regSet(a), bs = regSet(b);
+    const extra = a.filter(p => !bs.has(p.reg_no)), miss = b.filter(p => !as.has(p.reg_no));
+    const ok = a.length > 0 && extra.every(p => productHas(p, kana)) && miss.every(p => productHas(p, kanji));
+    check(ok, `"${kana}" ${a.length} 件 / "${kanji}" ${b.length} 件 (差は商品名などで一致した剤だけ: ${extra.length} / ${miss.length})`);
+  }
+  const teaN = normalizeMod("茶");
+  const tea = run("ちゃ アブラムシ", "and");
+  check(tea.length > 0 && tea.every(p => cropRows(p, a => cropOf(a).some(c => c.startsWith(teaN)) && truthPest(a).includes(normalizeMod("アブラムシ")))),
+    `"ちゃ アブラムシ" の ${tea.length} 件すべてに 茶×アブラムシ の行がある`);
+  for (const [q, narrow] of [["なし", "日本なし"], ["水稲", "移植水稲"], ["ぶどう", "大粒種ぶどう"]]) {
+    const nn = normalizeMod(narrow);
+    const onlyNarrow = applyFilters(db.products, baseFilters()).filter(p => cropRows(p, a => cropOf(a).some(c => c.startsWith(nn))));
+    const got = regSet(run(q, "and"));
+    const miss = onlyNarrow.filter(p => !got.has(p.reg_no));
+    check(onlyNarrow.length > 0 && miss.length === 0, `"${q}" に ${narrow} の登録がある ${onlyNarrow.length} 商品がすべて含まれる` + (miss.length ? ` /* 漏れ ${miss.length}: ${names(miss)} */` : ""));
+  }
+
   // 屋号付きを除外: 同じグループの屋号の無い商品が結果に無いときは表示する
   const yashi = run("ヤシ類 タイワンカブトムシ", "and");
   if ((applications[String((db.products.find(p => p.product_name === "サンケイダイアジノン粒剤5") || {}).reg_no)] || []).length) {

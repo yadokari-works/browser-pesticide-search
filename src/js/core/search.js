@@ -5,7 +5,7 @@
  * - 全て正規化後の部分一致
  */
 
-import { normalize, normalizeRacQuery, splitRacCode, appEntry, entryHasCrop, entryHasPest, membersHave } from "./normalize.js";
+import { normalize, normalizeRacQuery, splitRacCode, appEntry, entryHasCrop, entryHasPest, cropsMayHave, searchablePest, isCropReading } from "./normalize.js";
 
 /**
  * 検索インデックス構築
@@ -160,10 +160,14 @@ function isCropPart(nt, lex) {
   return v;
 }
 
-/** 作物と確定する検索語か: 作物欄の作物名 (病害虫名と完全一致しない)、または病害虫名の頭に現れない所属作物・別名 */
+/**
+ * 作物と確定する検索語か: 作物欄の作物名 (病害虫名と完全一致しない)、病害虫名の頭に現れない所属作物・別名、
+ * または漢字の作物名の読み (ちゃ → 茶。チャノキイロアザミウマ の頭にも現れるが、作物を指す語として入れたもの)
+ */
 function isCropToken(nt, lex) {
   return (lex.cropWords.has(nt) && !lex.pestWords.has(nt))
-    || (!!lex.virtualCropWords && lex.virtualCropWords.has(nt) && !isPestStem(nt, lex));
+    || (!!lex.virtualCropWords && lex.virtualCropWords.has(nt) && !isPestStem(nt, lex))
+    || isCropReading(nt);
 }
 
 /**
@@ -254,7 +258,7 @@ function rowHas(entry, cropQ, pestQ) {
  */
 function cropsHave(entry, nt, cropOK = true) {
   return cropOK &&
-    (entry.norm_crops.includes(nt) || membersHave(entry.crop_members, nt)) &&
+    cropsMayHave(entry.norm_crops, entry.crop_members, nt) &&
     entry.app_entries.some(e => entryHasCrop(e, nt));
 }
 
@@ -426,7 +430,8 @@ export function search(query, index, racSystem, mode, scope) {
   // OR 検索: いずれかのトークンに一致すれば採用。
   // AND 検索: 全トークン一致。ただし作物×病害虫は同一適用行での共起を要求 (matchesAnd)。
   const lex = index.lexicon || EMPTY_LEX;
-  const sc = { crop: normalize((scope && scope.crop) || ""), pest: normalize((scope && scope.pest) || "") };
+  // サイドバーの病害虫は、候補から選んだ原文 ("…(…を除く)") でも一致するよう除外の括弧を除く
+  const sc = { crop: normalize((scope && scope.crop) || ""), pest: normalize(searchablePest((scope && scope.pest) || "")) };
   const nts = tokens.map(t => normalize(t.text.trim()));
   const flags = cropFlags(nts, lex, sc.crop, mode);
   tokens.forEach((t, i) => {
@@ -480,7 +485,7 @@ export function buildRowCondition(query, lex, mode, scope) {
     mode: mode === "or" ? "or" : "and",
     crops, pests, either, noCrop,
     scopeCrop,
-    scopePest: normalize((scope && scope.pest) || ""),
+    scopePest: normalize(searchablePest((scope && scope.pest) || "")),
   };
 }
 

@@ -336,29 +336,162 @@ function pestParenText(pest) {
     .join("|");
 }
 
+// 漢字で書かれた作物名の読み。かなで入力しても漢字の作物名の行に一致させる
+// (分類表の別名には読みが無いため、ここに置く。データの作物欄にある名前だけ)。
+const CROP_READINGS = {
+  "茶": ["ちゃ"], "稲": ["いね"], "水稲": ["すいとう"], "陸稲": ["りくとう", "おかぼ"],
+  "小麦": ["こむぎ"], "大麦": ["おおむぎ"], "桑": ["くわ"], "芝": ["しば"], "牧草": ["ぼくそう"],
+};
+const READING_TO_NAME = new Map();
+for (const [n, rs] of Object.entries(CROP_READINGS)) for (const r of rs) READING_TO_NAME.set(normalize(r), normalize(n));
+
+/** q (正規化済み) が漢字の作物名の読み (ちゃ、いね など) か。読みは作物を指す語として扱う */
+export function isCropReading(q) {
+  return READING_TO_NAME.has(q);
+}
+
+/** 作物の検索語 q (正規化済み) と、q が読みなら その作物名 (例 チャ → [チャ, 茶]) */
+export function cropQueryForms(q) {
+  const name = READING_TO_NAME.get(q);
+  return name ? [q, name] : [q];
+}
+
+// 分類表 (crop_groups.js) に載っている作物名・作物群名・別名 (正規化済み)。部分一致を制限するのに使う
+const KNOWN_CROPS = new Set();
+for (const [g, names] of Object.entries(CROP_GROUPS)) {
+  KNOWN_CROPS.add(normalize(g));
+  for (const n of names) KNOWN_CROPS.add(normalize(n));
+}
+for (const [n, words] of Object.entries(CROP_ALIASES)) {
+  KNOWN_CROPS.add(normalize(n));
+  for (const w of words) KNOWN_CROPS.add(normalize(w));
+}
+const relativesCache = new Map();
+
+/**
+ * 分類表が作物名 q (正規化済み) に含めている作物: 作物群 q (と q + "類") の所属作物と、q の別名、
+ * それらの括弧の前、所属作物がすべて q の所属作物に含まれる作物群 (下位の作物群)。
+ * 例: なし → 日本なし・西洋なし、ぶどう → 大粒種ぶどう、芝 → 日本芝(こうらいしば)・日本芝・西洋芝、
+ *     まつ → まつ類の所属作物、核果類 → 小粒核果類
+ */
+function cropRelatives(q) {
+  let set = relativesCache.get(q);
+  if (set) return set;
+  set = new Set();
+  const groupMembers = [...(GROUP_MEMBERS.get(q) || []), ...(GROUP_MEMBERS.get(q + "類") || [])];
+  for (const m of [...groupMembers, ...(ALIASES.get(q) || [])]) {
+    set.add(m);
+    const i = m.indexOf("(");
+    if (i > 0) set.add(m.slice(0, i));
+  }
+  if (groupMembers.length) {
+    const all = new Set(groupMembers);
+    for (const [g, ms] of GROUP_MEMBERS) {
+      if (g !== q && ms.length && ms.every(m => all.has(m))) set.add(g);
+    }
+  }
+  relativesCache.set(q, set);
+  return set;
+}
+
+const cropInfoCache = new Map();
+
+/**
+ * 展開済みの作物名 1 つを照合用に分解する (同じ名前は使い回す)。
+ * full: 名前全体、base: 括弧の前、comps: 括弧の前を "・" "、" で区切った各語、parens: 括弧の中身
+ * 例: "花き類・観葉植物(施設栽培)" → base 花キ類・観葉植物, comps [花キ類, 観葉植物], parens [施設栽培]
+ */
+function cropInfo(name) {
+  let info = cropInfoCache.get(name);
+  if (info) return info;
+  const segs = parenSegments(String(name).normalize("NFKC"));
+  const base = normalize(segs.filter(g => !g.paren).map(g => g.text).join(""));
+  info = {
+    full: normalize(name),
+    base,
+    comps: base.split(/[・、,]/).filter(Boolean),
+    parens: segs.filter(g => g.paren).map(g => normalize(g.text)),
+  };
+  cropInfoCache.set(name, info);
+  return info;
+}
+
+const blockersCache = new Map();
+
+/**
+ * q (正規化済み) を名前の一部に含む、分類表の別の作物 (q の別名・所属作物でないもの)。
+ * 例: チャ → カボチャ・チャービル、ネギ → タマネギ、ナシ → クチナシ。部分一致でこれらの作物に当てないために使う
+ */
+function cropBlockers(q, rel) {
+  let list = blockersCache.get(q);
+  if (list) return list;
+  list = [];
+  for (const k of KNOWN_CROPS) if (k !== q && k.includes(q) && !rel.has(k)) list.push(k);
+  blockersCache.set(q, list);
+  return list;
+}
+
+/**
+ * 作物名 info が検索語 q (正規化済み) に一致するか。
+ * - 名前全体・括弧の前・"・" で並ぶ各語・括弧の中身との完全一致。"類" を付けると一致する語 (野菜 → 野菜類) も一致
+ * - 部分一致は、その文字列に、q を含む分類表の別の作物名 (cropBlockers) が現れないときだけ。
+ *   分類表に無い作物名 (移植水稲、直播水稲) と、分類表が q に含めている作物 (なし → 日本なし) には当たり、
+ *   別の作物 (ちゃ → かぼちゃ・"かぼちゃ(かぼちゃ台を含む)"、ねぎ → たまねぎ、なし → くちなし) には当たらない。
+ *   括弧の中の栽培条件 ("ポット・プランター等の容器栽培" の "ラン") には部分一致させない
+ */
+function cropInfoMatches(info, q, rel) {
+  if (info.full === q || info.base === q) return true;
+  for (const c of info.comps) if (c === q || c === q + "類") return true;
+  for (const p of info.parens) if (p === q) return true;
+  const blockers = cropBlockers(q, rel);
+  const partial = t => t.includes(q) && !blockers.some(b => t.includes(b));
+  for (const c of info.comps) if (partial(c)) return true;
+  for (const p of info.parens) if (!CONDITION_QUALIFIERS.has(p) && partial(p)) return true;
+  return false;
+}
+
 /**
  * 適用行 1 行を照合用に正規化する。検索 (search.js) とサイドバーの絞り込み (filter.js) が共用する。
- * - crop: 作物欄・使用場所欄を expandSearchableCrops で展開して正規化し "|" で結合
+ * - crop: 作物欄・使用場所欄を expandSearchableCrops で展開して正規化し "|" で結合 (商品全体での絞り込み用)
+ * - crops: 展開した作物名ごとの cropInfo (entryHasCrop が使う)
  * - members: 作物欄で引ける語の Set の配列 (applicationCropMembers)
  * - pest: 除外の括弧を取り除いた病害虫名 (searchablePest) を正規化したもの
  * - paren: 病害虫欄の除外でない括弧の中身を正規化したもの
  */
 export function appEntry(a) {
-  const cparts = [];
+  const names = [];
   for (const v of [a.crop, a.place]) {
-    if (v) for (const c of expandSearchableCrops(v)) cparts.push(normalize(c));
+    if (v) names.push(...expandSearchableCrops(v));
   }
+  const crops = names.map(cropInfo);
   return {
-    crop: cparts.join("|"),
+    crop: crops.map(c => c.full).join("|"),
+    crops,
     members: applicationCropMembers(a),
     pest: a.pest ? normalize(searchablePest(a.pest)) : "",
     paren: a.pest ? normalize(pestParenText(a.pest)) : "",
   };
 }
 
-/** 適用行 (appEntry) の作物欄に q (正規化済み) があるか (所属作物・別名は完全一致) */
+/**
+ * 適用行 (appEntry) の作物欄が検索語 q (正規化済み) に当たるか。
+ * 所属作物・別名は完全一致、作物名は cropInfoMatches の規則で照合する。q が読み (ちゃ) なら作物名 (茶) でも照合する。
+ */
 export function entryHasCrop(e, q) {
-  return e.crop.includes(q) || membersHave(e.members, q);
+  for (const f of cropQueryForms(q)) {
+    if (membersHave(e.members, f)) return true;
+    const rel = cropRelatives(f);
+    for (const c of e.crops) if (cropInfoMatches(c, f, rel)) return true;
+  }
+  return false;
+}
+
+/**
+ * 商品全体の結合文字列 (作物欄 crops、所属作物・別名 memberSets) に q が現れうるか。
+ * entryHasCrop の前の、速い絞り込みに使う (これが false なら、どの適用行でも一致しない)。
+ */
+export function cropsMayHave(crops, memberSets, q) {
+  return cropQueryForms(q).some(f => (crops || "").includes(f) || membersHave(memberSets, f));
 }
 
 /** 適用行 (appEntry) の病害虫欄 (除外の括弧を除く) に q (正規化済み) があるか */
