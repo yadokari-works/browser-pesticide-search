@@ -649,6 +649,19 @@ console.log("--- レビュー指摘 (2026-10-18) ---");
   } else {
     console.log("⚠ タネサンGT が現行剤に無いため、RAC 系統の確認を飛ばした");
   }
+  // RAC 表の「-」「-(植)」「-(生)」はコードではないので、コードに残さない (「-(植)」「-(生)」は対象外の印になる)
+  const marked = db.products.flatMap(p => p.ingredients.filter(i => /[「」]|\((植|生)\)/.test(i.rac_code || "")).map(i => `${p.product_name}:${i.rac_code}`));
+  check(marked.length === 0, `RAC コードに「-」などの記号が残る成分 ${marked.length} 件` + (marked.length ? ` /* ${marked.slice(0, 3).join(", ")} */` : ""));
+  const poly = db.products.find(p => p.status !== "失効" && p.ingredients.some(i => i.name === "ポリオキシン複合体" && i.rac_code));
+  if (poly) {
+    const s = splitRacCode(poly.ingredients.find(i => i.name === "ポリオキシン複合体").rac_code, poly.categories);
+    check(s.I.length === 0 && s.F.join() === "19", `${poly.product_name} のポリオキシン複合体: IRAC [${s.I}] / FRAC [${s.F}] (表は "「-」(I*),19(F*)")`);
+  }
+  const bio = db.products.filter(p => p.status !== "失効" && p.ingredients.some(i => i.name === "オンシツツヤコバチ"));
+  if (bio.length) {
+    const ok = bio.every(p => p.ingredients.every(i => i.name !== "オンシツツヤコバチ" || (!i.rac_code && i.rac_status === "out_of_scope")));
+    check(ok, `オンシツツヤコバチ (表は "「-(生)」") の ${bio.length} 商品が、コード無し・対象外の印`);
+  }
   // 系統を明示した英字のコードと全角入力
   const n1 = run("IRAC UN", "and").length, n2 = run("IRACUN", "and").length;
   check(n1 > 0 && n1 === n2, `"IRAC UN" ${n1} 件 = "IRACUN" ${n2} 件`);

@@ -88,6 +88,7 @@ FAMIC_APP2 = _pick_famic_csv("2")
 RAC_XLSX = RAW_DIR / "mechanism_rac.xlsx"
 RAC_SHEET_PREFIX = "RACコード検索表"
 RAC_EDITION = "不明"  # load_rac_excel() が検索表のシート名 (…2025.06) から設定
+RAC_OUT_OF_SCOPE = {}  # load_rac_excel() が設定: {成分名: 対象外の種別 "植"/"生"} (コードの無い成分の名寄せ用)
 RAC_MANUAL = RAW_DIR / "rac_manual.json"
 SIKKOU_XLS = _pick_sikkou_xls()
 ALLOW_NO_CANCELLED = "--allow-no-cancelled" in sys.argv  # 失効農薬一覧を読めなくても止めない
@@ -353,15 +354,50 @@ def load_famic_basic():
     return records
 
 
+# CropLife 表の凡例 (「はじめに」シートの 7): 「-」= CLI 対策委員会で認定されていない成分、
+# 「-(植)」= 植物成長調整剤、「-(生)」= 生物剤・天敵剤 (どちらも RAC の対象外)。
+# どれもコードではないので取り除く。「-(植)」「-(生)」は対象外の印 (rac_status) に回す。
+_RAC_DASH = re.compile(r"^「?[-ー―]\s*(?:\((植|生)\))?」?$")
+RAC_OUT_OF_SCOPE_REASON = {
+    "植": "植物成長調整剤 (RAC の対象外。CropLife 表の「-(植)」)",
+    "生": "生物剤・天敵剤 (RAC の対象外。CropLife 表の「-(生)」)",
+}
+
+
+def parse_rac_cell(s):
+    """RAC 表のセル (norm 済み) → (RAC コード or None, 対象外の種別 "植"/"生" or None)。
+    "「-」(I*),19(F*)" → ("19(F*)", None)、"「-(生)」" → (None, "生")、
+    "「-」(H*),「-(植)」(植*)" → (None, "植")。記号が無いセルはそのまま返す。"""
+    if s in ("", "N/A"):
+        return None, None
+    codes, kind, removed = [], None, False
+    for part in re.split(r"[,、]", s):
+        part = part.strip()
+        if not part:
+            continue
+        m = re.match(r"^(.*?)\s*\(([^()]*)\*\)$", part)  # "19(F*)" → ("19", "F")
+        code = m.group(1).strip() if m else part
+        d = _RAC_DASH.match(code)
+        if d:
+            removed = True
+            kind = kind or d.group(1)
+            continue
+        codes.append(part)
+    if not removed:
+        return s, None
+    return (", ".join(codes) or None), kind
+
+
 def load_rac_excel():
     """RAC Excel → ({登録番号: {initial, ingredients}}, {成分名: RACコード})
 
     第2返値は成分名→RACコードのマスターテーブル。CropLife表に載っている
     全商品から成分単位で抽出し、多数決で確定する。FAMICの新規登録商品が
     RAC表に未収録でも、その商品の成分が別商品で分類されていればフォール
-    バックでマッチできる。
+    バックでマッチできる。コードが無く「-(植)」「-(生)」だけの成分は、
+    同じく多数決で RAC_OUT_OF_SCOPE に入れる。
     """
-    global RAC_EDITION
+    global RAC_EDITION, RAC_OUT_OF_SCOPE
     wb = load_workbook(RAC_XLSX, read_only=True, data_only=True)
     # 版が上がるとシート名の年月が変わるため、前方一致で検索表を探す
     sheet_name = next((n for n in wb.sheetnames if n.strip().startswith(RAC_SHEET_PREFIX)), None)
@@ -372,6 +408,7 @@ def load_rac_excel():
     ws = wb[sheet_name]
     records = {}
     ing_votes = defaultdict(lambda: defaultdict(int))  # {成分名: {rac: count}}
+    kind_votes = defaultdict(lambda: defaultdict(int))  # {成分名: {"植"/"生": count}}
     for r in ws.iter_rows(min_row=4, values_only=True):
         reg_no_cell = r[3]
         reg_no = None
@@ -386,16 +423,15 @@ def load_rac_excel():
             name = r[ing_col]
             rac = r[rac_col]
             if name:
-                rac_str = None
+                rac_str, kind = None, None
                 if rac not in (None, "", 0, "0"):
-                    s = norm(str(rac))
-                    # RAC Excel は未分類を "-" や "「-」" で表す場合あり
-                    if s not in ("-", "「-」", "ー", "―", "N/A"):
-                        rac_str = s
+                    rac_str, kind = parse_rac_cell(norm(str(rac)))
                 n = norm(name)
-                ingredients.append({"name": n, "rac_code": rac_str})
+                ingredients.append({"name": n, "rac_code": rac_str, "rac_kind": kind})
                 if rac_str:
                     ing_votes[n][rac_str] += 1
+                elif kind:
+                    kind_votes[n][kind] += 1
 
         if reg_no is not None:
             records[reg_no] = {
@@ -407,6 +443,11 @@ def load_rac_excel():
     ing_master = {
         n: max(votes.items(), key=lambda x: x[1])[0]
         for n, votes in ing_votes.items()
+    }
+    RAC_OUT_OF_SCOPE = {
+        n: max(votes.items(), key=lambda x: x[1])[0]
+        for n, votes in kind_votes.items()
+        if n not in ing_master
     }
     return records, ing_master
 
@@ -491,17 +532,22 @@ def _lookup_rac_by_name(name, ing_master):
     return None
 
 
-def _annotate(name, rac_code, density, manual_map):
-    """RAC コードが無い成分には手動のコード/ラベルを付与。表由来のコードがあれば manual は無視。"""
+def _annotate(name, rac_code, density, manual_map, kind=None):
+    """RAC コードが無い成分には手動のコード/ラベルを付与し、それも無ければ RAC 表の対象外の印
+    (「-(植)」「-(生)」。kind か RAC_OUT_OF_SCOPE) を rac_status にする。表由来のコードがあれば manual は無視。"""
     entry = {"name": name, "rac_code": rac_code, "density": density}
     if not rac_code:
         man = (manual_map or {}).get(name)
+        kind = kind or RAC_OUT_OF_SCOPE.get(name)
         if man and man.get("rac_code"):
             # CropLife 表に未収録だが IRAC/FRAC/HRAC 公式分類で確定している成分
             entry["rac_code"] = man["rac_code"]
         elif man:
             entry["rac_status"] = man.get("status")
             entry["rac_reason"] = man.get("reason", "")
+        elif kind:
+            entry["rac_status"] = "out_of_scope"
+            entry["rac_reason"] = RAC_OUT_OF_SCOPE_REASON[kind]
     return entry
 
 
@@ -522,7 +568,7 @@ def merge_ingredients(basic_rec, rac_rec, ing_master=None, manual_map=None):
                         density = b.get("density", "")
                         break
             code = rac_ing["rac_code"] or _lookup_rac_by_name(name, ing_master)
-            out.append(_annotate(name, code, density, manual_map))
+            out.append(_annotate(name, code, density, manual_map, rac_ing.get("rac_kind")))
         return out
 
     # RAC 無し: 基本部の成分 + 成分名フォールバック + 手動ラベル

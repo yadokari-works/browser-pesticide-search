@@ -6,6 +6,7 @@
 """
 
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -86,6 +87,11 @@ def main():
                 rac_codes[ing["rac_code"]] += 1
     print(f"[4] RACコード種類: {len(rac_codes)}")
     print(f"   Top 10: {rac_codes.most_common(10)}")
+    # RAC 表の「-」「-(植)」「-(生)」はコードではない (build_data.py の parse_rac_cell が取り除く)
+    marked = sorted(c for c in rac_codes if re.search(r"[「」]|\((植|生)\)|\(植\*\)", c))
+    print(f"   記号の残るコード: {'OK なし' if not marked else f'NG {marked[:5]}'}")
+    if marked:
+        errors.append(f"RAC コードに記号が残っている {len(marked)} 種 (例: {marked[0]})")
 
     # 検証4: 剤型分布
     forms = Counter(p["formulation"] for p in products)
