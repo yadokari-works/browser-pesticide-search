@@ -19,6 +19,7 @@ Windows / macOS / Linux いずれでも動作します。外部コマンド (cur
 
 import re
 import shutil
+import json
 import subprocess
 import sys
 import urllib.request
@@ -191,21 +192,33 @@ def main() -> int:
         extract_zip(zip_path, SIKKOU_DIR)
         zip_path.unlink()  # 展開後は削除
 
+    # check_rac_status.py が RAC 表の版の変化を検知できるよう、build_data.py で上書きする前の版を読んでおく
+    prev_rac_edition = ""
+    pesticides_json = PROJECT_ROOT / "src" / "data" / "pesticides.json"
+    if pesticides_json.exists():
+        try:
+            src = json.loads(pesticides_json.read_text(encoding="utf-8")).get("sources", {}).get("rac", "")
+            prev_rac_edition = src.split(" ")[0] if src else ""
+        except ValueError:
+            pass
+
     log("[5/7] CropLife RAC xlsx をダウンロード")
     download(CROPLIFE_RAC_URL, RAW_DIR / "mechanism_rac.xlsx")
 
     run_step(6, 7, "JSON 生成 (build_data.py)",
              [sys.executable, str(SCRIPTS_DIR / "build_data.py")])
 
-    # verify_data.py は情報出力のみで失敗させない（アラートあっても続行）
-    log("[6.5/7] データ検証 (verify_data.py)")
-    subprocess.run([sys.executable, str(SCRIPTS_DIR / "verify_data.py")],
-                   cwd=PROJECT_ROOT)
+    # verify_data.py は明らかな異常 (重複、成分の無い有効剤、失効剤 0 件、件数の急減) で失敗し、更新を止める
+    run_step(6, 7, "データ検証 (verify_data.py)",
+             [sys.executable, str(SCRIPTS_DIR / "verify_data.py")])
 
-    # RAC の最新状況確認も警告のみ (失敗させない)。要対応は ::warning:: と Step Summary に出る
+    # RAC の最新状況確認は警告のみ (失敗させない)。要対応は ::warning:: と Step Summary に出る。
+    # 公開側との比較は直前にダウンロードした表と比べることになるので省く
     log("[6.6/7] RAC コード最新状況の確認 (check_rac_status.py)")
-    subprocess.run([sys.executable, str(SCRIPTS_DIR / "check_rac_status.py")],
-                   cwd=PROJECT_ROOT)
+    rac_cmd = [sys.executable, str(SCRIPTS_DIR / "check_rac_status.py"), "--offline"]
+    if prev_rac_edition:
+        rac_cmd += ["--prev-edition", prev_rac_edition]
+    subprocess.run(rac_cmd, cwd=PROJECT_ROOT)
 
     run_step(7, 7, "シングルHTML 再生成 (build_bundled.py)",
              [sys.executable, str(BUILD_DIR / "build_bundled.py")])

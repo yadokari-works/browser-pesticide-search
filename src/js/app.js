@@ -78,7 +78,7 @@ async function init() {
     renderFilters();
     updateResults();
   } catch (e) {
-    resultList.innerHTML = `<div class="empty">データ読込エラー: ${e.message}<br><small>scripts/build_data.py を実行してから再試行してください。</small></div>`;
+    resultList.innerHTML = `<div class="empty">データ読込エラー: ${escapeHtml(e.message)}<br><small>scripts/build_data.py を実行してから再試行してください。</small></div>`;
     console.error(e);
   }
 }
@@ -325,7 +325,8 @@ function renderGroupCard(g, idx) {
   const ingBadges = rep.ingredients.map(i => {
     return `<span class="badge ingredient">${escapeHtml(i.name)}${racBadgesHtml(i, cats)}</span>`;
   }).join("");
-  const catBadges = cats.map(c => `<span class="badge category-${c}">${c}</span>`).join(" ");
+  const catBadges = cats.map(c => `<span class="badge category-${c}">${c}</span>`).join(" ")
+    + (g.products.some(p => p.original_category === "農薬肥料") ? ` <span class="badge" title="用途（FAMIC原表記）">農薬肥料</span>` : "");
   const activeCount = g.products.filter(p => p.status !== "失効").length;
   const cancelledCount = g.products.length - activeCount;
   const statusBadge = (activeCount > 0 ? `<span class="badge status-active">有効 ${activeCount}</span>` : "")

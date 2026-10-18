@@ -23,7 +23,7 @@ import re
 import sys
 import unicodedata
 from pathlib import Path
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime
 
 try:
@@ -90,6 +90,7 @@ RAC_SHEET_PREFIX = "RACコード検索表"
 RAC_EDITION = "不明"  # load_rac_excel() が検索表のシート名 (…2025.06) から設定
 RAC_MANUAL = RAW_DIR / "rac_manual.json"
 SIKKOU_XLS = _pick_sikkou_xls()
+ALLOW_NO_CANCELLED = "--allow-no-cancelled" in sys.argv  # 失効農薬一覧を読めなくても止めない
 
 TARGET_CATEGORIES = {"殺虫剤", "殺菌剤", "除草剤"}
 
@@ -237,7 +238,7 @@ def classify_formulation(product_name, raw_formulation):
     return "その他"
 
 
-def build_ingredient_category_hints(basic_records):
+def build_ingredient_category_hints(basic_records, single_only=False):
     """
     現行剤の用途データから 成分名→カテゴリ集合 の対応表を動的生成する。
     失効剤の種類名/商品名には用途(殺虫/殺菌/除草)が明記されないことが多く、
@@ -245,12 +246,13 @@ def build_ingredient_category_hints(basic_records):
     (フサライド、ベンスルフロンメチル等) を取り逃して失効剤がサイレントに
     除外される問題があった。現行剤側で成分名↔用途が既に判明しているため、
     それを失効剤のカテゴリ推定に再利用する。
+    single_only=True なら用途が 1 つだけの剤だけから作る (殺虫殺菌剤の成分を両方の用途にしないため)。
     戻り値: ({成分名: {カテゴリ, ...}}, 成分名を長い順に並べたリスト)
     """
     votes = defaultdict(set)
     for b in basic_records.values():
         cats = apply_category_override(b["type_name"], pick_categories(b["category"]))
-        if not cats:
+        if not cats or (single_only and len(cats) != 1):
             continue
         for ing in b["ingredients_raw"]:
             name = ing["name"]
@@ -258,6 +260,22 @@ def build_ingredient_category_hints(basic_records):
                 votes[name].update(cats)
     names_by_length = sorted(votes.keys(), key=len, reverse=True)
     return votes, names_by_length
+
+
+CATEGORY_ORDER = ["殺虫剤", "殺菌剤", "除草剤"]
+
+
+def infer_categories_from_ingredients(basic_rec, single_hints, ingredient_hints):
+    """
+    用途が「農薬肥料」の剤 (ジノテフラン複合肥料など) の用途を、その成分が現行剤で使われている用途から
+    推定する (成分名の完全一致)。用途が 1 つだけの剤での使われ方 (single_hints) を優先し、無ければ
+    すべての剤での使われ方 (ingredient_hints) を使う。推定できなければ空のリスト
+    (ウニコナゾールP だけの剤など、植物成長調整剤の肥料はここで除かれる)。
+    """
+    found = set()
+    for ing in basic_rec["ingredients_raw"]:
+        found |= single_hints.get(ing["name"]) or ingredient_hints.get(ing["name"], set())
+    return [c for c in CATEGORY_ORDER if c in found]
 
 
 def pick_categories_with_legacy(type_name, product_name, ingredient_hints=None, ingredient_names_by_length=None):
@@ -579,8 +597,12 @@ def load_cancelled_pesticides():
     シート「失効理由」: 表示番号 → 失効理由テキスト
     """
     if not SIKKOU_XLS.exists() or xlrd is None:
-        print("  (失効農薬ファイル無し or xlrd 未インストール → スキップ)")
-        return []
+        reason = "失効農薬ファイルが無い" if not SIKKOU_XLS.exists() else "xlrd が未インストール (pip3 install xlrd)"
+        if ALLOW_NO_CANCELLED:
+            print(f"  ({reason} → --allow-no-cancelled のため失効剤なしで続ける)")
+            return []
+        # 黙って失効剤を落とすと pesticides.json が現行剤だけに縮むため、明示しない限り止める
+        sys.exit(f"ERROR: {reason}。失効剤なしで作るときは --allow-no-cancelled を付けてください。")
 
     wb = xlrd.open_workbook(str(SIKKOU_XLS))
 
@@ -653,6 +675,7 @@ def build():
     print(f"  失効: {len(cancelled_raw)} 剤")
 
     ingredient_hints, ingredient_names_by_length = build_ingredient_category_hints(basic)
+    single_hints, _ = build_ingredient_category_hints(basic, single_only=True)
     print(f"  失効剤カテゴリ推定用 成分名ヒント: {len(ingredient_hints)} 成分 (現行剤から動的生成)")
 
     print("\nMerging...")
@@ -663,12 +686,17 @@ def build():
     rac_match_count = 0
     cancelled_count = 0
     totals_mismatch = []  # 総使用回数の数が成分の数を超える剤 (①〜⑤の対応が取れない)
+    fertilizer_included, fertilizer_dropped = [], []  # 用途「農薬肥料」の剤 (取り込んだもの / 用途を推定できず除いたもの)
 
     for reg_no, b in sorted(basic.items()):
         categories = pick_categories(b["category"])
         categories = apply_category_override(b["type_name"], categories)
+        if not categories and b["category"] == "農薬肥料":
+            # 農薬肥料は用途欄に殺虫・殺菌・除草が無いので、成分から用途を推定して取り込む
+            categories = infer_categories_from_ingredients(b, single_hints, ingredient_hints)
+            (fertilizer_included if categories else fertilizer_dropped).append((b["product_name"], categories))
         if not categories:
-            continue  # 殺そ剤・植物成長調整剤など除外
+            continue  # 殺そ剤・植物成長調整剤・用途「その他」など除外
 
         household = is_household(b["product_name"], b["formulation"])
         if household:
@@ -760,6 +788,11 @@ def build():
         cancelled_count += 1
         for cat in cats:
             category_counts[cat] += 1
+
+    print(f"\n用途「農薬肥料」の剤: 取り込み {len(fertilizer_included)} 件 "
+          f"({dict(Counter('+'.join(c) for _, c in fertilizer_included))})、用途を推定できず除外 {len(fertilizer_dropped)} 件")
+    for name, _ in fertilizer_dropped:
+        print(f"    除外: {name}")
 
     if totals_mismatch:
         sys.exit(f"ERROR: 総使用回数の数が成分の数を超える剤があります (①〜⑤の対応が取れない): {totals_mismatch[:5]}")

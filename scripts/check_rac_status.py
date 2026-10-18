@@ -50,6 +50,9 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
     ap.add_argument("--strict", action="store_true", help="警告があれば終了コード 1")
     ap.add_argument("--offline", action="store_true", help="公開側への問い合わせを省く")
+    ap.add_argument("--prev-edition", default=None,
+                    help="前回の RAC 表の版 (例 2025-06)。update_data.py が build_data.py の前に読んで渡す。"
+                         "省くと src/data/pesticides.json の版を使う (build_data.py の後では今回の版と同じになる)")
     args = ap.parse_args()
 
     warnings = []   # 要対応
@@ -66,7 +69,7 @@ def main() -> int:
     if PESTICIDES_JSON.exists():
         data = json.loads(PESTICIDES_JSON.read_text(encoding="utf-8"))
         src = data.get("sources", {}).get("rac", "")
-        prev_edition = src.split(" ")[0] if src else None
+        prev_edition = args.prev_edition or (src.split(" ")[0] if src else None)
         if prev_edition and prev_edition != edition:
             warnings.append(
                 f"RAC 表の版が {prev_edition} → {edition} に更新された。rac_manual.json の "

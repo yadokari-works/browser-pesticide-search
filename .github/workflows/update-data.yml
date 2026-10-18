@@ -35,6 +35,9 @@ jobs:
       - name: PWA再生成 (docs/)
         run: python3 build/build_pwa.py
 
+      - name: 配布物の検査 (script の構文・埋め込んだデータ・版。1件でも失敗したら停止)
+        run: node scripts/check_bundle.mjs
+
       - name: 変更検出
         id: diff
         run: |

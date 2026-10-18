@@ -16,7 +16,7 @@ Service Worker + Web App Manifest + Apple Touch Icon を加えて
 使い方:
   python3 build/build_pwa.py
   python3 build/build_pwa.py --regen-icons  # アイコンを作り直す (要 CJK フォント)
-  python3 -m http.server 8765 -d pwa  # ローカル動作確認
+  python3 -m http.server 8765 -d docs  # ローカル動作確認
 
 iOS Safari で `https://...` 経由でアクセスし、共有 → ホーム画面に追加。
 1 回開いたあとはネット接続を切っても動作する。
@@ -47,14 +47,18 @@ REGEN_ICONS = "--regen-icons" in sys.argv
 
 
 SW_JS_TEMPLATE = r"""// Service Worker - バージョンアップ時に確実にキャッシュを更新する戦略
-// 1. CACHE 名にバージョンを埋め込み、新版デプロイ時に古い CACHE を強制破棄
-// 2. index.html (HTML) は network-first で常に最新を取得 (オフライン時のみキャッシュ)
-// 3. 静的アセット (アイコン等) は cache-first
+// 1. CACHE 名にバージョンを埋め込み、新版デプロイ時に古い CACHE を破棄する。
+//    消すのはこのアプリのキャッシュ (pesticide-search-) だけ (同じ origin の他のアプリのキャッシュは消さない)
+// 2. HTML は network-first で最新を取得する。4 秒で応答が無く、キャッシュがあればキャッシュを返す
+//    (電波の弱い圃場でも起動を待たせない)。取得は裏で続け、届いたらキャッシュを更新する
+// 3. アプリ本体の HTML (./ と ./index.html) は 1 つのキーにまとめる (約 30 MB を 2 重に保存しないため)
+// 4. 静的アセット (アイコン等) は cache-first
 const VERSION = "__APP_VERSION__";
-const CACHE = `pesticide-search-${VERSION}`;
+const CACHE_PREFIX = "pesticide-search-";
+const CACHE = `${CACHE_PREFIX}${VERSION}`;
+const APP_KEY = "./";
+const HTML_TIMEOUT_MS = 4000;
 const ASSETS = [
-  "./",
-  "./index.html",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
@@ -63,14 +67,14 @@ const ASSETS = [
 
 self.addEventListener("install", e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE).then(c => c.addAll([APP_KEY, ...ASSETS])).then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener("activate", e => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k.startsWith(CACHE_PREFIX) && k !== CACHE).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
@@ -81,21 +85,34 @@ function isHtmlRequest(request) {
   return url.pathname === "/" || url.pathname.endsWith("/") || url.pathname.endsWith(".html");
 }
 
+// アプリ本体は APP_KEY に、使い方のページなど他の HTML はそれぞれの URL で保存する
+function htmlCacheKey(request) {
+  const scope = new URL(APP_KEY, self.location).pathname;
+  const path = new URL(request.url).pathname;
+  return (path === scope || path === `${scope}index.html`) ? APP_KEY : request;
+}
+
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
+  if (new URL(e.request.url).origin !== self.location.origin) return;
   if (isHtmlRequest(e.request)) {
-    // network-first: 最新の HTML を取得し、失敗時のみキャッシュ
+    const key = htmlCacheKey(e.request);
+    const network = fetch(e.request).then(res => {
+      if (res.ok) {
+        const clone = res.clone();
+        e.waitUntil(caches.open(CACHE).then(c => c.put(key, clone)));
+      }
+      return res;
+    });
+    // 先にキャッシュを返しても、取得とキャッシュの更新は最後まで続ける
+    e.waitUntil(network.catch(() => {}));
+    const cachedAfterTimeout = new Promise(resolve => setTimeout(resolve, HTML_TIMEOUT_MS))
+      .then(() => caches.match(key));
     e.respondWith(
-      fetch(e.request).then(res => {
-        const url = new URL(e.request.url);
-        if (url.origin === self.location.origin && res.ok) {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return res;
-      }).catch(() =>
-        caches.match(e.request).then(cached => cached || caches.match("./index.html"))
-      )
+      Promise.race([network, cachedAfterTimeout])
+        .then(res => res || network)          // 4 秒たってもキャッシュが無ければ、取得を待つ
+        .catch(() => caches.match(key))       // 取得に失敗したら (オフライン) キャッシュ
+        .then(res => res || caches.match(APP_KEY))
     );
     return;
   }
@@ -104,13 +121,12 @@ self.addEventListener("fetch", e => {
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(res => {
-        const url = new URL(e.request.url);
-        if (url.origin === self.location.origin && res.ok) {
+        if (res.ok) {
           const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
+          e.waitUntil(caches.open(CACHE).then(c => c.put(e.request, clone)));
         }
         return res;
-      }).catch(() => caches.match("./index.html"));
+      }).catch(() => caches.match(APP_KEY));
     })
   );
 });
@@ -277,7 +293,7 @@ def main():
 
     total = sum(f.stat().st_size for f in OUT_DIR.iterdir() if f.is_file())
     print(f"\nDone. 合計 {total/1024/1024:.1f} MB")
-    print(f"動作確認: python3 -m http.server 8765 -d pwa")
+    print(f"動作確認: python3 -m http.server 8765 -d docs")
     print(f"        → http://localhost:8765/")
 
 

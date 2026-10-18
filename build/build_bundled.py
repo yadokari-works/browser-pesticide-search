@@ -87,13 +87,18 @@ def inline_data(html):
 
     if not main_path.exists():
         sys.exit("ERROR: pesticides.json が無い。先に scripts/build_data.py を実行してください。")
+    if not apps_path.exists():
+        # 適用データ無しで配布すると、作物・病害虫の検索が黙って 0 件になるため止める
+        sys.exit("ERROR: applications.json が無い。先に scripts/build_data.py を実行してください。")
 
     main_size = main_path.stat().st_size / 1024 / 1024
-    apps_size = apps_path.stat().st_size / 1024 / 1024 if apps_path.exists() else 0
+    apps_size = apps_path.stat().st_size / 1024 / 1024
     print(f"  Embedding data: main={main_size:.2f}MB, apps={apps_size:.2f}MB")
 
-    main_json = read(main_path)
-    apps_json = read(apps_path) if apps_path.exists() else "{}"
+    # データ中の "</script>" や "<!--" で script 要素が閉じないよう、"<" を \u003c にする。
+    # JSON では "<" は文字列の中にしか現れないので、読み込んだ値は変わらない
+    main_json = read(main_path).replace("<", "\\u003c")
+    apps_json = read(apps_path).replace("<", "\\u003c")
 
     data_script = (
         f'<script>\n'

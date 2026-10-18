@@ -23,9 +23,10 @@ export async function loadApplications() {
     cache = data.applications || {};
     return cache;
   } catch (e) {
+    // 空のデータをキャッシュすると、作物・病害虫の検索が黙って 0 件になる。キャッシュせず、エラーとして伝える
+    // (app.js の init が画面に出す。次に呼ばれたときは読み直す)
     console.warn("適用部データの読込に失敗:", e);
-    cache = {};
-    return cache;
+    throw new Error(`適用部データ (data/applications.json) の読込に失敗しました: ${e.message}`);
   }
 }
 
