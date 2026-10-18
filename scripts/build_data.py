@@ -205,14 +205,19 @@ LEGACY_CATEGORY_HINTS = {
 }
 
 
-# 剤型カテゴリは 7 種 + その他 に簡素化。
-# 優先順:
+# 剤型の判定。優先順:
 #   1. 商品名末尾が "フロアブル" / "ジャンボ" / "ベイト" → それぞれ {フロアブル剤, ジャンボ剤, ベイト剤}
-#   2. 生の剤型 (FAMIC 剤型名列、または失効剤の種類名から抽出) が
-#      {水和剤, 粒剤, 水溶剤, 粉剤} に完全一致 → そのまま
+#   2. 生の剤型 (FAMIC 剤型名列、または失効剤の種類名) が FAMIC の剤型名に一致 (失効剤は末尾一致) → そのまま
 #   3. その他
+# 以前は水和剤・粒剤・水溶剤・粉剤しか残さず、乳剤・液剤などがすべて「その他」になっていた。
 
-_ALLOWED_EXACT_FORMULATIONS = {"水和剤", "粒剤", "水溶剤", "粉剤"}
+# FAMIC 基本部の「剤型名」列の値 (「その他」を除く)。失効剤の種類名は末尾で照合するため、長い順に並べる
+# (「粉粒剤」を「粒剤」より先に)
+_FAMIC_FORMULATIONS = sorted(
+    ["水和剤", "粒剤", "液剤", "乳剤", "粉剤", "水溶剤", "くん蒸剤", "粉粒剤", "エアゾル", "くん煙剤",
+     "マイクロカプセル剤", "油剤", "塗布剤", "粉末", "ペースト剤", "農薬肥料"],
+    key=len, reverse=True,
+)
 
 
 def classify_formulation(product_name, raw_formulation):
@@ -226,9 +231,9 @@ def classify_formulation(product_name, raw_formulation):
         return "ベイト剤"
     rf = norm(raw_formulation or "")
     # 失効剤の種類名は "エンドリン乳剤" のような合成語なので末尾一致も許容
-    for allowed in _ALLOWED_EXACT_FORMULATIONS:
-        if rf == allowed or rf.endswith(allowed):
-            return allowed
+    for name in _FAMIC_FORMULATIONS:
+        if rf == name or rf.endswith(name):
+            return name
     return "その他"
 
 
@@ -388,8 +393,20 @@ def load_rac_excel():
     return records, ing_master
 
 
+# 適用部 CSV の列 → applications.json の項目名。空の項目は書き出さない (ファイルを小さくするため)
+_APP_FIELDS = [
+    ("crop", "作物名"), ("place", "適用場所"), ("pest", "適用病害虫雑草名"), ("purpose", "使用目的"),
+    ("dosage", "希釈倍数使用量"), ("spray", "散布液量"), ("timing", "使用時期"), ("count", "本剤の使用回数"),
+    ("method", "使用方法"), ("fumi_time", "くん蒸時間"), ("fumi_temp", "くん蒸温度"), ("soil", "適用土壌"),
+    ("zone", "適用地帯名"),
+]
+# 有効成分①〜⑤を含む農薬の総使用回数。①〜⑤は基本部 CSV のその商品の成分の行の順 (total_usage_names)
+_TOTAL_COLUMNS = [f"有効成分{c}を含む農薬の総使用回数" for c in "①②③④⑤"]
+
+
 def load_famic_applications():
-    """適用部 CSV → {登録番号: [{crop, pest, dosage, timing, count, method}, ...]}"""
+    """適用部 CSV → {登録番号: [{crop, place, pest, dosage, spray, timing, count, method, ..., totals}, ...]}
+    totals は総使用回数の配列 (①〜⑤の順。末尾の空は除く)。"""
     apps = defaultdict(list)
     for path in (FAMIC_APP1, FAMIC_APP2):
         with open(path, encoding="cp932") as f:
@@ -402,18 +419,17 @@ def load_famic_applications():
                     key = int(reg_no)
                 except ValueError:
                     continue
-                apps[key].append(
-                    {
-                        "crop": norm(row["作物名"]),
-                        "place": norm(row["適用場所"]),
-                        "pest": norm(row["適用病害虫雑草名"]),
-                        "dosage": norm(row["希釈倍数使用量"]),
-                        "spray": norm(row["散布液量"]),
-                        "timing": norm(row["使用時期"]),
-                        "count": norm(row["本剤の使用回数"]),
-                        "method": norm(row["使用方法"]),
-                    }
-                )
+                entry = {}
+                for name, col in _APP_FIELDS:
+                    v = norm(row[col])
+                    if v:
+                        entry[name] = v
+                totals = [norm(row[c]) for c in _TOTAL_COLUMNS]
+                while totals and not totals[-1]:
+                    totals.pop()
+                if totals:
+                    entry["totals"] = totals
+                apps[key].append(entry)
     return apps
 
 
@@ -646,6 +662,7 @@ def build():
     household_count = 0
     rac_match_count = 0
     cancelled_count = 0
+    totals_mismatch = []  # 総使用回数の数が成分の数を超える剤 (①〜⑤の対応が取れない)
 
     for reg_no, b in sorted(basic.items()):
         categories = pick_categories(b["category"])
@@ -678,6 +695,22 @@ def build():
             "registration_date": b["registration_date"],
             "app_count": len(apps.get(reg_no, [])),  # 適用エントリ数（詳細読込判定用）
         }
+        rows = apps.get(reg_no, [])
+        n_totals = max((len(a.get("totals", [])) for a in rows), default=0)
+        if n_totals:
+            # 適用部の「有効成分①〜⑤を含む農薬の総使用回数」の①〜⑤が指す成分名 (基本部の成分の行の順)
+            names = [ing["total_usage"] or ing["name"] for ing in b["ingredients_raw"]]
+            if n_totals > len(names):
+                totals_mismatch.append((reg_no, b["product_name"], n_totals, len(names)))
+            product["total_usage_names"] = names
+            # ファイルを小さくするため、どの成分の総使用回数も本剤の使用回数と同じ行は totals を省く
+            # (画面は totals が無ければ本剤の使用回数と同じとして表示する)。総使用回数が無い行は空の配列で残す
+            for a in rows:
+                t = a.get("totals")
+                if not t:
+                    a["totals"] = []
+                elif len(t) == len(names) and all(x == a.get("count") for x in t):
+                    del a["totals"]
         products.append(product)
         for c in categories:
             category_counts[c] += 1
@@ -727,6 +760,9 @@ def build():
         cancelled_count += 1
         for cat in cats:
             category_counts[cat] += 1
+
+    if totals_mismatch:
+        sys.exit(f"ERROR: 総使用回数の数が成分の数を超える剤があります (①〜⑤の対応が取れない): {totals_mismatch[:5]}")
 
     tagged, undecided = tag_rac_systems(products)
     print(f"\nRAC 系統の印を付けた成分 (用途が 2 つ以上の剤): {tagged}")

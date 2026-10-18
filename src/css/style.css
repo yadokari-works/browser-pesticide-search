@@ -500,6 +500,14 @@ button.primary:hover { background: var(--accent-hover); }
   word-break: break-word;
 }
 
+/* 適用表は列が多いので、狭い画面では押しつぶさずに横へスクロールさせる */
+.app-table-wrap {
+  overflow-x: auto;
+}
+.app-table-wrap > .app-table {
+  min-width: 760px;
+}
+
 .app-table {
   width: 100%;
   border-collapse: collapse;

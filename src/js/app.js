@@ -223,7 +223,7 @@ function renderFilters() {
   const forms = countFormulations(state.db.products);
   formDiv.innerHTML = `<option value="">全て (${state.db.products.length})</option>` +
     [...forms.entries()].slice(0, 50)
-      .map(([name, cnt]) => `<option value="${name}">${name} (${cnt})</option>`).join("");
+      .map(([name, cnt]) => `<option value="${escapeHtml(name)}">${escapeHtml(name)} (${cnt})</option>`).join("");
   formDiv.addEventListener("change", e => {
     const v = e.target.value;
     state.filters.formulations = v ? new Set([v]) : null;
@@ -234,7 +234,7 @@ function renderFilters() {
   if (cropList && state.cropSuggestions) {
     cropList.innerHTML = state.cropSuggestions
       .slice(0, 1500)
-      .map(([name, cnt]) => `<option value="${name.replaceAll('"', '&quot;')}">${cnt} 件</option>`)
+      .map(([name, cnt]) => `<option value="${escapeHtml(name)}">${cnt} 件</option>`)
       .join("");
   }
   const cropInput = $("#filter-crop");
@@ -250,7 +250,7 @@ function renderFilters() {
   if (pestList && state.pestSuggestions) {
     pestList.innerHTML = state.pestSuggestions
       .slice(0, 1500)
-      .map(([name, cnt]) => `<option value="${name.replaceAll('"', '&quot;')}">${cnt} 件</option>`)
+      .map(([name, cnt]) => `<option value="${escapeHtml(name)}">${cnt} 件</option>`)
       .join("");
   }
   const pestInput = $("#filter-pest");
@@ -453,8 +453,65 @@ async function openGroupDetail(groupIdx) {
   detailContent.querySelectorAll(".group-product-row").forEach(row =>
     row.addEventListener("click", () => showGroupProductApplications(parseInt(row.dataset.reg, 10)))
   );
-  showGroupProductApplications(rep.reg_no);
+  showGroupProductApplications(initialDetailProduct(g, rep).reg_no);
 }
+
+/** 検索ボックスとサイドバーで指定した作物・病害虫から、適用表の行を絞る条件を作る */
+function currentRowCondition() {
+  return buildRowCondition(
+    state.currentQuery, state.index && state.index.lexicon, state.searchMode,
+    { crop: state.filters.crop, pest: state.filters.pest }
+  );
+}
+
+/**
+ * 詳細を開いたとき最初に適用表を出す商品。代表商品 (rep) が今の条件に当たる行を持たなければ、
+ * 同じグループで条件に当たる行を持つ有効な商品にする (代表商品だけを見ると 0 行になる場合があるため)。
+ */
+function initialDetailProduct(g, rep) {
+  const cond = currentRowCondition();
+  if (state.appScope !== "specified" || !hasRowCondition(cond)) return rep;
+  const hasRows = p => filterApplications(getApplicationsFor(p.reg_no) || [], cond).length > 0;
+  if (hasRows(rep)) return rep;
+  return g.products.find(p => p.status !== "失効" && hasRows(p)) || rep;
+}
+
+/**
+ * 有効成分ごとの総使用回数 (例 "ダイアジノン: 2回以内")。applications.json は、どの成分の総使用回数も
+ * 本剤の使用回数と同じ行の totals を省いているので、そのときは本剤の使用回数を出す。
+ */
+function totalUsageHtml(a, p) {
+  const names = p.total_usage_names;
+  if (!names || !names.length) return "";
+  const totals = a.totals || names.map(() => a.count || "");
+  return totals
+    .map((t, i) => t ? `${escapeHtml(names[i] || "")}: ${escapeHtml(t)}` : "")
+    .filter(Boolean).join("<br>");
+}
+
+/** 使用目的・適用地帯・適用土壌・くん蒸の条件 (値のあるものだけ) */
+function conditionHtml(a) {
+  const parts = [];
+  if (a.purpose) parts.push(`使用目的: ${a.purpose}`);
+  if (a.zone) parts.push(`適用地帯: ${a.zone}`);
+  if (a.soil) parts.push(`適用土壌: ${a.soil}`);
+  if (a.fumi_time || a.fumi_temp) parts.push(`くん蒸: ${[a.fumi_time, a.fumi_temp].filter(Boolean).join("、")}`);
+  return parts.map(escapeHtml).join("<br>");
+}
+
+// 適用表の列。optional の列は、表示する行のどれにも値が無ければ出さない (スマホで表が広がりすぎないように)
+const APP_COLUMNS = [
+  { head: "作物名", cell: a => escapeHtml(a.crop) },
+  { head: "適用場所", cell: a => escapeHtml(a.place), optional: true },
+  { head: "適用病害虫雑草", cell: a => escapeHtml(a.pest) },
+  { head: "希釈倍数・使用量", cell: a => escapeHtml(a.dosage) },
+  { head: "散布液量", cell: a => escapeHtml(a.spray), optional: true },
+  { head: "使用時期", cell: a => escapeHtml(a.timing) },
+  { head: "本剤の使用回数", cell: a => escapeHtml(a.count) },
+  { head: "総使用回数", cell: totalUsageHtml, optional: true },
+  { head: "使用方法", cell: a => escapeHtml(a.method) },
+  { head: "条件", cell: conditionHtml, optional: true },
+];
 
 function showGroupProductApplications(regNo) {
   const p = state.db.products.find(x => x.reg_no === regNo);
@@ -466,10 +523,7 @@ function showGroupProductApplications(regNo) {
   state.detailRegNo = regNo;
   const allApps = getApplicationsFor(regNo) || [];
   // 「指定した作物・病害虫のみ」のとき、検索ボックスとサイドバーで指定した作物・病害虫の行に絞る
-  const cond = buildRowCondition(
-    state.currentQuery, state.index && state.index.lexicon, state.searchMode,
-    { crop: state.filters.crop, pest: state.filters.pest }
-  );
+  const cond = currentRowCondition();
   const narrowed = state.appScope === "specified" && hasRowCondition(cond);
   const apps = narrowed ? filterApplications(allApps, cond) : allApps;
   const condParts = [];
@@ -485,28 +539,22 @@ function showGroupProductApplications(regNo) {
   const emptyMessage = narrowed && allApps.length > 0
     ? `指定した条件に該当する適用行はありません (全登録 ${allApps.length} 行は、サイドバーの「適用情報の表示範囲」で表示できます)`
     : `適用情報なし (失効剤には適用情報がありません)`;
+  const cols = APP_COLUMNS
+    .map(c => ({ head: c.head, optional: c.optional, cells: apps.map(a => c.cell(a, p)) }))
+    .filter(c => !c.optional || c.cells.some(v => v && v !== "-"));  // FAMIC は値が無いことを "-" で表す
   const appTableHtml = apps.length === 0
     ? `<div class="empty" style="padding:20px;">${escapeHtml(emptyMessage)}</div>`
     : `
-      <table class="app-table">
-        <thead>
-          <tr>
-            <th>作物名</th><th>適用病害虫雑草</th><th>希釈/使用量</th><th>使用時期</th><th>使用回数</th><th>使用方法</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${apps.map(a => `
-            <tr>
-              <td>${escapeHtml(a.crop)}</td>
-              <td>${escapeHtml(a.pest)}</td>
-              <td>${escapeHtml(a.dosage)}</td>
-              <td>${escapeHtml(a.timing)}</td>
-              <td>${escapeHtml(a.count)}</td>
-              <td>${escapeHtml(a.method)}</td>
-            </tr>
-          `).join("")}
-        </tbody>
-      </table>
+      <div class="app-table-wrap">
+        <table class="app-table">
+          <thead>
+            <tr>${cols.map(c => `<th>${c.head}</th>`).join("")}</tr>
+          </thead>
+          <tbody>
+            ${apps.map((a, i) => `<tr>${cols.map(c => `<td>${c.cells[i]}</td>`).join("")}</tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
     `;
   target.innerHTML = `
     <h3>${escapeHtml(p.product_name)} の適用 (${narrowed ? `${apps.length} / ${allApps.length}` : allApps.length})</h3>
