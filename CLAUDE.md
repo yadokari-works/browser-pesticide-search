@@ -16,7 +16,7 @@ python3 scripts/update_data.py
 
 # 個別ステップ
 python3 scripts/build_data.py          # rawdata/ → src/data/pesticides.json, applications.json (失効農薬一覧を読めないと止まる。--allow-no-cancelled で続行)
-python3 scripts/verify_data.py         # 統計・整合性の検査 (登録番号の重複、成分の無い有効剤、失効剤 0 件、前回のコミットから 10% 以上の件数の急減で exit 1)
+python3 scripts/verify_data.py         # 統計・整合性の検査 (登録番号の重複、成分の無い有効剤、失効剤 0 件、RAC コードに「-」などの記号が残る、前回のコミットから 10% 以上の件数の急減で exit 1)
 python3 scripts/check_rac_status.py    # RAC 表の版・未分類成分を確認 (--strict で警告時 exit 1, --offline, --prev-edition 前回の版)
 python3 scripts/build_crop_groups.py   # 作物分類表 PDF → src/js/core/crop_groups.js (分類表の改正時だけ手動で実行。要 pdfplumber)
 
@@ -35,7 +35,12 @@ cd src && python3 -m http.server 8765
 # iOS: 最新の build/これをクリック.html を ios/App/Resources/ にコピーして実機に再インストール
 # (Git 管理外のローカルスクリプト。clone した環境には無い)
 ios/rebuild_install.sh
+
+# macOS のローカル自動更新 (launchd。毎日 12:00 に確認し、前回の成功から 7 日で update_data.py)
+scripts/install_auto_update_mac.sh install|run|status|uninstall
 ```
+
+ローカル自動更新の実行役は `scripts/auto_update_mac.sh` で、`install` が `~/Library/Application Support/browser-pesticide-search/auto_update.sh` にコピーして launchd から呼ぶ (外付けドライブ上のスクリプトは launchd から読めないことがあるため)。**`auto_update_mac.sh` を直したら `install` をやり直す** (コピーが古いまま動く)。リポジトリが外付けドライブにあると、`/bin/bash` にフルディスクアクセスが無い限りドライブを読めず失敗する (失敗は通知と `~/Library/Logs/browser-pesticide-search/history.log` に出る)。main 以外のブランチ、または生成物 (`src/data/*.json`・`build/これをクリック.html`) 以外に未コミットの変更があるときは見送るので、開発中の src/ からバンドルされることはない。自動更新で書き換わった生成物はコミットされないため、bot の週次更新を pull する前に `git checkout -- src/data build/これをクリック.html` で戻す。
 
 テストに単体実行の仕組みは無い。1 ケースだけ確かめたいときは、`test_search.mjs` と同じように `src/js/core/*.js` を import する小さなスクリプトを書いて実行する。`app.js` は DOM に依存するため Node から import できない。
 
@@ -53,7 +58,7 @@ ios/rebuild_install.sh
   - `total_usage_names`: 適用部の「有効成分①〜⑤を含む農薬の総使用回数」の①〜⑤が指す成分名 (基本部の成分の行の順)。
 - `src/data/applications.json`: `applications[登録番号の文字列] = [{crop, place, pest, purpose, dosage, spray, timing, count, method, fumi_time, fumi_temp, soil, zone, totals}]`。有効剤のみ。**空の項目は書き出さない** (読む側は `a.place` などが無い前提で書く)。`totals` は成分ごとの総使用回数の配列で、どの成分も本剤の使用回数と同じ行では省き、総使用回数が無い行は `[]` にする (`app.js` の `totalUsageHtml` がこの約束で表示する)。
 
-RAC コードは CropLife の表を優先し、表に無い成分は `rawdata/rac_manual.json` で補う (`rac_code` か、`rac_status` = `out_of_scope` / `legacy` / `recent`)。成分名での名寄せは完全一致と、塩・水和物の語尾を除いた一致だけ (部分一致は使わない)。`rac_code` は `"UN(I*), M2(F*)"` のような複合表記を含み、`normalize.js` の `splitRacCode` が IRAC/FRAC/HRAC に振り分ける。印の無いコードは商品の用途すべてに振り分けるので、用途が 2 つ以上の剤 (殺虫殺菌剤など) では `tag_rac_systems` が、用途 1 つの現行剤での成分の用途から系統の印を付ける (タネサンGT のダイアジノン → `1B(I*)`)。
+RAC コードは CropLife の表を優先し、表に無い成分は `rawdata/rac_manual.json` で補う (`rac_code` か、`rac_status` = `out_of_scope` / `legacy` / `recent`)。成分名での名寄せは完全一致と、塩・水和物の語尾を除いた一致だけ (部分一致は使わない)。CropLife の表の「-」(CLI で認定されていない)・「-(植)」(植物成長調整剤)・「-(生)」(生物剤・天敵剤) はコードではないので、`parse_rac_cell` が取り除く (`"「-」(I*),19(F*)"` → `"19(F*)"`)。コードが残らず「-(植)」「-(生)」があった成分は `rac_status` = `out_of_scope` にする (手動ラベルがあればそちらを優先)。`rac_code` は `"UN(I*), M2(F*)"` のような複合表記を含み、`normalize.js` の `splitRacCode` が IRAC/FRAC/HRAC に振り分ける。印の無いコードは商品の用途すべてに振り分けるので、用途が 2 つ以上の剤 (殺虫殺菌剤など) では `tag_rac_systems` が、用途 1 つの現行剤での成分の用途から系統の印を付ける (タネサンGT のダイアジノン → `1B(I*)`)。
 
 生成物 (`src/data/*.json`、`src/js/core/crop_groups.js`、`build/これをクリック.html`、`docs/*`、`ios/App/Resources/これをクリック.html`) は手で編集しない。ソースを直して再生成する。
 

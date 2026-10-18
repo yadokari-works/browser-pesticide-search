@@ -5,7 +5,7 @@
 //    (電波の弱い圃場でも起動を待たせない)。取得は裏で続け、届いたらキャッシュを更新する
 // 3. アプリ本体の HTML (./ と ./index.html) は 1 つのキーにまとめる (約 30 MB を 2 重に保存しないため)
 // 4. 静的アセット (アイコン等) は cache-first
-const VERSION = "1.8.0";
+const VERSION = "1.9.0";
 const CACHE_PREFIX = "pesticide-search-";
 const CACHE = `${CACHE_PREFIX}${VERSION}`;
 const APP_KEY = "./";

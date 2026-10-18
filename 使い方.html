@@ -187,7 +187,7 @@
 
 <div class="callout warn">
   <p><strong>ご利用前に毎回「データ更新」を実行することを推奨します。</strong></p>
-  <p>農薬登録情報は月初に FAMIC で更新されるため、古いデータのままだと新規登録剤や登録変更が反映されません。検索前に <code>データ更新.bat</code>（Windows）または <code>データ更新.command</code>（macOS）を一度ダブルクリックしてください（所要 1〜2 分、ネットワーク接続が必要）。詳細は <a href="#update">6. データ更新</a>。</p>
+  <p>農薬登録情報は月初に FAMIC で更新されるため、古いデータのままだと新規登録剤や登録変更が反映されません。検索前に <code>データ更新.bat</code>（Windows）または <code>データ更新.command</code>（macOS）を一度ダブルクリックしてください（所要 1〜2 分、ネットワーク接続が必要）。Mac では自動更新も設定できます。詳細は <a href="#update">6. データ更新</a>。</p>
 </div>
 
 <div class="big-step">
@@ -336,7 +336,7 @@
   <tr>
     <td><span class="badge b-out">対象外</span></td>
     <td>RAC 体系の対象外成分。マウスオーバーで理由表示</td>
-    <td>脂肪酸エステル (物理作用) / 燐酸第二鉄 (軟体動物剤) / 微生物製剤</td>
+    <td>脂肪酸エステル (物理作用) / 燐酸第二鉄 (軟体動物剤) / 微生物製剤 / 天敵・植物成長調整剤 (CropLife 表の「-(生)」「-(植)」)</td>
   </tr>
   <tr>
     <td><span class="badge b-legacy">古典未分類</span></td>
@@ -350,8 +350,11 @@
   </tr>
 </table>
 
-<p>現行剤 3,468 件のうち 3,467 件は、<strong>全成分が分類済み</strong>です。アルテリア水和剤の フマル酸 だけは、
-CropLife の表と手動ラベルのどちらにも無いため未分類（バッジなし）です。成分名の一部が重なる別の成分のコードは付けません (Ver. 1.8 から)。</p>
+<p>現行剤 3,468 件のうち 3,465 件は、<strong>全成分が分類済み</strong>です。次の 2 成分は未分類（バッジなし）です。</p>
+<ul>
+  <li>アルテリア水和剤の フマル酸: CropLife の表と手動ラベルのどちらにも無い。成分名の一部が重なる別の成分のコードは付けません (Ver. 1.8 から)。</li>
+  <li>エコフィット・ビネガーキラーの 醸造酢: CropLife の表で「-」（RAC の認定なし）だけ。「-」はコードではないので表示しません (Ver. 1.9 から)。</li>
+</ul>
 
 <hr>
 
@@ -394,6 +397,24 @@ CropLife の表と手動ラベルのどちらにも無いため未分類（バ�
   <tr><td><code>openpyxl</code></td><td>初回起動時に自動インストール</td></tr>
 </table>
 
+<h3>Mac で自動更新する (Ver. 1.9 から)</h3>
+
+<p>ターミナルで <code>scripts/install_auto_update_mac.sh install</code> を一度実行すると、毎日 12:00 に確認し、前回の成功から 7 日たっていれば自動でデータ更新を行います（Mac が眠っていた分は、起きたときに実行されます）。</p>
+
+<table>
+  <tr><th>コマンド</th><th>動作</th></tr>
+  <tr><td><code>scripts/install_auto_update_mac.sh install</code></td><td>登録する</td></tr>
+  <tr><td><code>scripts/install_auto_update_mac.sh run</code></td><td>今すぐ 1 回実行する</td></tr>
+  <tr><td><code>scripts/install_auto_update_mac.sh status</code></td><td>登録の状態と直近の結果を表示する</td></tr>
+  <tr><td><code>scripts/install_auto_update_mac.sh uninstall</code></td><td>登録を外す</td></tr>
+</table>
+
+<p>結果は <code>~/Library/Logs/browser-pesticide-search/history.log</code> に残り、失敗したとき・見送ったとき・データが新しくなったときは通知が出ます。</p>
+
+<div class="callout warn">
+  <p><strong>フォルダが外付けドライブにある場合</strong>: システム設定 → プライバシーとセキュリティ → フルディスクアクセス に <code>/bin/bash</code> を加えてください。加えないと、自動更新からはドライブを読めず「失敗: SSD のファイルを読めない」と通知されます。加えると、bash で動くほかのスクリプトもディスク全体を読めるようになります。</p>
+</div>
+
 <div class="callout warn">
   <p><strong>データ更新後はブラウザのキャッシュを再読み込みしてください。</strong><br>
   Windows: <kbd>Ctrl</kbd> + <kbd>F5</kbd> / macOS: <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd></p>
@@ -413,7 +434,7 @@ CropLife の表と手動ラベルのどちらにも無いため未分類（バ�
 <p>分類表で別の作物とされているためです (Ver. 1.8 から)。ミニトマトの剤は <code>ミニトマト</code> で検索してください。さやいんげん（いんげん）、はつかだいこん（だいこん）、葉たまねぎ（たまねぎ）なども同じです。</p>
 
 <h3>Q. RAC コードが付いていない成分がある</h3>
-<p>RAC 未分類成分は理由バッジを表示します。上記「RAC バッジの見方」を参照してください。アルテリア水和剤の フマル酸 だけは、どの区分にも入らない未分類で、バッジは出ません。</p>
+<p>RAC 未分類成分は理由バッジを表示します。上記「RAC バッジの見方」を参照してください。アルテリア水和剤の フマル酸 と、エコフィット・ビネガーキラーの 醸造酢 は、どの区分にも入らない未分類で、バッジは出ません。</p>
 
 <h3>Q. Windows で開くと文字化けする</h3>
 <p>HTML 自体は UTF-8 + <code>&lt;meta charset="UTF-8"&gt;</code> 宣言付きなので、どのブラウザでも文字化けしません。ファイル名（「これをクリック.html」「使い方.html」等の日本語名）が化ける場合は、配布時の ZIP 解凍ツールの問題です。対処は配布元に相談してください。</p>
