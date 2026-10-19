@@ -16,8 +16,9 @@ Personal Team 署名）** で 7 日間動作します。7 日経過後は Xcode 
 
 ### 1. Xcode で開く
 
+リポジトリのフォルダ (`browser-pesticide-search`) で実行:
 ```
-open /Volumes/tkg\ SSD/browser-pesticide-search/ios/PesticideSearch.xcodeproj
+open ios/PesticideSearch.xcodeproj
 ```
 
 もしくは Finder で `PesticideSearch.xcodeproj` をダブルクリック。
@@ -98,10 +99,9 @@ ios/
 
 ### HTML 内の検索が動かない / データが読み込まれない
 → `App/Resources/` に `これをクリック.html` がコピーされているか確認。
-   `build/これをクリック.html` を更新した場合は `cp` で再コピー:
+   `build/これをクリック.html` を更新した場合は `cp` で再コピー (リポジトリのフォルダで実行):
    ```
-   cp "/Volumes/tkg SSD/browser-pesticide-search/build/これをクリック.html" \
-      "/Volumes/tkg SSD/browser-pesticide-search/ios/App/Resources/"
+   cp "build/これをクリック.html" "ios/App/Resources/"
    ```
    Xcode で `⌘R` 再ビルド。
 
