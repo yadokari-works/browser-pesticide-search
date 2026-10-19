@@ -22,7 +22,7 @@ python3 scripts/build_crop_groups.py   # 作物分類表 PDF → src/js/core/cro
 
 # ビルド (必ずこの順。build_pwa は build/これをクリック.html を入力にする)
 python3 build/build_bundled.py         # src/ を 1 ファイルにインライン化 → build/これをクリック.html
-python3 build/build_pwa.py             # → docs/ (index.html, sw.js, manifest, アイコン)。--regen-icons でアイコン再生成 (要 CJK フォント)
+python3 build/build_pwa.py             # → docs/ (index.html, sw.js, manifest, アイコン)。--regen-icons でアイコンを元絵 build/icon/app-icon.png から再生成 (正本は build/icon/、docs/ へは版番号付きの名前でコピー。元絵が無ければ CJK フォントで「農」)。元絵からは numpy・scipy が要る。再生成後は build_bundled.py も回す (タブ用アイコンを埋め込むため)
 
 # テスト (検索ロジックの回帰テスト。1 件でも失敗で exit 1、CI の品質ゲート)
 node scripts/test_search.mjs

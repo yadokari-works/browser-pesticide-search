@@ -5,16 +5,16 @@
 //    (電波の弱い圃場でも起動を待たせない)。取得は裏で続け、届いたらキャッシュを更新する
 // 3. アプリ本体の HTML (./ と ./index.html) は 1 つのキーにまとめる (約 30 MB を 2 重に保存しないため)
 // 4. 静的アセット (アイコン等) は cache-first
-const VERSION = "1.9.0";
+const VERSION = "1.9.1";
 const CACHE_PREFIX = "pesticide-search-";
 const CACHE = `${CACHE_PREFIX}${VERSION}`;
 const APP_KEY = "./";
 const HTML_TIMEOUT_MS = 4000;
 const ASSETS = [
   "./manifest.webmanifest",
-  "./icon-192.png",
-  "./icon-512.png",
-  "./apple-touch-icon.png",
+  "./icon-192-1.9.1.png",
+  "./icon-512-1.9.1.png",
+  "./apple-touch-icon-1.9.1.png",
 ];
 
 self.addEventListener("install", e => {

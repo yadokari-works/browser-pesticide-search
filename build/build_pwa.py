@@ -7,15 +7,19 @@ Service Worker + Web App Manifest + Apple Touch Icon を加えて
 完全オフライン動作する PWA を docs/ ディレクトリに生成する。
 
 生成物:
-  docs/index.html             — PWA エントリ (manifest + SW 登録 + Apple meta タグ追加済)
-  docs/sw.js                  — Service Worker (HTML を install 時にキャッシュ)
-  docs/manifest.webmanifest   — Web App Manifest
-  docs/icon-{192,512}.png     — PWA アイコン
-  docs/apple-touch-icon.png   — iOS ホーム画面アイコン (180x180)
+  docs/index.html                 — PWA エントリ (manifest + SW 登録 + Apple meta タグ追加済)
+  docs/sw.js                      — Service Worker (HTML を install 時にキャッシュ)
+  docs/manifest.webmanifest       — Web App Manifest
+  docs/icon-192-<版>.png 等       — PWA アイコン (角丸、外側は透明)
+  docs/apple-touch-icon-<版>.png  — iOS ホーム画面アイコン (180x180、角を絵の色で埋めた不透明)
+
+アイコンの正本は build/icon/ (元絵 app-icon.png から作る)。docs/ へは版番号付きの名前でコピーする。
+版番号を入れるのは、iOS がホーム画面に追加した時点の画像を取り直さないため。
 
 使い方:
   python3 build/build_pwa.py
-  python3 build/build_pwa.py --regen-icons  # アイコンを作り直す (要 CJK フォント)
+  python3 build/build_pwa.py --regen-icons  # 元絵からアイコンを作り直す (元絵が無ければ「農」の字。要 numpy・scipy)
+  ※ --regen-icons の後は build/build_bundled.py も回す (単一ファイル版はタブ用アイコンを build/icon/ から埋め込む)
   python3 -m http.server 8765 -d docs  # ローカル動作確認
 
 iOS Safari で `https://...` 経由でアクセスし、共有 → ホーム画面に追加。
@@ -60,9 +64,9 @@ const APP_KEY = "./";
 const HTML_TIMEOUT_MS = 4000;
 const ASSETS = [
   "./manifest.webmanifest",
-  "./icon-192.png",
-  "./icon-512.png",
-  "./apple-touch-icon.png",
+  "./__ICON_192__",
+  "./__ICON_512__",
+  "./__APPLE_ICON__",
 ];
 
 self.addEventListener("install", e => {
@@ -133,7 +137,18 @@ self.addEventListener("fetch", e => {
 """
 
 
-MANIFEST = f"""{{
+def icon_names(version: str) -> dict:
+    """docs/ に置くアイコンのファイル名。版番号を入れ、版が変わると別の URL になるようにする。"""
+    return {
+        "192": f"icon-192-{version}.png",
+        "512": f"icon-512-{version}.png",
+        "apple": f"apple-touch-icon-{version}.png",
+    }
+
+
+# icons の purpose は any のみ。元絵は角丸の絵で、maskable (円形の切り抜き) だと柄が欠けるため
+def manifest_text(names: dict) -> str:
+    return f"""{{
   "name": "{APP_NAME}",
   "short_name": "{APP_SHORT}",
   "description": "FAMIC + CropLife 統合のオフライン農薬検索ツール",
@@ -145,8 +160,8 @@ MANIFEST = f"""{{
   "background_color": "{BG_COLOR}",
   "lang": "ja",
   "icons": [
-    {{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" }},
-    {{ "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }}
+    {{ "src": "{names['192']}", "sizes": "192x192", "type": "image/png", "purpose": "any" }},
+    {{ "src": "{names['512']}", "sizes": "512x512", "type": "image/png", "purpose": "any" }}
   ]
 }}
 """
@@ -187,8 +202,52 @@ def load_icon_font(size: int):
     )
 
 
-def make_icon(size: int, dest: Path):
-    """緑背景 + 白い「農」のアイコンを生成する。
+# 正本のアイコン (build/icon/)。元絵 app-icon.png から作り、docs/ へは版番号付きの名前でコピーする
+ICON_DIR = BUILD / "icon"
+ICON_SOURCE = ICON_DIR / "app-icon.png"  # 元絵 (1254x1254 の RGB。角丸の外側は透明ではなく白い余白)
+
+
+def make_icon_from_source(size: int, dest: Path, opaque: bool):
+    """元絵から角丸のアイコンを作る。
+
+    opaque=False: 角丸の外側を透明にする (ホーム画面・ファビコン用)。
+    opaque=True: 透明部分を最も近い絵の色で埋める (iOS は透明部分を黒く塗るため)。
+    """
+    try:
+        import numpy as np
+        from scipy import ndimage
+    except ImportError:
+        sys.exit("ERROR: 元絵からアイコンを作るには numpy と scipy が必要です。pip install numpy scipy")
+
+    art = np.asarray(Image.open(ICON_SOURCE).convert("RGB"))
+    # 白い余白 (三色とも 230 以上) のうち、画像の端につながる部分を外側とみなす。
+    # 絵の中の白 (虫眼鏡の縁) は緑に囲まれているので、端にはつながらない。
+    white = art.min(axis=2) >= 230
+    labels, _ = ndimage.label(white)
+    edge_labels = np.unique(np.concatenate([labels[0], labels[-1], labels[:, 0], labels[:, -1]]))
+    outside = np.isin(labels, edge_labels[edge_labels != 0])
+    inside = ~outside
+
+    ys, xs = np.where(inside)
+    x0, y0 = int(xs.min()), int(ys.min())
+    side = max(int(xs.max()) - x0 + 1, int(ys.max()) - y0 + 1)  # 正方形に切り出す
+    rgb = art[y0:y0 + side, x0:x0 + side]
+    keep = inside[y0:y0 + side, x0:x0 + side]
+
+    if opaque:
+        # 外側との境目は色が薄いので塗りの元にしない。内側 4 画素より奥の緑だけを使う
+        solid = ndimage.binary_erosion(keep, iterations=4)
+        _, (iy, ix) = ndimage.distance_transform_edt(~solid, return_distances=True, return_indices=True)
+        img = Image.fromarray(rgb[iy, ix])
+    else:
+        img = Image.fromarray(np.dstack([rgb, keep.astype(np.uint8) * 255]))
+
+    img.resize((size, size), Image.LANCZOS).save(dest, "PNG", optimize=True)
+    return True
+
+
+def make_icon(size: int, dest: Path, opaque: bool = False):
+    """緑背景 + 白い「農」のアイコンを生成する (元絵があれば元絵から作る)。
 
     既存ファイルがあれば再生成しない。フォントは環境ごとに違うため、
     毎回生成すると CI (Linux) と手元 (macOS) で別画像になり、週次の自動更新の
@@ -197,6 +256,8 @@ def make_icon(size: int, dest: Path):
     """
     if dest.exists() and not REGEN_ICONS:
         return False
+    if ICON_SOURCE.exists():
+        return make_icon_from_source(size, dest, opaque)
 
     font = load_icon_font(size)
     img = Image.new("RGB", (size, size), THEME_COLOR)
@@ -219,14 +280,16 @@ def make_icon(size: int, dest: Path):
     return True
 
 
-PWA_HEAD_INJECT = f"""
+def pwa_head(names: dict) -> str:
+    """docs/index.html の head に足す PWA 用のタグ。アイコンは版番号付きのファイル名。"""
+    return f"""
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="{THEME_COLOR}">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="{APP_SHORT}">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="{names['apple']}">
+<link rel="icon" type="image/png" sizes="192x192" href="{names['192']}">
 """
 
 SW_REGISTER_SCRIPT = """
@@ -242,7 +305,7 @@ if ("serviceWorker" in navigator) {
 """
 
 
-def inject_pwa_bits(html: str) -> str:
+def inject_pwa_bits(html: str, names: dict) -> str:
     """既存のバンドル HTML に PWA メタタグと SW 登録スクリプトを差し込む。"""
     # CSP を緩和: worker-src 'self' を追加 (Service Worker のため)
     html = re.sub(
@@ -252,10 +315,21 @@ def inject_pwa_bits(html: str) -> str:
         count=1,
     )
     # head に meta + manifest を差し込み
-    html = html.replace("</head>", f"{PWA_HEAD_INJECT}</head>", 1)
+    html = html.replace("</head>", f"{pwa_head(names)}</head>", 1)
     # body 末尾直前に SW 登録スクリプト
     html = html.replace("</body>", f"{SW_REGISTER_SCRIPT}</body>", 1)
     return html
+
+
+STALE_ICON = re.compile(r"^(icon-192|icon-512|apple-touch-icon)(-[0-9.]+)?\.png$")
+
+
+def remove_stale_icons(keep: set):
+    """古い版のアイコン (版番号が無いもの、別の版のもの) を docs/ から消す。"""
+    for p in OUT_DIR.iterdir():
+        if STALE_ICON.match(p.name) and p.name not in keep:
+            p.unlink()
+            print(f"  削除: docs/{p.name} (古い版のアイコン)")
 
 
 def main():
@@ -266,30 +340,42 @@ def main():
 
     print(f"Building PWA → {OUT_DIR.relative_to(PROJECT_ROOT)}/")
 
+    version = (PROJECT_ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    names = icon_names(version)
+
     # 1. HTML を読み込んで PWA 化
     html = SRC_HTML.read_text(encoding="utf-8")
-    html = inject_pwa_bits(html)
+    html = inject_pwa_bits(html, names)
     (OUT_DIR / "index.html").write_text(html, encoding="utf-8")
     print(f"  index.html      ({len(html)/1024/1024:.1f} MB)")
 
     # 2. Service Worker (VERSION を埋め込み、CACHE 名をバージョン付きにする)
-    version = (PROJECT_ROOT / "VERSION").read_text(encoding="utf-8").strip()
-    sw_js = SW_JS_TEMPLATE.replace("__APP_VERSION__", version)
+    sw_js = (SW_JS_TEMPLATE.replace("__APP_VERSION__", version)
+             .replace("__ICON_192__", names["192"])
+             .replace("__ICON_512__", names["512"])
+             .replace("__APPLE_ICON__", names["apple"]))
     (OUT_DIR / "sw.js").write_text(sw_js, encoding="utf-8")
     print(f"  sw.js (CACHE = pesticide-search-{version})")
 
     # 3. Manifest
-    (OUT_DIR / "manifest.webmanifest").write_text(MANIFEST, encoding="utf-8")
+    (OUT_DIR / "manifest.webmanifest").write_text(manifest_text(names), encoding="utf-8")
     print(f"  manifest.webmanifest")
 
-    # 4. アイコン (既存があれば維持。--regen-icons で作り直す)
+    # 4. アイコン: 正本は build/icon/ (既存があれば維持。--regen-icons で作り直す)。
+    #    docs/ へは版番号付きの名前でコピーし、古い版のファイルは消す
+    ICON_DIR.mkdir(parents=True, exist_ok=True)
     made = [
-        make_icon(192, OUT_DIR / "icon-192.png"),
-        make_icon(512, OUT_DIR / "icon-512.png"),
-        make_icon(180, OUT_DIR / "apple-touch-icon.png"),
+        make_icon(192, ICON_DIR / "icon-192.png"),
+        make_icon(512, ICON_DIR / "icon-512.png"),
+        make_icon(180, ICON_DIR / "apple-touch-icon.png", opaque=True),
+        make_icon(32, ICON_DIR / "favicon-32.png"),
     ]
     state = "生成" if any(made) else "既存を維持"
-    print(f"  icon-192.png / icon-512.png / apple-touch-icon.png ({state})")
+    shutil.copyfile(ICON_DIR / "icon-192.png", OUT_DIR / names["192"])
+    shutil.copyfile(ICON_DIR / "icon-512.png", OUT_DIR / names["512"])
+    shutil.copyfile(ICON_DIR / "apple-touch-icon.png", OUT_DIR / names["apple"])
+    remove_stale_icons(keep=set(names.values()))
+    print(f"  {names['192']} / {names['512']} / {names['apple']} ({state})")
 
     total = sum(f.stat().st_size for f in OUT_DIR.iterdir() if f.is_file())
     print(f"\nDone. 合計 {total/1024/1024:.1f} MB")

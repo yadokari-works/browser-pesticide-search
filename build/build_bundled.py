@@ -4,8 +4,10 @@
 CSS, JS, JSON を src/index.html にインライン化して build/これをクリック.html を生成。
 
 JS は ES module 形式だが、バンドル時に import/export を除去して 1 つの IIFE に結合する。
+タブ用のアイコン (build/icon/favicon-32.png) は data: で埋め込む。
 """
 
+import base64
 import json
 import re
 import sys
@@ -15,6 +17,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SRC = PROJECT_ROOT / "src"
 BUILD = PROJECT_ROOT / "build"
 OUT = BUILD / "これをクリック.html"
+ICON_FAVICON = BUILD / "icon" / "favicon-32.png"  # build_pwa.py が作る正本
 
 # 結合する JS の順序（依存関係順）
 JS_ORDER = [
@@ -126,6 +129,15 @@ def add_csp(html):
     return html
 
 
+def add_favicon(html):
+    """タブ用アイコンを data: で埋め込む。単一ファイルを開いたブラウザのタブにも絵が出る。"""
+    if not ICON_FAVICON.exists():
+        sys.exit(f"ERROR: {ICON_FAVICON} が無い。python3 build/build_pwa.py --regen-icons を先に実行してください。")
+    b64 = base64.b64encode(ICON_FAVICON.read_bytes()).decode("ascii")
+    link = f'<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,{b64}">'
+    return html.replace("</head>", f"{link}\n</head>", 1)
+
+
 def main():
     print("Bundling to single HTML...")
     print(f"  Source: {SRC / 'index.html'}")
@@ -143,6 +155,9 @@ def main():
 
     html = add_csp(html)
     print("  CSP added")
+
+    html = add_favicon(html)
+    print("  favicon embedded (tab icon)")
 
     BUILD.mkdir(parents=True, exist_ok=True)
     with open(OUT, "w", encoding="utf-8") as f:
