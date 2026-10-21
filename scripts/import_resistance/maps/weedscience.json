@@ -1,0 +1,20 @@
+{
+  "_note": "列名は未確認 (2026-10-22)。WeedScience.org から書き出したファイルの見出しを見て、（）の値を実際の列名に直す",
+  "source_id": "weedscience",
+  "columns": {
+    "scientific_name": "（学名の列名）",
+    "country": "（国の列名）",
+    "survey_year": "（報告年の列名）",
+    "ingredient_en": "（成分名 英語 の列名）",
+    "source_title": "（文献の列名）",
+    "host_crop": "（作物・場所の列名）",
+    "rac_code": "（HRAC グループの列名）"
+  },
+  "defaults": {
+    "kind": "雑草",
+    "level": "抵抗性あり",
+    "evidence": "データベースの記録",
+    "source_publisher": "International Herbicide-Resistant Weed Database (Heap)",
+    "source_url": "https://www.weedscience.org/"
+  }
+}

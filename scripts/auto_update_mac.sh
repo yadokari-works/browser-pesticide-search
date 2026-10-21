@@ -21,7 +21,7 @@ STAMP="$STATE_DIR/last_success"
 FORCE_FLAG="$STATE_DIR/force"    # install_auto_update_mac.sh run が置く (間隔を無視して今すぐ実行)
 INTERVAL_SEC=$((7 * 24 * 3600 - 3600))
 # 自動更新で書き換わる生成物。これ以外に未コミットの変更があれば見送る
-GENERATED='^.. (src/data/pesticides\.json|src/data/applications\.json|build/これをクリック\.html)$'
+GENERATED='^.. (src/data/pesticides\.json|src/data/applications\.json|src/data/resistance\.json|build/これをクリック\.html)$'
 
 mkdir -p "$STATE_DIR" "$LOG_DIR"
 
@@ -73,7 +73,8 @@ fi
 
 # 失敗したときに戻せるよう、今の JSON を控える
 BACKUP=$(mktemp -d "${TMPDIR:-/tmp}/pesticide-auto-update.XXXXXX") || fail "一時フォルダを作れない"
-cp "$REPO/src/data/pesticides.json" "$REPO/src/data/applications.json" "$BACKUP/" || fail "src/data の控えを取れない"
+cp "$REPO/src/data/pesticides.json" "$REPO/src/data/applications.json" "$REPO/src/data/resistance.json" "$BACKUP/" \
+  || fail "src/data の控えを取れない"
 famic_of() {
   "$PY" -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); print(d.get("sources",{}).get("famic",""), d.get("stats",{}).get("active",""))' "$1" 2>/dev/null
 }
@@ -83,7 +84,7 @@ started=$(date +%s)
 (cd "$REPO" && "$PY" scripts/update_data.py) > "$LAST_LOG" 2>&1 < /dev/null
 rc=$?
 if [ "$rc" -ne 0 ]; then
-  cp "$BACKUP/pesticides.json" "$BACKUP/applications.json" "$REPO/src/data/" 2>/dev/null
+  cp "$BACKUP/pesticides.json" "$BACKUP/applications.json" "$BACKUP/resistance.json" "$REPO/src/data/" 2>/dev/null
   fail "update_data.py が終了コード $rc で止まった。src/data は実行前に戻した。ログ: $LAST_LOG"
 fi
 

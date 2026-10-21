@@ -1,0 +1,52 @@
+{
+  "sources": [
+    {
+      "id": "wssj_japan",
+      "name": "日本雑草学会 Herbicide Resistant Weeds in Japan",
+      "url": "https://wssj.jp/~hr/index.html",
+      "region": "国内",
+      "importer": "python3 scripts/import_resistance/wssj_japan.py",
+      "include": false,
+      "terms_checked": "",
+      "verified_at": "",
+      "imported_at": "2026-10-22",
+      "note": "ページに利用条件の記載は無い (2026-10-21 確認)。各行は初めて確認された県・年・作物で、その後に広がった県は載っていない。一覧表と詳細の文章で県が違う行がある (No.42・43 タイヌビエは一覧表が Okayama、詳細が Niigata)。取り込みは一覧表に従う"
+    },
+    {
+      "id": "aprd",
+      "name": "Arthropod Pesticide Resistance Database (APRD)",
+      "url": "https://www.pesticideresistance.org/",
+      "region": "海外",
+      "importer": "python3 scripts/import_resistance/generic_csv.py --map scripts/import_resistance/maps/aprd.json --input <書き出したファイル>",
+      "include": false,
+      "terms_checked": "",
+      "verified_at": "",
+      "imported_at": "",
+      "note": "ボット対策があり、スクリプトでは取得できない (2026-10-22 確認)。利用者がブラウザで書き出したファイルか、運営者から提供されたデータを読む。利用条件は未確認"
+    },
+    {
+      "id": "weedscience",
+      "name": "International Herbicide-Resistant Weed Database (WeedScience.org)",
+      "url": "https://www.weedscience.org/",
+      "region": "海外",
+      "importer": "python3 scripts/import_resistance/generic_csv.py --map scripts/import_resistance/maps/weedscience.json --input <書き出したファイル>",
+      "include": false,
+      "terms_checked": "",
+      "verified_at": "",
+      "imported_at": "",
+      "note": "論文の大部分をこのデータに拠るときは事前の許可が要る、とページにある。2026-10-22 はこの環境から接続できなかった"
+    },
+    {
+      "id": "frac",
+      "name": "FRAC の耐性病原菌の一覧",
+      "url": "https://www.frac.info/",
+      "region": "海外",
+      "importer": "python3 scripts/import_resistance/generic_csv.py --map scripts/import_resistance/maps/frac.json --input <入手したファイル>",
+      "include": false,
+      "terms_checked": "",
+      "verified_at": "",
+      "imported_at": "",
+      "note": "「耐性が確認された病原菌の一覧」は 2026-10-22 時点の frac.info に見当たらない (病原菌のリスク表 2019 はある)。入手できたら CSV にして読む"
+    }
+  ]
+}

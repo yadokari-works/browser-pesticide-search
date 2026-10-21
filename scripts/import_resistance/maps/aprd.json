@@ -1,0 +1,20 @@
+{
+  "_note": "列名は未確認 (2026-10-22)。APRD から書き出したファイルの見出しを見て、（）の値を実際の列名に直す。ダニの種は kind を「ダニ」にする列か、別の対応表を使う",
+  "source_id": "aprd",
+  "columns": {
+    "scientific_name": "（学名の列名）",
+    "country": "（国の列名）",
+    "survey_year": "（報告年の列名）",
+    "ingredient_en": "（成分名 英語 の列名）",
+    "source_title": "（文献の列名）",
+    "prefecture": "（地域の列名。無ければこの行を消す）",
+    "rac_code": "（IRAC 作用機構の列名。無ければこの行を消す）"
+  },
+  "defaults": {
+    "kind": "昆虫",
+    "level": "抵抗性あり",
+    "evidence": "データベースの記録",
+    "source_publisher": "Arthropod Pesticide Resistance Database (Michigan State University)",
+    "source_url": "https://www.pesticideresistance.org/"
+  }
+}

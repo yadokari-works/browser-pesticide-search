@@ -4,7 +4,7 @@
  * test_search.mjs は src のモジュールを直接読むため、正規表現で import/export を除いて 1 つにまとめた
  * 配布 HTML そのものは確かめていない。ここで次を確かめ、1 つでも外れたら終了コード 1 にする。
  *   - インラインの script がすべて JavaScript として構文エラーにならない
- *   - 埋め込んだデータ (window.PESTICIDES_DB / window.APPLICATIONS) が src/data の JSON と同じ
+ *   - 埋め込んだデータ (window.PESTICIDES_DB / window.APPLICATIONS / window.RESISTANCE_DB) が src/data の JSON と同じ
  *   - VERSION の版がページに書かれている
  * 使い方: node scripts/check_bundle.mjs
  */
@@ -18,6 +18,7 @@ const TARGETS = ["build/これをクリック.html", "docs/index.html"];
 const version = fs.readFileSync(path.join(ROOT, "VERSION"), "utf-8").trim();
 const srcMain = fs.readFileSync(path.join(ROOT, "src/data/pesticides.json"), "utf-8");
 const srcApps = fs.readFileSync(path.join(ROOT, "src/data/applications.json"), "utf-8");
+const srcRes = fs.readFileSync(path.join(ROOT, "src/data/resistance.json"), "utf-8");
 
 let fail = 0;
 const check = (ok, label) => { console.log(`${ok ? "✓" : "✗"} ${label}`); if (!ok) fail++; };
@@ -42,8 +43,10 @@ for (const rel of TARGETS) {
   vm.runInNewContext(dataScript, sandbox);
   const sameMain = JSON.stringify(sandbox.window.PESTICIDES_DB) === JSON.stringify(JSON.parse(srcMain));
   const sameApps = JSON.stringify(sandbox.window.APPLICATIONS) === JSON.stringify(JSON.parse(srcApps));
+  const sameRes = JSON.stringify(sandbox.window.RESISTANCE_DB) === JSON.stringify(JSON.parse(srcRes));
   const n = sandbox.window.PESTICIDES_DB?.products?.length ?? 0;
-  check(sameMain && sameApps, `${rel}: 埋め込んだデータが src/data と同じ (${n} 商品)`);
+  const nRes = sandbox.window.RESISTANCE_DB?.records?.length ?? 0;
+  check(sameMain && sameApps && sameRes, `${rel}: 埋め込んだデータが src/data と同じ (${n} 商品、抵抗性の報告 ${nRes} 件)`);
   check(html.includes(version), `${rel}: 版 ${version} の表記がある`);
 }
 

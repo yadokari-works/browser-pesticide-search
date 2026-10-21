@@ -4,9 +4,11 @@
 
 import { buildIndex, search, buildRowCondition, hasRowCondition, filterApplications } from "./core/search.js";
 import { applyFilters, DEFAULT_FILTERS, countFormulations, attachBrandedFlags, groupKeyOf } from "./core/filter.js";
-import { splitRacCode, stripCompanyFromName, expandSearchableCrops, searchablePest } from "./core/normalize.js";
+import { splitRacCode, stripCompanyFromName, expandSearchableCrops, searchablePest, normalize, cropGroupMembers, appEntry, entryHasCrop } from "./core/normalize.js";
+import { buildResistanceIndex, resolveTaxa, findResistance, recordsByRacCode, summarizeResistance, pestNamesForTaxa, isOverseasRecord, RESISTANCE_LEVELS, RES_PREFECTURES } from "./core/resistance.js";
 import { exportTSV, exportCSV, exportMarkdown, exportJSON, download } from "./io/export.js";
 import { loadApplications, getApplicationsFor } from "./io/applications.js";
+import { loadResistance } from "./io/resistance_data.js";
 
 // RAC ステータスの表示ラベル (rac_manual.json と対応)
 const RAC_STATUS_LABEL = {
@@ -48,6 +50,11 @@ const state = {
   selectedFormulations: null,
   cropSuggestions: [],
   pestSuggestions: [],
+  view: "search", // "search"=剤を探す | "resistance"=抵抗性を見る
+  resistance: null, // buildResistanceIndex の結果
+  resistanceError: null, // 抵抗性データを読めなかったときのメッセージ
+  showOverseas: true, // 海外の報告を表示するか (端末に覚えさせる)
+  res: { crop: "", pest: "", code: null, hostOnly: false }, // 抵抗性の画面の入力と、選んだ系統
 };
 
 // DOM 参照
@@ -74,9 +81,18 @@ async function init() {
     state.index = buildIndex(state.db.products, apps);
     attachCropsPests(state.index, apps);
     attachBrandedFlags(state.db.products);
+    // 抵抗性データを読めなくても検索は使えるようにする (抵抗性の欄と画面に読込エラーを出す)
+    try {
+      state.resistance = buildResistanceIndex(await loadResistance());
+    } catch (e) {
+      state.resistanceError = e.message;
+      console.warn(e);
+    }
+    state.showOverseas = loadOverseasPref();
     renderHeader();
     renderFilters();
     updateResults();
+    if (state.view === "resistance") renderResistanceView();
   } catch (e) {
     resultList.innerHTML = `<div class="empty">データ読込エラー: ${escapeHtml(e.message)}<br><small>scripts/build_data.py を実行してから再試行してください。</small></div>`;
     console.error(e);
@@ -569,7 +585,437 @@ function showGroupProductApplications(regNo) {
     </div>
     ${scopeNote}
     ${appTableHtml}
+    ${resistanceSectionHtml(p, apps, cond, narrowed)}
   `;
+  const overseas = target.querySelector(".res-overseas-toggle");
+  if (overseas) {
+    overseas.addEventListener("change", e => {
+      setShowOverseas(e.target.checked);
+      showGroupProductApplications(regNo);
+    });
+  }
+}
+
+// ===== 抵抗性・耐性の報告 =====
+
+const RES_SYS_LABEL = { I: "IRAC", F: "FRAC", H: "HRAC" };
+const RES_BASIS_LABEL = {
+  crop: "作物ごとの対応",
+  group: "作物群の対応",
+  any: "全作物に共通の対応",
+  name: "病害虫名と和名が同じ種",
+};
+const RES_OVERSEAS_KEY = "pesticide-search:res-overseas";
+
+// 「海外の報告を表示」は端末に覚えさせる。保存できない環境 (プライベートブラウズなど) では毎回「表示」から始める
+function loadOverseasPref() {
+  try {
+    return localStorage.getItem(RES_OVERSEAS_KEY) !== "0";
+  } catch (e) {
+    return true;
+  }
+}
+
+function setShowOverseas(value) {
+  state.showOverseas = value;
+  try {
+    localStorage.setItem(RES_OVERSEAS_KEY, value ? "1" : "0");
+  } catch (e) {
+    // 保存できなくても、この画面を開いている間の表示は切り替わる
+  }
+}
+
+function resHasOverseas(rx) {
+  for (const list of rx.byTaxon.values()) if (list.some(isOverseasRecord)) return true;
+  return false;
+}
+
+function resLevelBadge(level) {
+  const L = RESISTANCE_LEVELS[level];
+  return L ? `<span class="badge res-level res-${level}">${L.label}</span>` : "";
+}
+
+function resRegion(r) {
+  if (isOverseasRecord(r)) return r.country;
+  return (RES_PREFECTURES[r.pref] || [])[0] || "-";
+}
+
+function resTaxonLabel(rx, id) {
+  const t = rx.taxa[id] || {};
+  return `${t.ja ? `${escapeHtml(t.ja)} ` : ""}<i>${escapeHtml(t.sci || id)}</i>`;
+}
+
+function resSourceHtml(rx, r) {
+  const s = r.src || {};
+  const title = escapeHtml(s.title || s.url || "");
+  const parts = [s.url ? `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener noreferrer">${title}</a>` : title];
+  if (s.publisher) parts.push(escapeHtml(s.publisher));
+  if (s.page) parts.push(escapeHtml(s.page));
+  const origin = r.origin !== "domestic" && rx.sources.get(r.origin);
+  if (origin) parts.push(`<span class="res-origin">${escapeHtml(origin.name)} より取り込み</span>`);
+  return parts.join("<br>");
+}
+
+/**
+ * 報告の表。hits は findResistance / recordsByRacCode の戻り値。
+ * opts.relation: 成分の下に「同じ成分」「同じ系統」を出す、opts.taxon: 種の列を出す、opts.code: 系統の列を出す
+ */
+function resRecordTableHtml(rx, hits, opts = {}) {
+  const heads = ["成分", opts.code && "系統", opts.taxon && "種", "程度", "地域", "年", "宿主作物", "数値・判定", "出典"].filter(Boolean);
+  const rows = hits.map(h => {
+    const r = h.record;
+    const sys = RES_SYS_LABEL[(rx.taxa[h.taxon] || {}).sys] || "";
+    const rel = h.relation === "ingredient"
+      ? `<span class="res-rel res-rel-ingredient">同じ成分</span>`
+      : `<span class="res-rel res-rel-group">同じ系統 (${escapeHtml(`${sys} ${h.code || ""}`.trim())})</span>`;
+    const detail = [r.metric, r.wording].filter(Boolean).map(escapeHtml).join("<br>")
+      + (r.note ? `<br><span class="res-muted">${escapeHtml(r.note)}</span>` : "");
+    const cells = [
+      `${escapeHtml(r.ingredient || r.ingredient_en || "-")}${opts.relation ? `<br>${rel}` : ""}`,
+      opts.code && escapeHtml((r.rac || []).map(c => `${sys} ${c}`).join(", ") || "-"),
+      opts.taxon && resTaxonLabel(rx, h.taxon),
+      resLevelBadge(r.level),
+      // 地域・年・宿主作物は短いので折り返さない (狭い表で 1 文字ずつ折り返して読みにくくなるため)
+      `<span class="res-nowrap">${escapeHtml(resRegion(r))}</span>`,
+      `<span class="res-nowrap">${escapeHtml(r.year || r.published || "")}</span>`,
+      `<span class="res-nowrap">${escapeHtml(r.host || "-")}</span>`,
+      detail || "-",
+      resSourceHtml(rx, r),
+    ].filter(c => c !== false && c !== undefined);
+    return `<tr>${cells.map(c => `<td>${c}</td>`).join("")}</tr>`;
+  }).join("");
+  return `
+    <div class="app-table-wrap">
+      <table class="app-table res-table">
+        <thead><tr>${heads.map(h => `<th>${h}</th>`).join("")}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function resSummaryHtml(hits) {
+  const s = summarizeResistance(hits);
+  if (!s.count) return "";
+  const where = [s.prefs.size ? `${s.prefs.size} 都道府県` : "", s.countries.size ? `海外 ${s.countries.size} か国` : ""]
+    .filter(Boolean).join("・");
+  return ` ${resLevelBadge(s.maxLevel)} <span class="res-muted">${s.count} 件${where ? ` / ${where}` : ""}${s.latestYear ? ` / 最新 ${s.latestYear} 年` : ""}</span>`;
+}
+
+/**
+ * 抵抗性の照合に使う作物。利用者が指定した作物 (サイドバー、または AND 検索で作物と決まった 1 語) に
+ * その行が当たればそれを、当たらなければ行の作物が作物群でない 1 つの作物のときだけその作物を使う。
+ * 作物群の行 (野菜類など) で作物の指定が無ければ null (全作物に共通の対応だけで種を決める)。
+ */
+function resistanceCropFor(a, cond) {
+  const userCrop = cond.scopeCrop || (cond.mode === "and" && cond.crops.length === 1 ? cond.crops[0] : "");
+  if (userCrop && entryHasCrop(appEntry(a), userCrop)) return userCrop;
+  const names = expandSearchableCrops(a.crop);
+  if (names.length === 1 && cropGroupMembers(names[0]).size === 0) return names[0].replace(/[(（].*$/, "");
+  return null;
+}
+
+/** 照合に使った作物の表示名。サイドバーで入力した作物なら入力どおりに出す (正規化するとカタカナになるため) */
+function resCropLabel(crop) {
+  return state.filters.crop && normalize(state.filters.crop) === crop ? state.filters.crop : crop;
+}
+
+function resPairHtml(rx, pair, t, hits) {
+  const taxa = t.taxa.length
+    ? ` <span class="res-taxa">→ ${t.taxa.map(id => resTaxonLabel(rx, id)).join("、")}</span> <span class="res-muted">(${RES_BASIS_LABEL[t.basis]})</span>`
+    : "";
+  const head = `<div class="res-pair-head"><b>${escapeHtml(pair.cropLabel || "")}</b> × <b>${escapeHtml(pair.pest)}</b>${taxa}${resSummaryHtml(hits)}</div>`;
+  let body;
+  if (!t.taxa.length) {
+    body = t.cropSpecific && !pair.crop
+      ? `<p class="res-note">この病害虫名は作物によって病原菌・種が違います。作物を指定すると照合できます。</p>`
+      : `<p class="res-note">この病害虫の病原菌・種が未登録のため、照合できません。</p>`;
+  } else if (!hits.length) {
+    body = `<p class="res-note">この剤の成分・系統について、収録した報告はありません。</p>`;
+  } else {
+    const here = hits.filter(h => h.hostMatch !== false);
+    const other = hits.filter(h => h.hostMatch === false);
+    const opts = { relation: true, taxon: t.taxa.length > 1 };
+    body = (here.length ? resRecordTableHtml(rx, here, opts) : `<p class="res-note">この作物での報告はありません。</p>`)
+      + (other.length
+        ? `<details class="res-other"><summary>他の作物での報告 (同じ病原菌・種) ${other.length} 件</summary>${resRecordTableHtml(rx, other, opts)}</details>`
+        : "");
+  }
+  return `<div class="res-pair">${head}${body}</div>`;
+}
+
+/** 照合の注意書き。withToggle なら「海外の報告を表示」も付ける (抵抗性の画面は上の入力欄に同じものがある) */
+function resFootnoteHtml(rx, withToggle = true) {
+  const toggle = withToggle && resHasOverseas(rx)
+    ? `<label class="filter-option res-inline-option"><input type="checkbox" class="res-overseas-toggle" ${state.showOverseas ? "checked" : ""}><span>海外の報告を表示</span></label>`
+    : "";
+  return `
+    <p class="res-footnote">
+      収録した報告の範囲での照合です。報告が無いことは、抵抗性・耐性が無いことを意味しません。
+      「同じ系統」は、成分は違っても作用機構の分類 (RAC コード) が同じ報告です。交差抵抗性があるとは限りません。
+      各報告は出典で確かめてください。
+    </p>
+    ${toggle}`;
+}
+
+/**
+ * 詳細の適用表の下に出す「抵抗性・耐性の報告」。表示している適用行を (作物, 病害虫) の組にまとめ、
+ * 組ごとに種を決めて、商品の成分と同じ成分・同じ系統の報告を出す。
+ * narrowed (指定した作物・病害虫の行だけを表示中) でなければ、報告のある組だけを出す (組が多くなるため)。
+ */
+function resistanceSectionHtml(p, apps, cond, narrowed) {
+  const wrap = inner => `<div class="detail-section res-section"><h3>抵抗性・耐性の報告</h3>${inner}</div>`;
+  if (state.resistanceError) {
+    return wrap(`<p class="res-note">抵抗性データを読み込めませんでした: ${escapeHtml(state.resistanceError)}</p>`);
+  }
+  const rx = state.resistance;
+  if (!rx || !(p.ingredients || []).length || !apps.length) return "";
+  const cats = p.categories || [p.category];
+  const opts = { overseas: state.showOverseas };
+  const pairs = new Map();
+  for (const a of apps) {
+    if (!a.pest) continue;
+    const crop = resistanceCropFor(a, cond);
+    const key = `${crop || a.crop}\u0000${searchablePest(a.pest)}`;
+    if (!pairs.has(key)) pairs.set(key, { crop, cropLabel: crop ? resCropLabel(crop) : a.crop, pest: a.pest });
+  }
+  const blocks = [];
+  for (const pair of pairs.values()) {
+    const t = resolveTaxa(rx, pair.crop, pair.pest);
+    const hits = t.taxa.length ? p.ingredients.flatMap(i => findResistance(rx, t.taxa, i, cats, pair.crop, opts)) : [];
+    if (narrowed || hits.length) blocks.push(resPairHtml(rx, pair, t, hits));
+  }
+  const MAX_PAIRS = 30;
+  let inner = blocks.slice(0, MAX_PAIRS).join("");
+  if (blocks.length > MAX_PAIRS) {
+    inner += `<p class="res-note">ほか ${blocks.length - MAX_PAIRS} 組。作物・病害虫を指定すると絞り込めます。</p>`;
+  }
+  if (!blocks.length) {
+    inner = `<p class="res-note">この剤の登録 (作物 × 病害虫 ${pairs.size} 組) について、収録した報告はありません。` +
+      `作物・病害虫を指定すると、組ごとの照合の状況 (病原菌・種が未登録かどうか) を表示します。</p>`;
+  }
+  return wrap(inner + resFootnoteHtml(rx));
+}
+
+// ===== 抵抗性の画面 (作物 × 病害虫 を選んで、系統ごと・都道府県ごとの報告を見る) =====
+
+function setView(view) {
+  state.view = view;
+  document.body.classList.toggle("view-resistance", view === "resistance");
+  $("#resistance-panel").hidden = view !== "resistance";
+  document.querySelectorAll("#view-switch button").forEach(b =>
+    b.setAttribute("aria-selected", String(b.dataset.view === view)));
+  if (view === "resistance") renderResistanceView();
+}
+
+/** その作物で種 taxa に当たる、適用データの病害虫名 (pestNamesForTaxa)。入力した病害虫名そのものは常に含める */
+function resCoveringPests(rx, crop, pest, taxa) {
+  const names = state.pestSuggestions.map(([name]) => name);
+  return [...new Set([pest, ...pestNamesForTaxa(rx, crop, names, taxa)])];
+}
+
+/**
+ * その作物 × 病害虫名 (pests のどれか) に登録のある有効剤を、系統 (種の RAC 系統のコード) ごとに数える。
+ * 作物と病害虫の組はサイドバーの絞り込みと同じ規則 (同じ適用行に作物と病害虫がある) で見る。
+ * 戻り値 Map(code → { ingredients: Map(成分名 → 剤の数), products: 剤の数 })。コードの無い成分は "" に入れる
+ */
+function resRegisteredGroups(crop, pests, systems) {
+  const products = new Set();
+  for (const pest of pests) {
+    for (const p of applyFilters(state.db.products, {
+      ...DEFAULT_FILTERS,
+      statuses: new Set(["有効"]),
+      excludeBranded: false,
+      crop, pest,
+    })) products.add(p);
+  }
+  const out = new Map();
+  for (const p of products) {
+    const cats = p.categories || [p.category];
+    const seen = new Set();
+    for (const i of p.ingredients || []) {
+      const split = splitRacCode(i.rac_code, cats);
+      const codes = [...systems].flatMap(s => split[s]);
+      for (const code of codes.length ? codes : [""]) {
+        if (!out.has(code)) out.set(code, { ingredients: new Map(), products: 0 });
+        const g = out.get(code);
+        g.ingredients.set(i.name, (g.ingredients.get(i.name) || 0) + 1);
+        if (!seen.has(code)) { g.products++; seen.add(code); }
+      }
+    }
+  }
+  return out;
+}
+
+function resIntroHtml(rx) {
+  const domestic = [...rx.byTaxon.values()].flat().filter(r => r.origin === "domestic").length;
+  const external = rx.recordCount - domestic;
+  // 報告のある病害虫 (病害虫名の対応の病害虫名と、報告のある種の和名) を、押すと入力される候補として出す
+  const names = new Map();
+  for (const [pest, entries] of rx.pestMap) {
+    const n = entries.reduce((sum, e) => sum + e.taxa.reduce((s, id) => s + (rx.byTaxon.get(id) || []).length, 0), 0);
+    if (n) names.set(entries[0].pest, n);
+  }
+  for (const [id, list] of rx.byTaxon) {
+    const ja = (rx.taxa[id] || {}).ja;
+    if (ja && /[ァ-ヶ]/.test(ja) && !names.has(ja)) names.set(ja, list.length);
+  }
+  const chips = [...names.entries()].sort((a, b) => b[1] - a[1]).slice(0, 60)
+    .map(([n, c]) => `<button type="button" class="res-chip" data-pest="${escapeHtml(n)}">${escapeHtml(n)} <span class="res-muted">${c}</span></button>`)
+    .join("");
+  return `
+    <div class="res-intro">
+      <p>作物と病害虫・雑草を入れると、その組の病原菌・害虫の種を決め、登録のある剤の系統 (RAC コード) ごとに、
+      どの程度の抵抗性・耐性が、どこで報告されているかを表示します。同じ病名でも作物によって病原菌が違うため、
+      病気は作物を入れてください。</p>
+      <p class="res-muted">収録している報告: 国内の確認済み ${domestic} 件${external ? `、外部データベース ${external} 件` : ""}。
+      報告が無いことは、抵抗性が無いことを意味しません。</p>
+      ${chips ? `<div class="res-chips">${chips}</div>` : `<p class="res-note">まだ報告を収録していません。</p>`}
+    </div>`;
+}
+
+function resMapHtml(prefLevels, title) {
+  const tiles = Object.entries(RES_PREFECTURES).map(([code, [name, x, y]]) => {
+    const level = prefLevels.get(code);
+    const label = level ? `${name}: ${RESISTANCE_LEVELS[level].label}` : `${name}: 報告なし`;
+    return `<div class="res-tile ${level ? `res-${level}` : ""}" style="grid-column:${x + 1};grid-row:${y + 1}" title="${escapeHtml(label)}">${escapeHtml(name)}</div>`;
+  }).join("");
+  const legend = Object.entries(RESISTANCE_LEVELS)
+    .map(([k, L]) => `<span class="res-legend-item"><span class="res-tile-swatch res-${k}"></span>${L.label}</span>`).join("")
+    + `<span class="res-legend-item"><span class="res-tile-swatch"></span>報告なし</span>`;
+  return `
+    <div class="res-map-block">
+      <div class="res-map-title">${title}</div>
+      <div class="res-map" role="img" aria-label="${escapeHtml(title)}の都道府県別の地図">${tiles}</div>
+      <div class="res-legend">${legend}</div>
+    </div>`;
+}
+
+function renderResistanceView() {
+  const body = $("#res-body");
+  if (state.resistanceError) {
+    body.innerHTML = `<div class="empty">抵抗性データを読み込めませんでした: ${escapeHtml(state.resistanceError)}</div>`;
+    return;
+  }
+  const rx = state.resistance;
+  if (!rx) {
+    body.innerHTML = `<div class="loading">データを読込中...</div>`;
+    return;
+  }
+  $("#res-overseas-option").hidden = !resHasOverseas(rx);
+  $("#res-overseas").checked = state.showOverseas;
+  const { crop, pest } = state.res;
+  if (!pest) {
+    body.innerHTML = resIntroHtml(rx);
+    body.querySelectorAll(".res-chip").forEach(b => b.addEventListener("click", () => {
+      state.res.pest = b.dataset.pest;
+      $("#res-pest").value = b.dataset.pest;
+      renderResistanceView();
+    }));
+    return;
+  }
+
+  const t = resolveTaxa(rx, crop || null, pest);
+  const label = `${crop ? `${escapeHtml(crop)} × ` : ""}${escapeHtml(pest)}`;
+  if (!t.taxa.length) {
+    body.innerHTML = `<div class="res-intro"><p class="res-note">${label}: ${t.cropSpecific && !crop
+      ? "この病害虫名は作物によって病原菌・種が違います。作物を入れてください。"
+      : "この病害虫の病原菌・種が未登録のため、照合できません。"}</p></div>`;
+    return;
+  }
+
+  const basisSources = [...new Set(t.entries.map(e => e.source).filter(Boolean))];
+  const pests = resCoveringPests(rx, crop, pest, t.taxa);
+  const otherPests = pests.filter(n => normalize(searchablePest(n)) !== normalize(searchablePest(pest)));
+  let html = `
+    <div class="res-taxa-block">
+      <div><b>${label}</b> の病原菌・種:
+        ${t.taxa.map(id => resTaxonLabel(rx, id)).join("、")}
+        <span class="res-muted">(${RES_BASIS_LABEL[t.basis]}${basisSources.length ? `。根拠: ${basisSources.map(escapeHtml).join(" / ")}` : ""})</span>
+      </div>
+      ${otherPests.length
+        ? `<div class="res-muted">登録は、同じ種に当たる病害虫名 (${otherPests.slice(0, 8).map(escapeHtml).join("、")}${otherPests.length > 8 ? " ほか" : ""}) の分も数えています。</div>` : ""}
+      ${t.cropSpecific && t.basis !== "crop" && t.basis !== "group"
+        ? `<div class="res-note">この病害虫名は作物によって病原菌・種が違う場合があります。作物を入れると絞り込めます。</div>` : ""}
+    </div>`;
+
+  const systems = new Set(t.taxa.map(id => rx.taxa[id].sys));
+  const registered = resRegisteredGroups(crop, pests, systems);
+  const byCode = recordsByRacCode(rx, t.taxa, crop || null, { overseas: state.showOverseas });
+  if (state.res.hostOnly && crop) {
+    for (const [code, list] of byCode) byCode.set(code, list.filter(h => h.hostMatch));
+  }
+  const sysLabel = [...systems].map(s => RES_SYS_LABEL[s]).join("/");
+  const codes = [...new Set([...registered.keys(), ...byCode.keys()])]
+    .sort((a, b) => (a === "") - (b === "") || a.localeCompare(b, "ja", { numeric: true }));
+  if (state.res.code !== null && !codes.includes(state.res.code)) state.res.code = null;
+
+  const rows = codes.map(code => {
+    const reg = registered.get(code);
+    const hits = byCode.get(code) || [];
+    const s = summarizeResistance(hits);
+    const ings = reg ? [...reg.ingredients.keys()].slice(0, 6).map(escapeHtml).join("、") + (reg.ingredients.size > 6 ? " ほか" : "") : "";
+    const prefs = [...s.prefs.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([pc, lv]) => `<span class="res-pref res-${lv}">${escapeHtml(RES_PREFECTURES[pc][0])}</span>`).join("")
+      + [...s.countries].map(c => `<span class="res-pref res-country">${escapeHtml(c)}</span>`).join("");
+    const selected = state.res.code === code;
+    return `
+      <tr class="res-code-row ${selected ? "selected" : ""}" data-code="${escapeHtml(code)}">
+        <td><b>${code ? `${sysLabel} ${escapeHtml(code)}` : "系統なし・不明"}</b></td>
+        <td>${reg ? `${reg.products} 剤<br><span class="res-muted">${ings}</span>` : `<span class="res-muted">登録なし</span>`}</td>
+        <td>${s.count ? resLevelBadge(s.maxLevel) : `<span class="res-muted">報告なし</span>`}</td>
+        <td>${prefs || "-"}</td>
+        <td>${s.latestYear || "-"}</td>
+        <td>${s.count || "-"}</td>
+      </tr>`;
+  }).join("");
+  html += `
+    <div class="detail-section">
+      <h3>系統ごとの報告 (行を押すと、その系統の地図と報告を表示)</h3>
+      <div class="app-table-wrap">
+        <table class="app-table res-code-table">
+          <thead><tr><th>系統</th><th>登録のある剤 (有効)</th><th>最も強い程度</th><th>報告のある地域</th><th>最新の年</th><th>報告数</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  // 選んだ系統 (選んでいなければ全系統) の地図と報告の一覧
+  const code = state.res.code;
+  const seen = new Set();
+  const hits = (code === null ? [...byCode.values()].flat() : byCode.get(code) || [])
+    .filter(h => !seen.has(h.record.id) && seen.add(h.record.id));
+  const s = summarizeResistance(hits);
+  const scopeLabel = code === null ? "全系統" : code ? `${sysLabel} ${escapeHtml(code)}` : "系統なし・不明";
+  html += `<div class="detail-section res-map-section">
+    ${resMapHtml(s.prefs, `${label}: ${scopeLabel}`)}
+    ${s.countries.size ? `<p class="res-muted">海外: ${[...s.countries].map(escapeHtml).join("、")}</p>` : ""}
+    ${code ? pests.slice(0, 4).map(n => `<button type="button" class="res-search-btn" data-code="${escapeHtml(code)}" data-pest="${escapeHtml(n)}">この系統の剤を「剤を探す」で一覧する${pests.length > 1 ? ` (${escapeHtml(n)})` : ""}</button>`).join(" ") : ""}
+  </div>`;
+  html += `<div class="detail-section"><h3>報告 (${scopeLabel}、${hits.length} 件)</h3>
+    ${hits.length ? resRecordTableHtml(rx, hits, { code: true, taxon: t.taxa.length > 1 }) : `<p class="res-note">収録した報告はありません。</p>`}
+    ${resFootnoteHtml(rx, false)}
+  </div>`;
+
+  body.innerHTML = html;
+  body.querySelectorAll(".res-code-row").forEach(row => row.addEventListener("click", () => {
+    state.res.code = state.res.code === row.dataset.code ? null : row.dataset.code;
+    renderResistanceView();
+  }));
+  body.querySelectorAll(".res-search-btn").forEach(btn => btn.addEventListener("click", () =>
+    searchByRacCode(crop, btn.dataset.pest, [...systems][0], btn.dataset.code)));
+}
+
+/** 「剤を探す」に切り替え、作物・病害虫をサイドバーに、系統を検索語に入れて一覧する */
+function searchByRacCode(crop, pest, sys, code) {
+  state.filters.crop = crop;
+  state.filters.pest = pest;
+  $("#filter-crop").value = crop;
+  $("#filter-pest").value = pest;
+  state.currentQuery = `${RES_SYS_LABEL[sys]} ${code}`;
+  searchInput.value = state.currentQuery;
+  setView("search");
+  updateResults();
 }
 
 function closeDetail() {
@@ -618,6 +1064,33 @@ document.querySelectorAll("#filter-app-scope input[name='app-scope']").forEach(r
 
 detailOverlay.addEventListener("click", e => {
   if (e.target === detailOverlay) closeDetail();
+});
+
+// 画面の切り替え (剤を探す / 抵抗性を見る)
+document.querySelectorAll("#view-switch button").forEach(b =>
+  b.addEventListener("click", () => setView(b.dataset.view))
+);
+
+// 抵抗性の画面の入力。待ち時間の間にもう一方の欄を打っても取りこぼさないよう、描き直すときに両方の欄を読む
+let resDebounce = null;
+for (const id of ["#res-crop", "#res-pest"]) {
+  $(id).addEventListener("input", () => {
+    clearTimeout(resDebounce);
+    resDebounce = setTimeout(() => {
+      state.res.crop = $("#res-crop").value.trim();
+      state.res.pest = $("#res-pest").value.trim();
+      state.res.code = null;
+      renderResistanceView();
+    }, 200);
+  });
+}
+$("#res-host-only").addEventListener("change", e => {
+  state.res.hostOnly = e.target.checked;
+  renderResistanceView();
+});
+$("#res-overseas").addEventListener("change", e => {
+  setShowOverseas(e.target.checked);
+  renderResistanceView();
 });
 
 document.addEventListener("keydown", e => {

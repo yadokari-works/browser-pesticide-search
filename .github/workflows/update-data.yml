@@ -32,6 +32,9 @@ jobs:
       - name: 検索ロジック品質ゲート (1件でも失敗したら停止)
         run: node scripts/test_search.mjs
 
+      - name: 抵抗性の照合の品質ゲート (1件でも失敗したら停止)
+        run: node scripts/test_resistance.mjs
+
       - name: PWA再生成 (docs/)
         run: python3 build/build_pwa.py
 

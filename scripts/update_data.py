@@ -8,7 +8,7 @@ FAMIC + CropLife Japan + 失効農薬の最新データを取得し、JSON を�
 - 失効農薬 index ページを取得 → 2本の zip URL を自動抽出
 - zip を rawdata/ にダウンロード → rawdata/sikkou/ に展開（stdlib zipfile）
 - CropLife RAC xlsx を rawdata/mechanism_rac.xlsx にダウンロード
-- build_data.py → verify_data.py → check_rac_status.py → build_bundled.py を順に実行
+- build_data.py → verify_data.py → check_rac_status.py → build_resistance.py → build_bundled.py を順に実行
 
 依存: Python 3.8+、openpyxl（build_data.py が要求）
          → 無ければ自動で pip install を提案
@@ -219,6 +219,11 @@ def main() -> int:
     if prev_rac_edition:
         rac_cmd += ["--prev-edition", prev_rac_edition]
     subprocess.run(rac_cmd, cwd=PROJECT_ROOT)
+
+    # 抵抗性の報告の成分に、新しい登録データの RAC コードを付け直す。報告の成分名が登録データから
+    # 消えた (名称変更など) ときは、ここで止まって気づける
+    run_step(7, 7, "抵抗性データ生成 (build_resistance.py)",
+             [sys.executable, str(SCRIPTS_DIR / "build_resistance.py")])
 
     run_step(7, 7, "シングルHTML 再生成 (build_bundled.py)",
              [sys.executable, str(BUILD_DIR / "build_bundled.py")])

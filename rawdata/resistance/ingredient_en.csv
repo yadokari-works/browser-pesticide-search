@@ -1,0 +1,18 @@
+﻿english,ingredient,note
+paraquat,パラコート,
+diquat,ジクワット,
+bensulfuron-methyl,ベンスルフロンメチル,
+pyrazosulfuron-ethyl,ピラゾスルフロンエチル,
+imazosulfuron,イマゾスルフロン,
+ethoxysulfuron,エトキシスルフロン,
+cyclosulfamuron,シクロスルファムロン,
+thifensulfuron-methyl,チフェンスルフロンメチル,
+halosulfuron-methyl,ハロスルフロンメチル,
+flazasulfuron,フラザスルフロン,
+penoxsulam,ペノキススラム,
+cyhalofop-butyl,シハロホップブチル,
+metamifop,メタミホップ,
+trifluralin,トリフルラリン,
+glyphosate,グリホサート,登録データは塩の名前 (グリホサートカリウム塩など)。語尾を除いて照合する
+glufosinate,グルホシネート,
+glyphoaste,グリホサート,日本雑草学会のページの綴りの誤り (glyphosate)。綴りを直さずに対応づける

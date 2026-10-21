@@ -1,0 +1,20 @@
+{
+  "_note": "FRAC の耐性病原菌の一覧は 2026-10-22 時点で入手先が未確認。入手したら CSV にし、（）の値を実際の列名に直す。卵菌は kind を「卵菌」に",
+  "source_id": "frac",
+  "columns": {
+    "scientific_name": "（学名の列名）",
+    "country": "（国の列名）",
+    "survey_year": "（報告年の列名）",
+    "ingredient_en": "（成分名 英語 の列名）",
+    "source_title": "（文献の列名）",
+    "host_crop": "（作物の列名）",
+    "rac_code": "（FRAC コードの列名）"
+  },
+  "defaults": {
+    "kind": "糸状菌",
+    "level": "抵抗性あり",
+    "evidence": "データベースの記録",
+    "source_publisher": "Fungicide Resistance Action Committee (FRAC)",
+    "source_url": "https://www.frac.info/"
+  }
+}

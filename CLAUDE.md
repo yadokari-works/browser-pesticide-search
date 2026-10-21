@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 概要
 
-FAMIC の農薬登録情報 (現行登録 + 失効農薬) と CropLife Japan の RAC コード表を統合し、商品名・成分名・作物・病害虫・IRAC/FRAC/HRAC コードで検索する静的ブラウザアプリ。npm やバンドラは使わず、Python スクリプトで JSON を生成し、単一 HTML に埋め込んで配布する。配布形態は 3 つ: 単一 HTML (`build/これをクリック.html`)、GitHub Pages の PWA (`docs/`)、iOS アプリ (`ios/`、WKWebView で同梱 HTML を表示するだけのラッパー)。
+FAMIC の農薬登録情報 (現行登録 + 失効農薬) と CropLife Japan の RAC コード表を統合し、商品名・成分名・作物・病害虫・IRAC/FRAC/HRAC コードで検索する静的ブラウザアプリ。抵抗性・耐性の報告 (県の病害虫防除所の公表資料など、出典付きで手で整えたもの) を作物 × 病害虫 × 成分で照合して表示する機能もある。npm やバンドラは使わず、Python スクリプトで JSON を生成し、単一 HTML に埋め込んで配布する。配布形態は 3 つ: 単一 HTML (`build/これをクリック.html`)、GitHub Pages の PWA (`docs/`)、iOS アプリ (`ios/`、WKWebView で同梱 HTML を表示するだけのラッパー)。
 
 ユーザー向けの説明は `使い方.md`、変更履歴は `更新履歴.md`。`データ更新.bat` は CP932 で書かれているため、UTF-8 として編集しない。
 
@@ -19,6 +19,9 @@ python3 scripts/build_data.py          # rawdata/ → src/data/pesticides.json, 
 python3 scripts/verify_data.py         # 統計・整合性の検査 (登録番号の重複、成分の無い有効剤、失効剤 0 件、RAC コードに「-」などの記号が残る、前回のコミットから 10% 以上の件数の急減で exit 1)
 python3 scripts/check_rac_status.py    # RAC 表の版・未分類成分を確認 (--strict で警告時 exit 1, --offline, --prev-edition 前回の版)
 python3 scripts/build_crop_groups.py   # 作物分類表 PDF → src/js/core/crop_groups.js (分類表の改正時だけ手動で実行。要 pdfplumber)
+python3 scripts/build_resistance.py    # rawdata/resistance/*.csv → src/data/resistance.json (誤りがあれば行番号を出して exit 1。--check で検査だけ)
+python3 scripts/import_resistance/wssj_japan.py   # 日本雑草学会の抵抗性雑草の一覧 → rawdata/resistance/external/wssj_japan.csv
+python3 scripts/import_resistance/generic_csv.py --map scripts/import_resistance/maps/<id>.json --input <書き出したCSV>  # APRD など
 
 # ビルド (必ずこの順。build_pwa は build/これをクリック.html を入力にする)
 python3 build/build_bundled.py         # src/ を 1 ファイルにインライン化 → build/これをクリック.html
@@ -26,6 +29,8 @@ python3 build/build_pwa.py             # → docs/ (index.html, sw.js, manifest,
 
 # テスト (検索ロジックの回帰テスト。1 件でも失敗で exit 1、CI の品質ゲート)
 node scripts/test_search.mjs
+# 抵抗性の照合の回帰テスト (固定の試験データで照合の規則、実データで形の整合を確かめる。CI の品質ゲート)
+node scripts/test_resistance.mjs
 # 配布物の検査 (build/これをクリック.html と docs/index.html の script の構文、埋め込んだデータが src/data と同じか、版の表記)
 node scripts/check_bundle.mjs
 
@@ -62,6 +67,16 @@ RAC コードは CropLife の表を優先し、表に無い成分は `rawdata/ra
 
 生成物 (`src/data/*.json`、`src/js/core/crop_groups.js`、`build/これをクリック.html`、`docs/*`、`ios/App/Resources/これをクリック.html`) は手で編集しない。ソースを直して再生成する。
 
+### 抵抗性・耐性のデータ (`rawdata/resistance/` → `src/data/resistance.json`)
+
+列の意味と運用は `rawdata/resistance/README.md`。要点:
+
+- `taxa.csv` (種)・`pest_map.csv` (FAMIC の病害虫名 → 種。**作物ごと**。同じ病名でも作物で病原菌が違うため)・`records.csv` (国内の報告) は、確認者・確認日の無い行があると `build_resistance.py` が止まる。利用者が確かめた行だけを入れる。Claude が資料から作った下書きは `review/resistance-intake/` (Git 管理外) に置く。
+- 報告の成分の RAC コードは、ビルド時に pesticides.json から付ける (成分名は完全一致、次に塩・水和物の語尾を除いた一致。`build_data.py` の `_SALT_SUFFIXES` と同じ表が `build_resistance.py` と `resistance.js` にもある)。登録データに無い成分は CSV の `rac_code` を使う。出力に日時を入れないので、入力が同じなら resistance.json は変わらない。`update_data.py` が毎回作り直す (成分名が登録データから消えたら止まる)。
+- 外部データベースは `scripts/import_resistance/` の取り込み役が `external/<id>.csv` (Git 管理外) に書く。配布物に残すかは `sources.json` の `include` (既定 false。true には `terms_checked` と `verified_at` が要る)。ビルドが include に合わせて `included/<id>.csv` (Git 管理。CI は external を持たないため) へ写す・外す。APRD はボット対策があり、スクリプトで取得しない (利用者が書き出したファイルを読む)。
+- 照合 (`src/js/core/resistance.js`。DOM に依存しない): `resolveTaxa` が (作物, 病害虫名) → 種を、その作物の行 → 作物群の行 → `*` の行 → 和名が病害虫名と同じ種、の順に引く。無ければ未登録 (推測しない)。`findResistance` は、成分が同じなら「同じ成分」、RAC コードが同じなら「同じ系統」(UN・NC・0 は系統として扱わない)。宿主作物が照合の作物と同じかを `hostMatch` に付ける。
+- 画面: 詳細の適用表の下の「抵抗性・耐性の報告」(`resistanceSectionHtml`。照合の作物は、利用者が指定した作物にその行が当たればそれ、無ければ行の作物が作物群でない 1 作物のときだけその作物) と、ヘッダーの切り替えで出す「抵抗性を見る」画面 (`renderResistanceView`。系統ごとの表・都道府県のタイル地図・報告の一覧)。「海外の報告を表示」は localStorage に覚える。
+
 ### バンドルの制約
 
 `build/build_bundled.py` は、ES module の `import` / `export` を正規表現で取り除き、`JS_ORDER` の順に 1 つのスコープへ連結する。そのため:
@@ -70,7 +85,7 @@ RAC コードは CropLife の表を優先し、表に無い成分は `rawdata/ra
 - トップレベルの名前はモジュールをまたいで重複させない (連結後に衝突する)。
 - import は `import { ... } from "..."` の 1 文形式で書く。
 
-データは、バンドル版では `window.PESTICIDES_DB` / `window.APPLICATIONS` に埋め込まれる。開発版では `fetch("data/...")` で読む。`app.js` と `io/applications.js` は両方に対応している。
+データは、バンドル版では `window.PESTICIDES_DB` / `window.APPLICATIONS` / `window.RESISTANCE_DB` に埋め込まれる。開発版では `fetch("data/...")` で読む。`app.js` と `io/applications.js`・`io/resistance_data.js` は両方に対応している。抵抗性データが読めなくても検索は動く (抵抗性の欄に読込エラーを出す)。
 
 ### 検索の流れ (`src/js/core/` と `app.js`)
 
@@ -96,7 +111,7 @@ RAC コードは CropLife の表を優先し、表に無い成分は `rawdata/ra
 
 ## CI と公開
 
-`.github/workflows/update-data.yml` が毎週月曜 03:00 JST と手動実行で動く。手順は `update_data.py` (中で `verify_data.py` が失敗すると止まる) → `test_search.mjs` → `build_pwa.py` → `check_bundle.mjs`。差分があれば `famic-data-bot` が main へ直接 push し、GitHub Pages が `docs/` を配信する。PWA の Service Worker は HTML を network-first で取得し (4 秒で応答が無ければキャッシュを返し、裏で更新する)、キャッシュ名に `VERSION` を埋め込む。古いキャッシュは `pesticide-search-` で始まるものだけ消す (同じ origin の PDF Tool などのキャッシュを消さないため)。
+`.github/workflows/update-data.yml` が毎週月曜 03:00 JST と手動実行で動く。手順は `update_data.py` (中で `verify_data.py`・`build_resistance.py` が失敗すると止まる) → `test_search.mjs` → `test_resistance.mjs` → `build_pwa.py` → `check_bundle.mjs`。差分があれば `famic-data-bot` が main へ直接 push し、GitHub Pages が `docs/` を配信する。PWA の Service Worker は HTML を network-first で取得し (4 秒で応答が無ければキャッシュを返し、裏で更新する)、キャッシュ名に `VERSION` を埋め込む。古いキャッシュは `pesticide-search-` で始まるものだけ消す (同じ origin の PDF Tool などのキャッシュを消さないため)。
 
 ## リリースとコミット
 

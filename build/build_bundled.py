@@ -25,8 +25,10 @@ JS_ORDER = [
     "js/core/normalize.js",
     "js/core/search.js",
     "js/core/filter.js",
+    "js/core/resistance.js",
     "js/io/export.js",
     "js/io/applications.js",
+    "js/io/resistance_data.js",
     "js/app.js",
 ]
 
@@ -84,29 +86,36 @@ def inline_js(html):
 
 
 def inline_data(html):
-    """pesticides.json と applications.json を window 変数として埋め込む"""
+    """pesticides.json と applications.json と resistance.json を window 変数として埋め込む"""
     main_path = SRC / "data" / "pesticides.json"
     apps_path = SRC / "data" / "applications.json"
+    res_path = SRC / "data" / "resistance.json"
 
     if not main_path.exists():
         sys.exit("ERROR: pesticides.json が無い。先に scripts/build_data.py を実行してください。")
     if not apps_path.exists():
         # 適用データ無しで配布すると、作物・病害虫の検索が黙って 0 件になるため止める
         sys.exit("ERROR: applications.json が無い。先に scripts/build_data.py を実行してください。")
+    if not res_path.exists():
+        # 抵抗性データ無しで配布すると、抵抗性の欄が読込エラーになるため止める
+        sys.exit("ERROR: resistance.json が無い。先に scripts/build_resistance.py を実行してください。")
 
     main_size = main_path.stat().st_size / 1024 / 1024
     apps_size = apps_path.stat().st_size / 1024 / 1024
-    print(f"  Embedding data: main={main_size:.2f}MB, apps={apps_size:.2f}MB")
+    res_size = res_path.stat().st_size / 1024
+    print(f"  Embedding data: main={main_size:.2f}MB, apps={apps_size:.2f}MB, resistance={res_size:.1f}KB")
 
     # データ中の "</script>" や "<!--" で script 要素が閉じないよう、"<" を \u003c にする。
     # JSON では "<" は文字列の中にしか現れないので、読み込んだ値は変わらない
     main_json = read(main_path).replace("<", "\\u003c")
     apps_json = read(apps_path).replace("<", "\\u003c")
+    res_json = read(res_path).replace("<", "\\u003c")
 
     data_script = (
         f'<script>\n'
         f'window.PESTICIDES_DB = {main_json};\n'
         f'window.APPLICATIONS = {apps_json};\n'
+        f'window.RESISTANCE_DB = {res_json};\n'
         f'</script>'
     )
     # </head> 直前に挿入
