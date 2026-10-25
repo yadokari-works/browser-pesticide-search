@@ -1,7 +1,737 @@
 {
  "schema_version": 1,
- "taxa": {},
- "pest_map": [],
- "records": [],
+ "taxa": {
+  "plutella_xylostella": {
+   "sci": "Plutella xylostella",
+   "ja": "コナガ",
+   "kind": "昆虫",
+   "sys": "I",
+   "syn": [],
+   "source": "日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006)"
+  },
+  "tetranychus_urticae": {
+   "sci": "Tetranychus urticae",
+   "ja": "ナミハダニ",
+   "kind": "ダニ",
+   "sys": "I",
+   "syn": [],
+   "source": "日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006)"
+  }
+ },
+ "pest_map": [
+  {
+   "pest": "ハダニ類",
+   "crop": "いちご",
+   "taxa": [
+    "tetranychus_urticae"
+   ],
+   "source": "熊本県病害虫防除所 2025・栃木県農業環境指導センター 2023・長崎県病害虫防除所 令和2年度 のいちごのナミハダニの薬剤感受性検定 (いちごのハダニとしてナミハダニを扱う)",
+   "note": "いちごの「ハダニ類」にはナミハダニだけを対応させる。カンザワハダニなどは、報告を入れるときに足す。「ナミハダニ」「コナガ」は和名が FAMIC の病害虫名と同じなので、この表に行が無くても引ける"
+  }
+ ],
+ "records": [
+  {
+   "id": "kumamoto-2025-ichigo-namihadani-acynonapyr",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "アシノナピル",
+   "rac": [
+    "33"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "43",
+   "year": "2025",
+   "published": "2025-05-01",
+   "level": "not_detected",
+   "evidence": "生物検定",
+   "metric": "補正死虫率 100.0 / 100.0 / 100.0 / 100.0%",
+   "wording": "高い感受性を示した。感受性の低下は認められなかった",
+   "host": "いちご",
+   "src": {
+    "title": "イチゴにおけるナミハダニの薬剤感受性検定の結果（技術情報第１号）",
+    "publisher": "熊本県病害虫防除所",
+    "url": "https://www.pref.kumamoto.jp/uploaded/attachment/279436.pdf",
+    "page": "表３、３ 結果および考察",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 卵を薬液に浸漬 (リーフディスク法)、処理 7 日後の補正死虫率。4 個体群 (玉名市 2、八代市 2)"
+  },
+  {
+   "id": "kumamoto-2025-ichigo-namihadani-bifenazate",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "ビフェナゼート",
+   "rac": [
+    "20D"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "43",
+   "year": "2025",
+   "published": "2025-05-01",
+   "level": "not_detected",
+   "evidence": "生物検定",
+   "metric": "補正死虫率 100.0 / 96.3 / 100.0 / 100.0%",
+   "wording": "高い感受性を示した。供試した個体群全てで補正死虫率が 95％以上 (効果は遅効的)",
+   "host": "いちご",
+   "src": {
+    "title": "イチゴにおけるナミハダニの薬剤感受性検定の結果（技術情報第１号）",
+    "publisher": "熊本県病害虫防除所",
+    "url": "https://www.pref.kumamoto.jp/uploaded/attachment/279436.pdf",
+    "page": "表３、３ 結果および考察",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 卵を薬液に浸漬 (リーフディスク法)、処理 7 日後の補正死虫率。4 個体群 (玉名市 2、八代市 2)"
+  },
+  {
+   "id": "kumamoto-2025-ichigo-namihadani-cyenopyrafen",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "シエノピラフェン",
+   "rac": [
+    "25A"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "43",
+   "year": "2025",
+   "published": "2025-05-01",
+   "level": "reduced",
+   "evidence": "生物検定",
+   "metric": "補正死虫率 20.8 / 98.8 / 10.9 / 41.4%",
+   "wording": "一部の個体群で感受性が低かった。4 個体群中 3 個体群で 50％以下",
+   "host": "いちご",
+   "src": {
+    "title": "イチゴにおけるナミハダニの薬剤感受性検定の結果（技術情報第１号）",
+    "publisher": "熊本県病害虫防除所",
+    "url": "https://www.pref.kumamoto.jp/uploaded/attachment/279436.pdf",
+    "page": "表３、３ 結果および考察",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 卵を薬液に浸漬 (リーフディスク法)、処理 7 日後の補正死虫率。4 個体群 (玉名市 2、八代市 2)。感受性低下の個体群の数は 2015 年より多かったと記載。程度は結果の言葉「感受性が低かった」に従う。考察(6) の「抵抗性の発達程度」は、ほ場間の差を述べた文で、抵抗性の検出を述べた文ではない"
+  },
+  {
+   "id": "kumamoto-2025-ichigo-namihadani-cyflumetofen",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "シフルメトフェン",
+   "rac": [
+    "25A"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "43",
+   "year": "2025",
+   "published": "2025-05-01",
+   "level": "reduced",
+   "evidence": "生物検定",
+   "metric": "補正死虫率 15.9 / 100.0 / 4.3 / 7.3%",
+   "wording": "一部の個体群で感受性が低かった。4 個体群中 3 個体群で 20％以下",
+   "host": "いちご",
+   "src": {
+    "title": "イチゴにおけるナミハダニの薬剤感受性検定の結果（技術情報第１号）",
+    "publisher": "熊本県病害虫防除所",
+    "url": "https://www.pref.kumamoto.jp/uploaded/attachment/279436.pdf",
+    "page": "表３、３ 結果および考察",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 卵を薬液に浸漬 (リーフディスク法)、処理 7 日後の補正死虫率。4 個体群 (玉名市 2、八代市 2)。2012・2015 年の調査でも感受性低下の個体群を確認と記載。程度は結果の言葉「感受性が低かった」に従う。考察(6) の「抵抗性の発達程度」は、ほ場間の差を述べた文で、抵抗性の検出を述べた文ではない"
+  },
+  {
+   "id": "kumamoto-2025-ichigo-namihadani-fluxametamide",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "フルキサメタミド",
+   "rac": [
+    "30"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "43",
+   "year": "2025",
+   "published": "2025-05-01",
+   "level": "not_detected",
+   "evidence": "生物検定",
+   "metric": "補正死虫率 87.1 / 100.0 / 100.0 / 83.3%",
+   "wording": "高い感受性を示した。感受性の低下は認められなかった",
+   "host": "いちご",
+   "src": {
+    "title": "イチゴにおけるナミハダニの薬剤感受性検定の結果（技術情報第１号）",
+    "publisher": "熊本県病害虫防除所",
+    "url": "https://www.pref.kumamoto.jp/uploaded/attachment/279436.pdf",
+    "page": "表３、３ 結果および考察",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 卵を薬液に浸漬 (リーフディスク法)、処理 7 日後の補正死虫率。4 個体群 (玉名市 2、八代市 2)。数値は表３の値。本文 (8) は「全てで補正死虫率が 85％以上」と書くが、表３の B地域２ は 83.3%"
+  },
+  {
+   "id": "kumamoto-2025-ichigo-namihadani-milbemectin",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "ミルベメクチン",
+   "rac": [
+    "6"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "43",
+   "year": "2025",
+   "published": "2025-05-01",
+   "level": "reduced",
+   "evidence": "生物検定",
+   "metric": "補正死虫率 26.2 / 52.5 / 9.7 / 32.3% (A地域1 / A地域2 / B地域1 / B地域2)",
+   "wording": "コロマイト水和剤に対して感受性が低かった。供試した個体群全てで補正死虫率が 60％以下",
+   "host": "いちご",
+   "src": {
+    "title": "イチゴにおけるナミハダニの薬剤感受性検定の結果（技術情報第１号）",
+    "publisher": "熊本県病害虫防除所",
+    "url": "https://www.pref.kumamoto.jp/uploaded/attachment/279436.pdf",
+    "page": "表３、３ 結果および考察",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 卵を薬液に浸漬 (リーフディスク法)、処理 7 日後の補正死虫率。4 個体群 (玉名市 2、八代市 2)。2009・2012・2015 年の調査でも感受性低下の個体群を確認と記載。程度は結果の言葉「感受性が低かった」に従う。考察(6) の「抵抗性の発達程度」は、ほ場間の差を述べた文で、抵抗性の検出を述べた文ではない"
+  },
+  {
+   "id": "kumamoto-2025-ichigo-namihadani-pyflubumide",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "ピフルブミド",
+   "rac": [
+    "25B"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "43",
+   "year": "2025",
+   "published": "2025-05-01",
+   "level": "reduced",
+   "evidence": "生物検定",
+   "metric": "補正死虫率 82.0 / 100.0 / 56.5 / 14.0%",
+   "wording": "一部の個体群で感受性が低かった。補正死虫率が個体群間でばらつき、20％以下の個体群あり",
+   "host": "いちご",
+   "src": {
+    "title": "イチゴにおけるナミハダニの薬剤感受性検定の結果（技術情報第１号）",
+    "publisher": "熊本県病害虫防除所",
+    "url": "https://www.pref.kumamoto.jp/uploaded/attachment/279436.pdf",
+    "page": "表３、３ 結果および考察",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 卵を薬液に浸漬 (リーフディスク法)、処理 7 日後の補正死虫率。4 個体群 (玉名市 2、八代市 2)。程度は結果の言葉「感受性が低かった」に従う。考察(6) の「抵抗性の発達程度」は、ほ場間の差を述べた文で、抵抗性の検出を述べた文ではない"
+  },
+  {
+   "id": "nagasaki-2017-broccoli-konaga-bt",
+   "taxon": "plutella_xylostella",
+   "ingredient": "BT(生菌)",
+   "rac": [
+    "11A"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "42",
+   "year": "2017",
+   "published": "2018-01",
+   "level": "not_detected",
+   "evidence": "生物検定",
+   "metric": "補正死虫率 100 / 100 / 100% (デルフィン顆粒水和剤 1,000 倍)",
+   "wording": "補正死虫率は 3 地点全てで 100％と高かった",
+   "host": "ブロッコリー",
+   "src": {
+    "title": "平成２９年度ブロッコリーにおけるコナガの薬剤感受性検定結果",
+    "publisher": "長崎県病害虫防除所",
+    "url": "https://www.pref.nagasaki.jp/e-nourin/nougi/JPP/pdf/kentei/H29burokkorikonagakenntei.pdf",
+    "page": "３．結果、表",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 3 齢幼虫、葉片浸漬法、処理 96 時間後の補正死虫率。3 地点 (雲仙市、五島市、壱岐市)。供試は kurstaki 株の剤。登録データの成分名「BT(生菌)」は株を区別しないので、別の株の剤とも同じ成分として照合される"
+  },
+  {
+   "id": "nagasaki-2017-broccoli-konaga-chlorantraniliprole",
+   "taxon": "plutella_xylostella",
+   "ingredient": "クロラントラニリプロール",
+   "rac": [
+    "28"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "42",
+   "year": "2017",
+   "published": "2018-01",
+   "level": "reduced",
+   "evidence": "生物検定",
+   "metric": "補正死虫率 79.2 / 30.4 / 85.7% (雲仙市 / 五島市 / 壱岐市、2,000 倍)",
+   "wording": "五島市の補正死虫率は 30.4％と低く、雲仙市・壱岐市はそれぞれ 79.2％、85.7％とやや低かった",
+   "host": "ブロッコリー",
+   "src": {
+    "title": "平成２９年度ブロッコリーにおけるコナガの薬剤感受性検定結果",
+    "publisher": "長崎県病害虫防除所",
+    "url": "https://www.pref.nagasaki.jp/e-nourin/nougi/JPP/pdf/kentei/H29burokkorikonagakenntei.pdf",
+    "page": "３．結果、表",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 3 齢幼虫、葉片浸漬法、処理 96 時間後の補正死虫率。3 地点 (雲仙市、五島市、壱岐市)。程度は出典の判定 (低い・やや低い) に従う。出典は抵抗性とは書いていない"
+  },
+  {
+   "id": "nagasaki-2017-broccoli-konaga-chlorfenapyr",
+   "taxon": "plutella_xylostella",
+   "ingredient": "クロルフェナピル",
+   "rac": [
+    "13"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "42",
+   "year": "2017",
+   "published": "2018-01",
+   "level": "not_detected",
+   "evidence": "生物検定",
+   "metric": "補正死虫率 91.7 / 95.7 / 96.4% (2,000 倍)",
+   "wording": "補正死虫率は 3 地点全てで 90％以上と高かった",
+   "host": "ブロッコリー",
+   "src": {
+    "title": "平成２９年度ブロッコリーにおけるコナガの薬剤感受性検定結果",
+    "publisher": "長崎県病害虫防除所",
+    "url": "https://www.pref.nagasaki.jp/e-nourin/nougi/JPP/pdf/kentei/H29burokkorikonagakenntei.pdf",
+    "page": "３．結果、表",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 3 齢幼虫、葉片浸漬法、処理 96 時間後の補正死虫率。3 地点 (雲仙市、五島市、壱岐市)"
+  },
+  {
+   "id": "nagasaki-2017-broccoli-konaga-cyantraniliprole",
+   "taxon": "plutella_xylostella",
+   "ingredient": "シアントラニリプロール",
+   "rac": [
+    "28"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "42",
+   "year": "2017",
+   "published": "2018-01",
+   "level": "not_detected",
+   "evidence": "生物検定",
+   "metric": "補正死虫率 100 / 95.7 / 100% (2,000 倍)",
+   "wording": "補正死虫率は 3 地点全てで 90％以上と高かった",
+   "host": "ブロッコリー",
+   "src": {
+    "title": "平成２９年度ブロッコリーにおけるコナガの薬剤感受性検定結果",
+    "publisher": "長崎県病害虫防除所",
+    "url": "https://www.pref.nagasaki.jp/e-nourin/nougi/JPP/pdf/kentei/H29burokkorikonagakenntei.pdf",
+    "page": "３．結果、表",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 3 齢幼虫、葉片浸漬法、処理 96 時間後の補正死虫率。3 地点 (雲仙市、五島市、壱岐市)"
+  },
+  {
+   "id": "nagasaki-2017-broccoli-konaga-spinosad",
+   "taxon": "plutella_xylostella",
+   "ingredient": "スピノサド",
+   "rac": [
+    "5"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "42",
+   "year": "2017",
+   "published": "2018-01",
+   "level": "not_detected",
+   "evidence": "生物検定",
+   "metric": "補正死虫率 100 / 100 / 100% (5,000 倍)",
+   "wording": "補正死虫率は 3 地点全てで 100％と高かった",
+   "host": "ブロッコリー",
+   "src": {
+    "title": "平成２９年度ブロッコリーにおけるコナガの薬剤感受性検定結果",
+    "publisher": "長崎県病害虫防除所",
+    "url": "https://www.pref.nagasaki.jp/e-nourin/nougi/JPP/pdf/kentei/H29burokkorikonagakenntei.pdf",
+    "page": "３．結果、表",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 3 齢幼虫、葉片浸漬法、処理 96 時間後の補正死虫率。3 地点 (雲仙市、五島市、壱岐市)"
+  },
+  {
+   "id": "nagasaki-2020-ichigo-namihadani-abamectin",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "アバメクチン",
+   "rac": [
+    "6"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "42",
+   "year": "2020",
+   "published": "",
+   "level": "not_detected",
+   "evidence": "生物検定",
+   "metric": "補正死亡率 98.5 / 99.0 / 100 / 100% (常用濃度 1,000 倍)",
+   "wording": "常用濃度の補正死亡率は、小佐々町と北有馬町で 100％、鈴田で 99％、牧島町で 98.5％と高かった",
+   "host": "いちご",
+   "src": {
+    "title": "令和２年度いちごのナミハダニ薬剤感受性検定結果",
+    "publisher": "長崎県病害虫防除所",
+    "url": "https://www.pref.nagasaki.jp/e-nourin/nougi/JPP/pdf/kentei/R2itigohadanikenntei.pdf",
+    "page": "２．結果、表",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 卵を薬液に浸漬、処理 7 日後の補正死亡率 (常用濃度)。4 地点 (長崎市牧島、大村市鈴田、佐世保市小佐々、南島原市北有馬)。出典の評価: 95% 以上を効果が高い、95% 未満を効果が低い。資料の日付は「令和２年２月９日」と印刷されているが、採集は令和 2 年 5〜6 月なので公表日は空にした"
+  },
+  {
+   "id": "nagasaki-2020-ichigo-namihadani-cyenopyrafen",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "シエノピラフェン",
+   "rac": [
+    "25A"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "42",
+   "year": "2020",
+   "published": "",
+   "level": "reduced",
+   "evidence": "生物検定",
+   "metric": "補正死亡率 89.7 / 88.6 / 94.2 / 89.4% (常用濃度 2,000 倍)",
+   "wording": "常用濃度の補正死亡率は全地点で 95％未満と低かった",
+   "host": "いちご",
+   "src": {
+    "title": "令和２年度いちごのナミハダニ薬剤感受性検定結果",
+    "publisher": "長崎県病害虫防除所",
+    "url": "https://www.pref.nagasaki.jp/e-nourin/nougi/JPP/pdf/kentei/R2itigohadanikenntei.pdf",
+    "page": "２．結果、表",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 卵を薬液に浸漬、処理 7 日後の補正死亡率 (常用濃度)。4 地点 (長崎市牧島、大村市鈴田、佐世保市小佐々、南島原市北有馬)。出典の評価: 95% 以上を効果が高い、95% 未満を効果が低い。資料の日付は「令和２年２月９日」と印刷されているが、採集は令和 2 年 5〜6 月なので公表日は空にした。程度は出典の判定 (95% 未満は効果が低い) に従う"
+  },
+  {
+   "id": "nagasaki-2020-ichigo-namihadani-emamectin",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "エマメクチン安息香酸塩",
+   "rac": [
+    "6"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "42",
+   "year": "2020",
+   "published": "",
+   "level": "reduced",
+   "evidence": "生物検定",
+   "metric": "補正死亡率 98.6 / 61.3 / 100 / 100% (常用濃度 2,000 倍)",
+   "wording": "常用濃度の補正死亡率は、小佐々町と北有馬町で 100％、牧島で 98.6％と高かったが、鈴田は 61.3%と低かった",
+   "host": "いちご",
+   "src": {
+    "title": "令和２年度いちごのナミハダニ薬剤感受性検定結果",
+    "publisher": "長崎県病害虫防除所",
+    "url": "https://www.pref.nagasaki.jp/e-nourin/nougi/JPP/pdf/kentei/R2itigohadanikenntei.pdf",
+    "page": "２．結果、表",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 卵を薬液に浸漬、処理 7 日後の補正死亡率 (常用濃度)。4 地点 (長崎市牧島、大村市鈴田、佐世保市小佐々、南島原市北有馬)。出典の評価: 95% 以上を効果が高い、95% 未満を効果が低い。資料の日付は「令和２年２月９日」と印刷されているが、採集は令和 2 年 5〜6 月なので公表日は空にした。1 地点だけの低下。程度は出典の判定 (95% 未満は効果が低い) に従う"
+  },
+  {
+   "id": "nagasaki-2020-ichigo-namihadani-fluxametamide",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "フルキサメタミド",
+   "rac": [
+    "30"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "42",
+   "year": "2020",
+   "published": "",
+   "level": "not_detected",
+   "evidence": "生物検定",
+   "metric": "補正死亡率 99.5 / 100 / 100 / 100% (常用濃度 2,000 倍)",
+   "wording": "常用濃度の補正死亡率は、鈴田、小佐々町、北有馬町で 100％、牧島町も 99.5％と高かった",
+   "host": "いちご",
+   "src": {
+    "title": "令和２年度いちごのナミハダニ薬剤感受性検定結果",
+    "publisher": "長崎県病害虫防除所",
+    "url": "https://www.pref.nagasaki.jp/e-nourin/nougi/JPP/pdf/kentei/R2itigohadanikenntei.pdf",
+    "page": "２．結果、表",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 卵を薬液に浸漬、処理 7 日後の補正死亡率 (常用濃度)。4 地点 (長崎市牧島、大村市鈴田、佐世保市小佐々、南島原市北有馬)。出典の評価: 95% 以上を効果が高い、95% 未満を効果が低い。資料の日付は「令和２年２月９日」と印刷されているが、採集は令和 2 年 5〜6 月なので公表日は空にした"
+  },
+  {
+   "id": "nagasaki-2020-ichigo-namihadani-milbemectin",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "ミルベメクチン",
+   "rac": [
+    "6"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "42",
+   "year": "2020",
+   "published": "",
+   "level": "reduced",
+   "evidence": "生物検定",
+   "metric": "補正死亡率 47.5 / 69.5 / 86.5 / 85.0% (牧島 / 鈴田 / 小佐々 / 北有馬、常用濃度 2,000 倍)",
+   "wording": "常用濃度の補正死亡率は全地点で 95％未満と低かった",
+   "host": "いちご",
+   "src": {
+    "title": "令和２年度いちごのナミハダニ薬剤感受性検定結果",
+    "publisher": "長崎県病害虫防除所",
+    "url": "https://www.pref.nagasaki.jp/e-nourin/nougi/JPP/pdf/kentei/R2itigohadanikenntei.pdf",
+    "page": "２．結果、表",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 卵を薬液に浸漬、処理 7 日後の補正死亡率 (常用濃度)。4 地点 (長崎市牧島、大村市鈴田、佐世保市小佐々、南島原市北有馬)。出典の評価: 95% 以上を効果が高い、95% 未満を効果が低い。資料の日付は「令和２年２月９日」と印刷されているが、採集は令和 2 年 5〜6 月なので公表日は空にした。程度は出典の判定 (95% 未満は効果が低い) に従う"
+  },
+  {
+   "id": "tochigi-2022-ichigo-namihadani-abamectin",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "アバメクチン",
+   "rac": [
+    "6"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "09",
+   "year": "2022",
+   "published": "2023-02-09",
+   "level": "reduced",
+   "evidence": "生物検定",
+   "metric": "雌成虫の補正死虫率 95 / 98 / 100 / 72 / 100 / 82 / 83%。卵の補正死亡卵率 41 / 23 / 44 / 11 / 40 / 34 / 9%",
+   "wording": "アバメクチン乳剤の補正死虫率は、４地点で高く、３地点ではやや低かった。補正死亡卵率は、いずれの地点でも低かった",
+   "host": "いちご",
+   "src": {
+    "title": "いちごに発生したナミハダニの薬剤感受性検定（結果）について",
+    "publisher": "栃木県農業環境指導センター",
+    "url": "https://www.pref.tochigi.lg.jp/g59/boujo/documents/2022-ichigo-namihadani.pdf",
+    "page": "４ 結果、表３〜６",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 7 地点 (本ぽ 5、育苗床 2。地点の順は 壬生町 / 宇都宮市 / 栃木市 / 小山市 / 足利市 / 真岡市A / 真岡市B)。雌成虫は散布 48 時間後の補正死虫率、卵は補正死亡卵率。判定基準: 高い 95% 以上、やや高い 85〜95% 未満、やや低い 70〜85% 未満、低い 70% 未満。出典の注: 表の値はハウス単位で採集した個体群の結果で、各地域の感受性を反映したものではない。程度は出典の判定に従い、雌成虫の結果で決める (やや低い・低いの地点があれば感受性低下)。卵の結果は数値だけ。出典は感受性低下・抵抗性とは書いていない"
+  },
+  {
+   "id": "tochigi-2022-ichigo-namihadani-acequinocyl",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "アセキノシル",
+   "rac": [
+    "20B"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "09",
+   "year": "2022",
+   "published": "2023-02-09",
+   "level": "not_detected",
+   "evidence": "生物検定",
+   "metric": "雌成虫の補正死虫率 100 / 96 / 96 / 89 / 100 / 88 / 95%。卵の補正死亡卵率 94 / 100 / 95 / 96 / 99 / 87 / 62%",
+   "wording": "アセキノシル水和剤水和剤の補正死虫率は、５地点で高く、２地点ではやや高かった。補正死亡卵率は、４地点で高く、２地点でやや高く、１地点では低かった",
+   "host": "いちご",
+   "src": {
+    "title": "いちごに発生したナミハダニの薬剤感受性検定（結果）について",
+    "publisher": "栃木県農業環境指導センター",
+    "url": "https://www.pref.tochigi.lg.jp/g59/boujo/documents/2022-ichigo-namihadani.pdf",
+    "page": "４ 結果、表３〜６",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 7 地点 (本ぽ 5、育苗床 2。地点の順は 壬生町 / 宇都宮市 / 栃木市 / 小山市 / 足利市 / 真岡市A / 真岡市B)。雌成虫は散布 48 時間後の補正死虫率、卵は補正死亡卵率。判定基準: 高い 95% 以上、やや高い 85〜95% 未満、やや低い 70〜85% 未満、低い 70% 未満。出典の注: 表の値はハウス単位で採集した個体群の結果で、各地域の感受性を反映したものではない。程度は出典の判定に従い、雌成虫の結果で決める (やや低い・低いの地点があれば感受性低下)。卵の結果は数値だけ。出典は感受性低下・抵抗性とは書いていない"
+  },
+  {
+   "id": "tochigi-2022-ichigo-namihadani-acynonapyr",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "アシノナピル",
+   "rac": [
+    "33"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "09",
+   "year": "2022",
+   "published": "2023-02-09",
+   "level": "not_detected",
+   "evidence": "生物検定",
+   "metric": "雌成虫の補正死虫率 100 / 97 / 97 / 98 / 100 / 98 / 100%。卵の補正死亡卵率 92 / 94 / 82 / 92 / 88 / 92 / 97%",
+   "wording": "アシノナピル水和剤の補正死虫率は、いずれの地点でも高かった。補正死亡卵率は、１地点で高く、５地点でやや高く、１地点ではやや低かった",
+   "host": "いちご",
+   "src": {
+    "title": "いちごに発生したナミハダニの薬剤感受性検定（結果）について",
+    "publisher": "栃木県農業環境指導センター",
+    "url": "https://www.pref.tochigi.lg.jp/g59/boujo/documents/2022-ichigo-namihadani.pdf",
+    "page": "４ 結果、表３〜６",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 7 地点 (本ぽ 5、育苗床 2。地点の順は 壬生町 / 宇都宮市 / 栃木市 / 小山市 / 足利市 / 真岡市A / 真岡市B)。雌成虫は散布 48 時間後の補正死虫率、卵は補正死亡卵率。判定基準: 高い 95% 以上、やや高い 85〜95% 未満、やや低い 70〜85% 未満、低い 70% 未満。出典の注: 表の値はハウス単位で採集した個体群の結果で、各地域の感受性を反映したものではない。程度は出典の判定に従い、雌成虫の結果で決める (やや低い・低いの地点があれば感受性低下)。卵の結果は数値だけ。出典は感受性低下・抵抗性とは書いていない"
+  },
+  {
+   "id": "tochigi-2022-ichigo-namihadani-bifenazate",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "ビフェナゼート",
+   "rac": [
+    "20D"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "09",
+   "year": "2022",
+   "published": "2023-02-09",
+   "level": "not_detected",
+   "evidence": "生物検定",
+   "metric": "雌成虫の補正死虫率 98 / 100 / 98 / 100 / 93 / 100 / 100%。卵の補正死亡卵率 7 / 0 / 7 / 1 / 1 / 6 / 11%",
+   "wording": "ビフェナゼート水和剤の補正死虫率は、６地点で高く、１地点ではやや高かった。補正死亡卵率は、いずれの地点でも低かった",
+   "host": "いちご",
+   "src": {
+    "title": "いちごに発生したナミハダニの薬剤感受性検定（結果）について",
+    "publisher": "栃木県農業環境指導センター",
+    "url": "https://www.pref.tochigi.lg.jp/g59/boujo/documents/2022-ichigo-namihadani.pdf",
+    "page": "４ 結果、表３〜６",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 7 地点 (本ぽ 5、育苗床 2。地点の順は 壬生町 / 宇都宮市 / 栃木市 / 小山市 / 足利市 / 真岡市A / 真岡市B)。雌成虫は散布 48 時間後の補正死虫率、卵は補正死亡卵率。判定基準: 高い 95% 以上、やや高い 85〜95% 未満、やや低い 70〜85% 未満、低い 70% 未満。出典の注: 表の値はハウス単位で採集した個体群の結果で、各地域の感受性を反映したものではない。程度は出典の判定に従い、雌成虫の結果で決める (やや低い・低いの地点があれば感受性低下)。卵の結果は数値だけ。出典は感受性低下・抵抗性とは書いていない"
+  },
+  {
+   "id": "tochigi-2022-ichigo-namihadani-cyenopyrafen",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "シエノピラフェン",
+   "rac": [
+    "25A"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "09",
+   "year": "2022",
+   "published": "2023-02-09",
+   "level": "reduced",
+   "evidence": "生物検定",
+   "metric": "雌成虫の補正死虫率 32 / 28 / 19 / 4 / 16 / 25 / 25%。卵の補正死亡卵率 89 / 42 / 66 / 82 / 5 / 18 / 97%",
+   "wording": "シエノピラフェン水和剤の補正死虫率は、いずれの地点でも低かった。補正死亡卵率は、１地点で高く、１地点でやや高く、１地点でやや低く、４地点では低かった",
+   "host": "いちご",
+   "src": {
+    "title": "いちごに発生したナミハダニの薬剤感受性検定（結果）について",
+    "publisher": "栃木県農業環境指導センター",
+    "url": "https://www.pref.tochigi.lg.jp/g59/boujo/documents/2022-ichigo-namihadani.pdf",
+    "page": "４ 結果、表３〜６",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 7 地点 (本ぽ 5、育苗床 2。地点の順は 壬生町 / 宇都宮市 / 栃木市 / 小山市 / 足利市 / 真岡市A / 真岡市B)。雌成虫は散布 48 時間後の補正死虫率、卵は補正死亡卵率。判定基準: 高い 95% 以上、やや高い 85〜95% 未満、やや低い 70〜85% 未満、低い 70% 未満。出典の注: 表の値はハウス単位で採集した個体群の結果で、各地域の感受性を反映したものではない。程度は出典の判定に従い、雌成虫の結果で決める (やや低い・低いの地点があれば感受性低下)。卵の結果は数値だけ。出典は感受性低下・抵抗性とは書いていない"
+  },
+  {
+   "id": "tochigi-2022-ichigo-namihadani-cyflumetofen",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "シフルメトフェン",
+   "rac": [
+    "25A"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "09",
+   "year": "2022",
+   "published": "2023-02-09",
+   "level": "reduced",
+   "evidence": "生物検定",
+   "metric": "雌成虫の補正死虫率 23 / 29 / 16 / 23 / 33 / 29 / 17%。卵の補正死亡卵率 52 / 13 / 28 / 51 / 4 / 42 / 62%",
+   "wording": "シフルメトフェン水和剤の補正死虫率は、いずれの地点でも低かった。補正死亡卵率は、いずれの地点でも低かった",
+   "host": "いちご",
+   "src": {
+    "title": "いちごに発生したナミハダニの薬剤感受性検定（結果）について",
+    "publisher": "栃木県農業環境指導センター",
+    "url": "https://www.pref.tochigi.lg.jp/g59/boujo/documents/2022-ichigo-namihadani.pdf",
+    "page": "４ 結果、表３〜６",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 7 地点 (本ぽ 5、育苗床 2。地点の順は 壬生町 / 宇都宮市 / 栃木市 / 小山市 / 足利市 / 真岡市A / 真岡市B)。雌成虫は散布 48 時間後の補正死虫率、卵は補正死亡卵率。判定基準: 高い 95% 以上、やや高い 85〜95% 未満、やや低い 70〜85% 未満、低い 70% 未満。出典の注: 表の値はハウス単位で採集した個体群の結果で、各地域の感受性を反映したものではない。程度は出典の判定に従い、雌成虫の結果で決める (やや低い・低いの地点があれば感受性低下)。卵の結果は数値だけ。出典は感受性低下・抵抗性とは書いていない"
+  },
+  {
+   "id": "tochigi-2022-ichigo-namihadani-fluxametamide",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "フルキサメタミド",
+   "rac": [
+    "30"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "09",
+   "year": "2022",
+   "published": "2023-02-09",
+   "level": "not_detected",
+   "evidence": "生物検定",
+   "metric": "雌成虫の補正死虫率 100 / 100 / 100 / 98 / 100 / 100 / 100%。卵の補正死亡卵率 56 / 28 / 62 / 5 / 44 / 9 / 4%",
+   "wording": "フルキサメタミド乳剤の補正死虫率は、いずれの地点でも高かった。補正死亡卵率は、いずれの地点でも低かった",
+   "host": "いちご",
+   "src": {
+    "title": "いちごに発生したナミハダニの薬剤感受性検定（結果）について",
+    "publisher": "栃木県農業環境指導センター",
+    "url": "https://www.pref.tochigi.lg.jp/g59/boujo/documents/2022-ichigo-namihadani.pdf",
+    "page": "４ 結果、表３〜６",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 7 地点 (本ぽ 5、育苗床 2。地点の順は 壬生町 / 宇都宮市 / 栃木市 / 小山市 / 足利市 / 真岡市A / 真岡市B)。雌成虫は散布 48 時間後の補正死虫率、卵は補正死亡卵率。判定基準: 高い 95% 以上、やや高い 85〜95% 未満、やや低い 70〜85% 未満、低い 70% 未満。出典の注: 表の値はハウス単位で採集した個体群の結果で、各地域の感受性を反映したものではない。程度は出典の判定に従い、雌成虫の結果で決める (やや低い・低いの地点があれば感受性低下)。卵の結果は数値だけ。出典は感受性低下・抵抗性とは書いていない"
+  },
+  {
+   "id": "tochigi-2022-ichigo-namihadani-milbemectin",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "ミルベメクチン",
+   "rac": [
+    "6"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "09",
+   "year": "2022",
+   "published": "2023-02-09",
+   "level": "reduced",
+   "evidence": "生物検定",
+   "metric": "雌成虫の補正死虫率 90 / 58 / 80 / 70 / 72 / 75 / 87%。卵の補正死亡卵率 61 / 43 / 71 / 45 / 64 / 64 / 71%",
+   "wording": "ミルベメクチン水和剤の補正死虫率は、２地点でやや高く、４地点でやや低く、１地点では低かった。補正死亡卵率は、２地点でやや低く、５地点では低かった",
+   "host": "いちご",
+   "src": {
+    "title": "いちごに発生したナミハダニの薬剤感受性検定（結果）について",
+    "publisher": "栃木県農業環境指導センター",
+    "url": "https://www.pref.tochigi.lg.jp/g59/boujo/documents/2022-ichigo-namihadani.pdf",
+    "page": "４ 結果、表３〜６",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 7 地点 (本ぽ 5、育苗床 2。地点の順は 壬生町 / 宇都宮市 / 栃木市 / 小山市 / 足利市 / 真岡市A / 真岡市B)。雌成虫は散布 48 時間後の補正死虫率、卵は補正死亡卵率。判定基準: 高い 95% 以上、やや高い 85〜95% 未満、やや低い 70〜85% 未満、低い 70% 未満。出典の注: 表の値はハウス単位で採集した個体群の結果で、各地域の感受性を反映したものではない。程度は出典の判定に従い、雌成虫の結果で決める (やや低い・低いの地点があれば感受性低下)。卵の結果は数値だけ。出典は感受性低下・抵抗性とは書いていない"
+  },
+  {
+   "id": "tochigi-2022-ichigo-namihadani-prothiofos",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "プロチオホス",
+   "rac": [
+    "1B"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "09",
+   "year": "2022",
+   "published": "2023-02-09",
+   "level": "not_detected",
+   "evidence": "生物検定",
+   "metric": "雌成虫の補正死虫率 100 / 100 / 100 / 92 / 98 / 90 / 93%。卵の補正死亡卵率 98 / 99 / 98 / 100 / 96 / 100 / 96%",
+   "wording": "プロチオホス乳剤の補正死虫率は、４地点で高く、３地点ではやや高かった。補正死亡卵率は、いずれの地点でも高かった",
+   "host": "いちご",
+   "src": {
+    "title": "いちごに発生したナミハダニの薬剤感受性検定（結果）について",
+    "publisher": "栃木県農業環境指導センター",
+    "url": "https://www.pref.tochigi.lg.jp/g59/boujo/documents/2022-ichigo-namihadani.pdf",
+    "page": "４ 結果、表３〜６",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 7 地点 (本ぽ 5、育苗床 2。地点の順は 壬生町 / 宇都宮市 / 栃木市 / 小山市 / 足利市 / 真岡市A / 真岡市B)。雌成虫は散布 48 時間後の補正死虫率、卵は補正死亡卵率。判定基準: 高い 95% 以上、やや高い 85〜95% 未満、やや低い 70〜85% 未満、低い 70% 未満。出典の注: 表の値はハウス単位で採集した個体群の結果で、各地域の感受性を反映したものではない。程度は出典の判定に従い、雌成虫の結果で決める (やや低い・低いの地点があれば感受性低下)。卵の結果は数値だけ。出典は感受性低下・抵抗性とは書いていない"
+  },
+  {
+   "id": "tochigi-2022-ichigo-namihadani-pyflubumide",
+   "taxon": "tetranychus_urticae",
+   "ingredient": "ピフルブミド",
+   "rac": [
+    "25B"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "09",
+   "year": "2022",
+   "published": "2023-02-09",
+   "level": "reduced",
+   "evidence": "生物検定",
+   "metric": "雌成虫の補正死虫率 32 / 80 / 72 / 60 / 30 / 58 / 52%。卵の補正死亡卵率 24 / 47 / 59 / 70 / 10 / 24 / 75%",
+   "wording": "ピフルブミド水和剤の補正死虫率は、２地点でやや低く、５地点では低かった。補正死亡卵率は、２地点でやや低く、５地点では低かった",
+   "host": "いちご",
+   "src": {
+    "title": "いちごに発生したナミハダニの薬剤感受性検定（結果）について",
+    "publisher": "栃木県農業環境指導センター",
+    "url": "https://www.pref.tochigi.lg.jp/g59/boujo/documents/2022-ichigo-namihadani.pdf",
+    "page": "４ 結果、表３〜６",
+    "accessed": "2026-10-22"
+   },
+   "note": "検定: 7 地点 (本ぽ 5、育苗床 2。地点の順は 壬生町 / 宇都宮市 / 栃木市 / 小山市 / 足利市 / 真岡市A / 真岡市B)。雌成虫は散布 48 時間後の補正死虫率、卵は補正死亡卵率。判定基準: 高い 95% 以上、やや高い 85〜95% 未満、やや低い 70〜85% 未満、低い 70% 未満。出典の注: 表の値はハウス単位で採集した個体群の結果で、各地域の感受性を反映したものではない。程度は出典の判定に従い、雌成虫の結果で決める (やや低い・低いの地点があれば感受性低下)。卵の結果は数値だけ。出典は感受性低下・抵抗性とは書いていない"
+  }
+ ],
  "sources": []
 }
