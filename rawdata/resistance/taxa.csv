@@ -1,3 +1,14 @@
 ﻿taxon_id,scientific_name,synonyms,japanese_name,kind,source,verified_by,verified_at,note
 tetranychus_urticae,Tetranychus urticae,,ナミハダニ,ダニ,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),管理者,2026-10-25,
 plutella_xylostella,Plutella xylostella,,コナガ,昆虫,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),管理者,2026-10-25,
+thrips_tabaci,Thrips tabaci,,ネギアザミウマ,昆虫,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-10-25,学名と和名の対応は、この書籍と照らし合わせていない (AI 照合)
+frankliniella_intonsa,Frankliniella intonsa,,ヒラズハナアザミウマ,昆虫,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-10-25,学名と和名の対応は、この書籍と照らし合わせていない (AI 照合)
+bemisia_tabaci,Bemisia tabaci,,タバココナジラミ,昆虫,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-10-25,熊本の報告はバイオタイプＱ (PCR)。学名と和名の対応は、この書籍と照らし合わせていない (AI 照合)
+spodoptera_litura,Spodoptera litura,,ハスモンヨトウ,昆虫,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-10-25,学名と和名の対応は、この書籍と照らし合わせていない (AI 照合)
+panonychus_citri,Panonychus citri,,ミカンハダニ,ダニ,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-10-25,学名と和名の対応は、この書籍と照らし合わせていない (AI 照合)
+colletotrichum_fructicola,Colletotrichum fructicola,,炭疽病菌 (C. fructicola),糸状菌,日本植物病名データベース (農研機構 ジーンバンク) id=3501 (イチゴ 炭疽病) に病原として記載,AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+colletotrichum_gloeosporioides_sc,Colletotrichum gloeosporioides 種複合体,,炭疽病菌 (C. gloeosporioides 種複合体),糸状菌,宮城県農業・園芸総合研究所 普及に移す技術 第 100 号 参考資料 13,AI照合 (Claude Haiku・Claude Opus),2026-10-25,C. fructicola もこの種複合体に含まれる
+colletotrichum_unspecified,Colletotrichum,,炭疽病菌 (報告に種名なし),糸状菌,日本植物病名データベース (農研機構 ジーンバンク) id=3501 (イチゴ 炭疽病。病原は C. acutatum、C. fructicola、C. siamense など複数),AI照合 (Claude Haiku・Claude Opus),2026-10-25,報告が種名を書いていない炭疽病菌。種を推測で補わないため、属だけにした
+botrytis_cinerea,Botrytis cinerea,,灰色かび病菌,糸状菌,日本植物病名データベース (農研機構 ジーンバンク) id=3483 (イチゴ)、id=3564 (トマト),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+passalora_fulva,Passalora fulva,,葉かび病菌,糸状菌,日本植物病名データベース (農研機構 ジーンバンク) id=3565 (トマト 葉かび病),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+pseudocercospora_unspecified,Pseudocercospora,,すすかび病菌 (報告に種名なし),糸状菌,日本植物病名データベース (農研機構 ジーンバンク) id=3591 (トマト すすかび病。病原は Pseudocercospora fuligena と Pseudocercospora sp.),AI照合 (Claude Haiku・Claude Opus),2026-10-25,報告が種名を書いていないすすかび病菌。種を推測で補わないため、属だけにした

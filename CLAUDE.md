@@ -71,7 +71,7 @@ RAC コードは CropLife の表を優先し、表に無い成分は `rawdata/ra
 
 列の意味と運用は `rawdata/resistance/README.md`。要点:
 
-- `taxa.csv` (種)・`pest_map.csv` (FAMIC の病害虫名 → 種。**作物ごと**。同じ病名でも作物で病原菌が違うため)・`records.csv` (国内の報告) は、確認者・確認日の無い行があると `build_resistance.py` が止まる。利用者が確かめた行だけを入れる。Claude が資料から作った下書きは `review/resistance-intake/` (Git 管理外) に置く。
+- `taxa.csv` (種)・`pest_map.csv` (FAMIC の病害虫名 → 種。**作物ごと**。同じ病名でも作物で病原菌が違うため)・`records.csv` (国内の報告) は、確認者・確認日の無い行があると `build_resistance.py` が止まる。出典と照合した行だけを入れる。確認者の欄は、利用者が照合した行は「管理者」(個人名は書かない)、AI が照合した行は「AI照合 (Claude Haiku・Claude Opus)」のように照合したモデルを書く (2026-10-25 の利用者の決定)。Claude が資料から作った下書きは `review/resistance-intake/` (Git 管理外) に置く。
 - 報告の成分の RAC コードは、ビルド時に pesticides.json から付ける (成分名は完全一致、次に塩・水和物の語尾を除いた一致。`build_data.py` の `_SALT_SUFFIXES` と同じ表が `build_resistance.py` と `resistance.js` にもある)。登録データに無い成分は CSV の `rac_code` を使う。出力に日時を入れないので、入力が同じなら resistance.json は変わらない。`update_data.py` が毎回作り直す (成分名が登録データから消えたら止まる)。
 - 外部データベースは `scripts/import_resistance/` の取り込み役が `external/<id>.csv` (Git 管理外) に書く。配布物に残すかは `sources.json` の `include` (既定 false。true には `terms_checked` と `verified_at` が要る)。ビルドが include に合わせて `included/<id>.csv` (Git 管理。CI は external を持たないため) へ写す・外す。APRD はボット対策があり、スクリプトで取得しない (利用者が書き出したファイルを読む)。
 - 照合 (`src/js/core/resistance.js`。DOM に依存しない): `resolveTaxa` が (作物, 病害虫名) → 種を、その作物の行 → 作物群の行 → `*` の行 → 和名が病害虫名と同じ種、の順に引く。無ければ未登録 (推測しない)。`findResistance` は、成分が同じなら「同じ成分」、RAC コードが同じなら「同じ系統」(UN・NC・0 は系統として扱わない)。宿主作物が照合の作物と同じかを `hostMatch` に付ける。

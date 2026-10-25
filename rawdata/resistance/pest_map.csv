@@ -1,2 +1,18 @@
 ﻿pest,crop,taxon_ids,source,verified_by,verified_at,note
 ハダニ類,いちご,tetranychus_urticae,熊本県病害虫防除所 2025・栃木県農業環境指導センター 2023・長崎県病害虫防除所 令和2年度 のいちごのナミハダニの薬剤感受性検定 (いちごのハダニとしてナミハダニを扱う),管理者,2026-10-25,いちごの「ハダニ類」にはナミハダニだけを対応させる。カンザワハダニなどは、報告を入れるときに足す。「ナミハダニ」「コナガ」は和名が FAMIC の病害虫名と同じなので、この表に行が無くても引ける
+アザミウマ類,いちご,frankliniella_intonsa,山口県 イチゴのアザミウマ類の薬剤感受性検定 (令和３年。イチゴハウスのアザミウマ類の 83% がヒラズハナアザミウマ),AI照合 (Claude Haiku・Claude Opus),2026-10-25,ハナアザミウマ (17%) は報告を入れるときに足す
+アザミウマ類,たまねぎ,thrips_tabaci,香川県病害虫防除所 令和３年度 病害虫発生調査速報 第３号・第７号 (この作物のネギアザミウマを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+アザミウマ類,ねぎ,thrips_tabaci,香川県病害虫防除所 令和３年度 病害虫発生調査速報 第３号・第７号 (この作物のネギアザミウマを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+アザミウマ類,アスパラガス,thrips_tabaci,香川県病害虫防除所 令和３年度 病害虫発生調査速報 第３号・第７号 (この作物のネギアザミウマを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+コナジラミ類,トマト,bemisia_tabaci,熊本県病害虫防除所 技術情報第 16・17 号、愛媛県 タバココナジラミの薬剤感受性 (この作物のタバココナジラミを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+コナジラミ類,ミニトマト,bemisia_tabaci,熊本県病害虫防除所 技術情報第 16・17 号、愛媛県 タバココナジラミの薬剤感受性 (この作物のタバココナジラミを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+コナジラミ類,きゅうり,bemisia_tabaci,熊本県病害虫防除所 技術情報第 16・17 号、愛媛県 タバココナジラミの薬剤感受性 (この作物のタバココナジラミを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+コナジラミ類,メロン,bemisia_tabaci,熊本県病害虫防除所 技術情報第 16・17 号、愛媛県 タバココナジラミの薬剤感受性 (この作物のタバココナジラミを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+コナジラミ類,すいか,bemisia_tabaci,熊本県病害虫防除所 技術情報第 16・17 号、愛媛県 タバココナジラミの薬剤感受性 (この作物のタバココナジラミを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+タバココナジラミ類(シルバーリーフコナジラミを含む),*,bemisia_tabaci,病害虫名そのもの (シルバーリーフコナジラミはタバココナジラミの旧称),AI照合 (Claude Haiku・Claude Opus),2026-10-25,病害虫名から種が決まるので全作物で対応させた
+タバココナジラミ類幼虫(シルバーリーフコナジラミ幼虫を含む),*,bemisia_tabaci,病害虫名そのもの (シルバーリーフコナジラミはタバココナジラミの旧称),AI照合 (Claude Haiku・Claude Opus),2026-10-25,病害虫名から種が決まるので全作物で対応させた
+炭疽病,いちご,colletotrichum_fructicola;colletotrichum_gloeosporioides_sc;colletotrichum_unspecified,日本植物病名データベース (農研機構 ジーンバンク) id=3501,AI照合 (Claude Haiku・Claude Opus),2026-10-25,データベースには C. acutatum、C. nymphaeae なども載る。報告のある種と、種名の無い報告だけを対応させた
+灰色かび病,いちご,botrytis_cinerea,日本植物病名データベース (農研機構 ジーンバンク) id=3483,AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+灰色かび病,トマト,botrytis_cinerea,日本植物病名データベース (農研機構 ジーンバンク) id=3564,AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+葉かび病,トマト,passalora_fulva,日本植物病名データベース (農研機構 ジーンバンク) id=3565,AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+すすかび病,トマト,pseudocercospora_unspecified,日本植物病名データベース (農研機構 ジーンバンク) id=3591,AI照合 (Claude Haiku・Claude Opus),2026-10-25,

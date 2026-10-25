@@ -10,7 +10,8 @@ CSV は UTF-8 (BOM 付き) で、Excel では「CSV UTF-8 (コンマ区切り)�
 
 - **確かめた行だけを入れる。** `taxa.csv`・`pest_map.csv`・`records.csv` の各行は、確認者 (`verified_by`) と
   確認日 (`verified_at`、`2026-10-22` の形) が無いとビルドが止まる。Claude が PDF などから作った下書きは
-  `review/resistance-intake/` (Git 管理外) に置き、確かめてからここへ移す。
+  `review/resistance-intake/` (Git 管理外) に置き、確かめてからここへ移す。確認者は、利用者が照合した行は「管理者」
+  (公開リポジトリなので個人名は書かない)、AI が照合した行は「AI照合 (Claude Haiku・Claude Opus)」のように照合したモデルを書く。
 - **推測で補わない。** 病害虫名から種が決まらない組は、アプリに「未登録」と出る。それで正しい。
 - **出典の言葉を残す。** 程度は下の 4 段階に分けるが、出典の判定の言葉 (`source_wording`) と数値 (`metric`) も残す。
 
