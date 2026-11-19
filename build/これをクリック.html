@@ -1387,6 +1387,32 @@ window.RESISTANCE_DB = {
  ],
  "records": [
   {
+   "id": "agri-ibaraki-63-9-01",
+   "taxon": "colletotrichum_fructicola",
+   "ingredient": "ピリベンカルブ",
+   "rac": [
+    "11"
+   ],
+   "origin": "domestic",
+   "country": "日本",
+   "pref": "08",
+   "year": "2020-2021",
+   "published": "2024-03",
+   "level": "reduced",
+   "evidence": "生物検定",
+   "metric": "防除価：クレソキシムメチル耐性2菌株で22.6・26.9、感受性2菌株で77.6・49.8",
+   "wording": "耐性菌株に対する効果は低い結果となった",
+   "host": "日本なし",
+   "src": {
+    "title": "茨城県のナシ炭疽病罹病葉から分離されたColletotrichum属菌の病原性およびQoI剤に対する感受性",
+    "publisher": "茨城県病害虫研究会",
+    "url": "https://agriknowledge.affrc.go.jp/RN/2030951947.pdf",
+    "page": "10–11（表1）",
+    "accessed": "2026-11-19"
+   },
+   "note": "採集年は供試菌株の由来。選抜した4菌株の比較試験で、県内の発生率や圃場での効果を示すものではない。原著はピリベンカルブへの交さ耐性を示唆。"
+  },
+  {
    "id": "ehime-2023-kyuri-tabakokonajirami-clothianidin",
    "taxon": "bemisia_tabaci",
    "ingredient": "クロチアニジン",
@@ -6772,7 +6798,7 @@ window.RESISTANCE_DB = {
     "page": "38",
     "accessed": "2026-11-19"
    },
-   "note": "供試成分はp.39"
+   "note": "供試成分はp.39。同じ調査で得た菌株を用いた会報の追試では、防除価は耐性2菌株で0・20.2、感受性2菌株で90.5・86.8（茨城県病害虫研究会報63号 p.11 表1、AgriKnowledge RN 2030951947）。"
   },
   {
    "id": "jstage-ktpps-69-38-02",
@@ -13209,7 +13235,7 @@ window.RESISTANCE_DB = {
      padding: 14px 20px; font-size: 20pt; font-weight: 700; line-height: 1.3;">
   農薬簡易検索アプリ
   <span style="font-size: 13pt; color: var(--text-muted); font-weight: 500; margin-left: 10px;">
-    Ver. 1.11.0
+    Ver. 1.12.0
   </span>
 </div>
 
@@ -13223,7 +13249,7 @@ window.RESISTANCE_DB = {
 </div>
 
 <header>
-  <h1 class="header-title">農薬検索 <span class="version">Ver. 1.11.0</span></h1>
+  <h1 class="header-title">農薬検索 <span class="version">Ver. 1.12.0</span></h1>
   <div id="view-switch" class="view-switch" role="tablist" aria-label="画面の切り替え">
     <button type="button" role="tab" data-view="search" aria-selected="true">剤を探す</button>
     <button type="button" role="tab" data-view="resistance" aria-selected="false">抵抗性を見る</button>
