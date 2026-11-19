@@ -455,10 +455,13 @@ function cropInfoMatches(info, q, rel) {
  * - crop: 作物欄・使用場所欄を expandSearchableCrops で展開して正規化し "|" で結合 (商品全体での絞り込み用)
  * - crops: 展開した作物名ごとの cropInfo (entryHasCrop が使う)
  * - members: 作物欄で引ける語の Set の配列 (applicationCropMembers)
- * - pest: 除外の括弧を取り除いた病害虫名 (searchablePest) を正規化したもの
+ * - pest: 除外の括弧を取り除いた病害虫名 (searchablePest) を正規化したもの。purposeAsPest が真で病害虫欄が空の行は、
+ *   使用目的を病害虫名の代わりにする (用途「農薬肥料」の「節間短縮による倒伏軽減」など、病害虫欄の無い行を引けるように。
+ *   他の用途の剤では使用目的に害虫名が書かれることがあり、病害虫としては引かない)
  * - paren: 病害虫欄の除外でない括弧の中身を正規化したもの
  */
-export function appEntry(a) {
+export function appEntry(a, purposeAsPest = false) {
+  const pestText = a.pest || (purposeAsPest ? a.purpose : "");
   const names = [];
   for (const v of [a.crop, a.place]) {
     if (v) names.push(...expandSearchableCrops(v));
@@ -468,7 +471,7 @@ export function appEntry(a) {
     crop: crops.map(c => c.full).join("|"),
     crops,
     members: applicationCropMembers(a),
-    pest: a.pest ? normalize(searchablePest(a.pest)) : "",
+    pest: pestText ? normalize(searchablePest(pestText)) : "",
     paren: a.pest ? normalize(pestParenText(a.pest)) : "",
   };
 }

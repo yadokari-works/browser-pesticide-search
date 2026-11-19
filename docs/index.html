@@ -8382,8 +8382,8 @@ window.RESISTANCE_DB = {
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="農薬検索">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-1.10.0.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192-1.10.0.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-1.11.0.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192-1.11.0.png">
 </head>
 <body>
 
@@ -8392,7 +8392,7 @@ window.RESISTANCE_DB = {
      padding: 14px 20px; font-size: 20pt; font-weight: 700; line-height: 1.3;">
   農薬簡易検索アプリ
   <span style="font-size: 13pt; color: var(--text-muted); font-weight: 500; margin-left: 10px;">
-    Ver. 1.10.0
+    Ver. 1.11.0
   </span>
 </div>
 
@@ -8406,7 +8406,7 @@ window.RESISTANCE_DB = {
 </div>
 
 <header>
-  <h1 class="header-title">農薬検索 <span class="version">Ver. 1.10.0</span></h1>
+  <h1 class="header-title">農薬検索 <span class="version">Ver. 1.11.0</span></h1>
   <div id="view-switch" class="view-switch" role="tablist" aria-label="画面の切り替え">
     <button type="button" role="tab" data-view="search" aria-selected="true">剤を探す</button>
     <button type="button" role="tab" data-view="resistance" aria-selected="false">抵抗性を見る</button>
@@ -11861,10 +11861,13 @@ function cropInfoMatches(info, q, rel) {
  * - crop: 作物欄・使用場所欄を expandSearchableCrops で展開して正規化し "|" で結合 (商品全体での絞り込み用)
  * - crops: 展開した作物名ごとの cropInfo (entryHasCrop が使う)
  * - members: 作物欄で引ける語の Set の配列 (applicationCropMembers)
- * - pest: 除外の括弧を取り除いた病害虫名 (searchablePest) を正規化したもの
+ * - pest: 除外の括弧を取り除いた病害虫名 (searchablePest) を正規化したもの。purposeAsPest が真で病害虫欄が空の行は、
+ *   使用目的を病害虫名の代わりにする (用途「農薬肥料」の「節間短縮による倒伏軽減」など、病害虫欄の無い行を引けるように。
+ *   他の用途の剤では使用目的に害虫名が書かれることがあり、病害虫としては引かない)
  * - paren: 病害虫欄の除外でない括弧の中身を正規化したもの
  */
-function appEntry(a) {
+function appEntry(a, purposeAsPest = false) {
+  const pestText = a.pest || (purposeAsPest ? a.purpose : "");
   const names = [];
   for (const v of [a.crop, a.place]) {
     if (v) names.push(...expandSearchableCrops(v));
@@ -11874,7 +11877,7 @@ function appEntry(a) {
     crop: crops.map(c => c.full).join("|"),
     crops,
     members: applicationCropMembers(a),
-    pest: a.pest ? normalize(searchablePest(a.pest)) : "",
+    pest: pestText ? normalize(searchablePest(pestText)) : "",
     paren: a.pest ? normalize(pestParenText(a.pest)) : "",
   };
 }
@@ -12012,10 +12015,12 @@ function buildIndex(products, applications) {
   const seenMembers = new Set();
   // 適用行は appEntry で 1 回だけ正規化し、語彙と商品ごとの app_entries の両方に使う
   const entriesByReg = new Map();
+  // 用途「農薬肥料」の剤は病害虫欄が無く使用目的だけの行があるので、使用目的を病害虫名として引けるようにする
+  const fertilizerRegs = new Set(products.filter(p => p.original_category === "農薬肥料").map(p => String(p.reg_no)));
   for (const k in apps) {
     const list = [];
     for (const a of apps[k]) {
-      const e = appEntry(a);
+      const e = appEntry(a, fertilizerRegs.has(k));
       list.push(e);
       if (e.crop) for (const c of e.crop.split("|")) cropWords.add(c);
       for (const s of e.members) {
@@ -12478,13 +12483,13 @@ function hasRowCondition(cond) {
     cond.scopeCrop || cond.scopePest));
 }
 
-/** 適用行 (FAMIC 適用部の配列) を条件で絞り込む。条件が無ければそのまま返す */
-function filterApplications(apps, cond) {
+/** 適用行 (FAMIC 適用部の配列) を条件で絞り込む。条件が無ければそのまま返す。purposeAsPest は buildIndex と同じく用途「農薬肥料」の剤で真にする */
+function filterApplications(apps, cond, purposeAsPest = false) {
   if (!hasRowCondition(cond)) return apps;
   const groups = [["crops", cond.crops], ["pests", cond.pests], ["either", cond.either]]
     .filter(([, list]) => list.length);
   return apps.filter(a => {
-    const e = appEntry(a);
+    const e = appEntry(a, purposeAsPest);
     const noCrop = cond.noCrop || [];
     // 検索と同じく、作物は作物欄・所属作物・別名と病害虫欄の括弧の中、病害虫は除外の括弧を除いた病害虫欄で見る
     const cropHas = t => !noCrop.includes(t) && (entryHasCrop(e, t) || e.paren.includes(t));
@@ -13488,7 +13493,7 @@ function currentRowCondition() {
 function initialDetailProduct(g, rep) {
   const cond = currentRowCondition();
   if (state.appScope !== "specified" || !hasRowCondition(cond)) return rep;
-  const hasRows = p => filterApplications(getApplicationsFor(p.reg_no) || [], cond).length > 0;
+  const hasRows = p => filterApplications(getApplicationsFor(p.reg_no) || [], cond, p.original_category === "農薬肥料").length > 0;
   if (hasRows(rep)) return rep;
   return g.products.find(p => p.status !== "失効" && hasRows(p)) || rep;
 }
@@ -13542,7 +13547,7 @@ function showGroupProductApplications(regNo) {
   // 「指定した作物・病害虫のみ」のとき、検索ボックスとサイドバーで指定した作物・病害虫の行に絞る
   const cond = currentRowCondition();
   const narrowed = state.appScope === "specified" && hasRowCondition(cond);
-  const apps = narrowed ? filterApplications(allApps, cond) : allApps;
+  const apps = narrowed ? filterApplications(allApps, cond, p.original_category === "農薬肥料") : allApps;
   const condParts = [];
   if (state.filters.crop) condParts.push(`作物: ${state.filters.crop}`);
   if (state.filters.pest) condParts.push(`病害虫: ${state.filters.pest}`);

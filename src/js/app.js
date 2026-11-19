@@ -488,7 +488,7 @@ function currentRowCondition() {
 function initialDetailProduct(g, rep) {
   const cond = currentRowCondition();
   if (state.appScope !== "specified" || !hasRowCondition(cond)) return rep;
-  const hasRows = p => filterApplications(getApplicationsFor(p.reg_no) || [], cond).length > 0;
+  const hasRows = p => filterApplications(getApplicationsFor(p.reg_no) || [], cond, p.original_category === "農薬肥料").length > 0;
   if (hasRows(rep)) return rep;
   return g.products.find(p => p.status !== "失効" && hasRows(p)) || rep;
 }
@@ -542,7 +542,7 @@ function showGroupProductApplications(regNo) {
   // 「指定した作物・病害虫のみ」のとき、検索ボックスとサイドバーで指定した作物・病害虫の行に絞る
   const cond = currentRowCondition();
   const narrowed = state.appScope === "specified" && hasRowCondition(cond);
-  const apps = narrowed ? filterApplications(allApps, cond) : allApps;
+  const apps = narrowed ? filterApplications(allApps, cond, p.original_category === "農薬肥料") : allApps;
   const condParts = [];
   if (state.filters.crop) condParts.push(`作物: ${state.filters.crop}`);
   if (state.filters.pest) condParts.push(`病害虫: ${state.filters.pest}`);

@@ -709,13 +709,13 @@ console.log("--- レビュー指摘 (2026-10-18) ---");
     check(onlyNarrow.length > 0 && miss.length === 0, `"${q}" に ${narrow} の登録がある ${onlyNarrow.length} 商品がすべて含まれる` + (miss.length ? ` /* 漏れ ${miss.length}: ${names(miss)} */` : ""));
   }
 
-  // 用途「農薬肥料」の剤も、その適用行の作物×病害虫で引ける
+  // 用途「農薬肥料」の剤も、その適用行の作物×病害虫で引ける (病害虫欄が空の行は使用目的で引ける)
   const fert = db.products.filter(p => p.original_category === "農薬肥料" && (applications[String(p.reg_no)] || []).length);
   if (fert.length) {
     const missing = fert.filter(p => {
       const a = applications[String(p.reg_no)][0];
       const crop = expandSearchableCrops(a.crop)[0].split("(")[0];
-      return !search(`${crop} ${String(a.pest).split(/[(、・]/)[0]}`, index, null, "and").includes(p);
+      return !search(`${crop} ${String(a.pest || a.purpose).split(/[(、・]/)[0]}`, index, null, "and").includes(p);
     });
     check(missing.length === 0, `用途「農薬肥料」の ${fert.length} 商品が、それぞれ最初の適用行の作物×病害虫で引ける` + (missing.length ? ` /* 漏れ: ${names(missing)} */` : ""));
   } else {

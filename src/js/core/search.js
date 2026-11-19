@@ -29,10 +29,12 @@ export function buildIndex(products, applications) {
   const seenMembers = new Set();
   // 適用行は appEntry で 1 回だけ正規化し、語彙と商品ごとの app_entries の両方に使う
   const entriesByReg = new Map();
+  // 用途「農薬肥料」の剤は病害虫欄が無く使用目的だけの行があるので、使用目的を病害虫名として引けるようにする
+  const fertilizerRegs = new Set(products.filter(p => p.original_category === "農薬肥料").map(p => String(p.reg_no)));
   for (const k in apps) {
     const list = [];
     for (const a of apps[k]) {
-      const e = appEntry(a);
+      const e = appEntry(a, fertilizerRegs.has(k));
       list.push(e);
       if (e.crop) for (const c of e.crop.split("|")) cropWords.add(c);
       for (const s of e.members) {
@@ -495,13 +497,13 @@ export function hasRowCondition(cond) {
     cond.scopeCrop || cond.scopePest));
 }
 
-/** 適用行 (FAMIC 適用部の配列) を条件で絞り込む。条件が無ければそのまま返す */
-export function filterApplications(apps, cond) {
+/** 適用行 (FAMIC 適用部の配列) を条件で絞り込む。条件が無ければそのまま返す。purposeAsPest は buildIndex と同じく用途「農薬肥料」の剤で真にする */
+export function filterApplications(apps, cond, purposeAsPest = false) {
   if (!hasRowCondition(cond)) return apps;
   const groups = [["crops", cond.crops], ["pests", cond.pests], ["either", cond.either]]
     .filter(([, list]) => list.length);
   return apps.filter(a => {
-    const e = appEntry(a);
+    const e = appEntry(a, purposeAsPest);
     const noCrop = cond.noCrop || [];
     // 検索と同じく、作物は作物欄・所属作物・別名と病害虫欄の括弧の中、病害虫は除外の括弧を除いた病害虫欄で見る
     const cropHas = t => !noCrop.includes(t) && (entryHasCrop(e, t) || e.paren.includes(t));
