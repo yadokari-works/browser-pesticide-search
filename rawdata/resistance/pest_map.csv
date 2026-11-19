@@ -16,3 +16,20 @@
 灰色かび病,トマト,botrytis_cinerea,日本植物病名データベース (農研機構 ジーンバンク) id=3564,AI照合 (Claude Haiku・Claude Opus),2026-10-25,
 葉かび病,トマト,passalora_fulva,日本植物病名データベース (農研機構 ジーンバンク) id=3565,AI照合 (Claude Haiku・Claude Opus),2026-10-25,
 すすかび病,トマト,pseudocercospora_unspecified,日本植物病名データベース (農研機構 ジーンバンク) id=3591,AI照合 (Claude Haiku・Claude Opus),2026-10-25,
+黒星病,なし,venturia_nashicola,九州病害虫研究会報 54 pp.24-29（2008） 原著 DOI: 10.4241/kyubyochu.54.24,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
+ばか苗病,稲,fusarium_fujikuroi,北日本病害虫研究会報 2022 pp.65-69（2022） 原著 DOI: 10.11455/kitanihon.2022.73_65,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
+褐斑病,アスパラガス,cercospora_asparagi,北日本病害虫研究会報 2022 pp.19-22（2022） 原著 DOI: 10.11455/kitanihon.2022.73_19,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
+黒星病,りんご,venturia_inaequalis,北日本病害虫研究会報 2017 pp.108-114（2017） 原著 DOI: 10.11455/kitanihon.2017.68_108,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
+いもち病,稲,pyricularia_oryzae,北日本病害虫研究会報 2017 pp.25-27（2017） 原著 DOI: 10.11455/kitanihon.2017.68_25,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
+紫斑病,だいず,cercospora_kikuchii,北日本病害虫研究会報 2023 pp.14-20（2023） 原著 DOI: 10.11455/kitanihon.2023.74_14,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
+斑点落葉病,りんご,alternaria_alternata,北日本病害虫研究会報 2013 pp.118-120（2013） 原著 DOI: 10.11455/kitanihon.2013.64_118,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
+黒星病,きゅうり,cladosporium_cucumerinum,北日本病害虫研究会報 2011 pp.59-64（2011） 原著 DOI: 10.11455/kitanihon.2011.62_59,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
+褐斑病,きゅうり,corynespora_cassiicola,北日本病害虫研究会報 2010 pp.76-79（2010） 原著 DOI: 10.11455/kitanihon.2010.61_76,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
+葉枯病,しゅんぎく,cercospora_chrysanthemi,関西病虫害研究会報 67 pp.102-104（2025） 原著 DOI: 10.4165/kapps.67.102,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
+べと病,ぶどう,plasmopara_viticola,九州病害虫研究会報 60 pp.43-47（2014） 原著 DOI: 10.4241/kyubyochu.60.43,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
+輪斑病,茶,pestalotiopsis_longiseta,九州病害虫研究会報 55 pp.83-88（2009） 原著 DOI: 10.4241/kyubyochu.55.83,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
+すすかび病,なす,mycovellosiella_nattrassii,関西病虫害研究会報 67 pp.73-80（2025） 原著 DOI: 10.4165/kapps.67.73,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
+炭疽病,なし,colletotrichum_fructicola;colletotrichum_aenigma,原著 DOI: 10.11337/ktpps.69.38,AI照合 (GPT-6.1 Terra・Codex),2026-11-19,原著で同定が確認された種。ほかの病原種も存在しうる。
+うどんこ病,メロン,podosphaera_xanthii,原著 DOI: 10.11337/ktpps.68.1,AI照合 (GPT-6.1 Terra・Codex),2026-11-19,原著で同定が確認された種。ほかの病原種も存在しうる。
+うどんこ病,きゅうり,podosphaera_xanthii,原著 DOI: 10.11337/ktpps.68.1,AI照合 (GPT-6.1 Terra・Codex),2026-11-19,原著で同定が確認された種。ほかの病原種も存在しうる。
+うどんこ病,なす,podosphaera_xanthii,原著 DOI: 10.11337/ktpps.68.1,AI照合 (GPT-6.1 Terra・Codex),2026-11-19,原著で同定が確認された種。ほかの病原種も存在しうる。
