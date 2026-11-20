@@ -42,3 +42,16 @@
 コナジラミ類,ピーマン,bemisia_tabaci,茨城県農業総合センター園芸研究所 平成 28 年度 技術情報 (ピーマンのタバココナジラミ バイオタイプQ),AI照合 (Claude Haiku・Claude Opus),2026-11-03,
 ネダニ類,ねぎ,rhizoglyphus_robini;cosmoglyphus_unspecified,茨城県農業総合センター園芸研究所 令和 7 年度 技術情報 (県内 8 個体群のうち 5 個体群でロビンネダニ、3 個体群で Cosmoglyphus 属が優占),AI照合 (Claude Haiku・Claude Opus),2026-11-03,
 コナカイガラムシ類,なし,pseudococcus_comstocki,茨城県農業総合センター園芸研究所 令和 4 年度 技術情報 (ナシのクワコナカイガラムシ),AI照合 (Claude Haiku・Claude Opus),2026-11-03,なしのコナカイガラムシ類をクワコナカイガラムシだけに対応させた
+黒星病,うめ,cladosporium_carpophilum,関西病虫研報 64 pp.75-80（2022） 原著 DOI: 10.4165/kapps.64.75,AI照合 (Claude Sonnet 5.5),2026-11-20,原著の作物・病名・病原菌の記載とFAMICの適用名 (うめ/黒星病) を照合
+コナジラミ類,いちご,trialeurodes_vaporariorum,九州病害虫研究会報 56: 83-87 (2010) DOI 10.4241/kyubyochu.56.83 (大分県の施設イチゴの個体群をオンシツコナジラミと同定),AI照合 (Claude Sonnet 5.5),2026-11-20,報告のあるオンシツコナジラミだけに対応させた。いちごのコナジラミ類にはタバココナジラミなども存在しうる。トマトは和名 オンシツコナジラミが FAMIC の病害虫名と同じため pest_map の行は不要
+灰星病,おうとう,monilinia_fructicola,北日本病害虫研究会報 2014 pp.98-100（2014） 原著 DOI: 10.11455/kitanihon.2014.65_98,AI照合 (Claude Sonnet 5.5),2026-11-20,原著は北海道のオウトウ灰星病菌 96 菌株のうち 95 菌株を M. fructicola と同定。残り 1 菌株は同定結果が本文に書かれていない。他の灰星病菌の種は原著に出てこないので、この種だけに対応させるかは取り込み時に判断
+斑点病,セルリー,cercospora_apii,北日本病害虫研究会報 2009 pp.77-81（2009） 原著 DOI: 10.11455/kitanihon.2009.60_77,AI照合 (Claude Sonnet 5.5),2026-11-20,原著はセルリー斑点病の病原菌を Cercospora apii としている
+紅粒がんしゅ病,なし,nectria_cinnabarina,北日本病害虫研究会報 2009 pp.148-150（2009） 原著 DOI: 10.11455/kitanihon.2009.60_148,AI照合 (Claude Sonnet 5.5),2026-11-20,FAMIC の病害虫名「紅粒がんしゅ病」(なし) と原著の病名・学名が一致。ベノミルは FAMIC では胴枯病に登録で、紅粒がんしゅ病への登録の有無は未確認
+つる枯病,きゅうり,didymella_bryoniae,関東東山病害虫研究会報 60 pp.31-33（2013） 神奈川県におけるウリ科野菜つる枯病QoI剤耐性菌の発生 (病原菌 Didymella bryoniae),AI照合 (Claude Sonnet 5.5),2026-11-20,
+つる枯病,メロン,didymella_bryoniae,関東東山病害虫研究会報 60 pp.31-33（2013） 神奈川県におけるウリ科野菜つる枯病QoI剤耐性菌の発生 (病原菌 Didymella bryoniae),AI照合 (Claude Sonnet 5.5),2026-11-20,
+つる枯病,すいか,didymella_bryoniae,関東東山病害虫研究会報 60 pp.31-33（2013） 神奈川県におけるウリ科野菜つる枯病QoI剤耐性菌の発生 (病原菌 Didymella bryoniae),AI照合 (Claude Sonnet 5.5),2026-11-20,
+つる枯病,かぼちゃ,didymella_bryoniae,関東東山病害虫研究会報 60 pp.31-33（2013） 神奈川県におけるウリ科野菜つる枯病QoI剤耐性菌の発生 (病原菌 Didymella bryoniae),AI照合 (Claude Sonnet 5.5),2026-11-20,
+苗立枯病(ピシウム菌),稲,pythium_arrhenomanes,関東東山病害虫研究会報 59 pp.127-130 (2012) DOI: 10.11337/ktpps.2012.127,AI照合 (Claude Sonnet 5.5),2026-11-20,FAMICの稲に「苗立枯病(ピシウム菌)」がある。論文は長野県のイネ苗立枯病菌をP. arrhenomanesと同定
+ハマキムシ類,なし,adoxophyes_orana_fasciata,関東東山病害虫研究会報 57 pp.85-87 (2010) DOI: 10.11337/ktpps.2010.85,AI照合 (Claude Sonnet 5.5),2026-11-20,なしのハマキムシ類をリンゴコカクモンハマキだけに対応させた (論文の検定対象)。FAMICのなしに「ハマキムシ類」がある
+うどんこ病,小麦,blumeria_graminis_tritici,関西病虫研報 65 pp.35-41 (2023) DOI: 10.4165/kapps.65.35,AI照合 (Claude Sonnet 5.5),2026-11-20,FAMICの小麦に「うどんこ病」がある。論文はコムギうどんこ病菌 Bgt を検定
+赤かび病,小麦,fusarium_graminearum_sc,関西病虫害研究会報 51 pp.37-38 (2009) 原著 DOI: 10.4165/kapps.51.37,AI照合 (Claude Sonnet 5.5),2026-11-20,原著のコムギ赤かび病と FAMIC の適用名 (小麦・赤かび病) を照合

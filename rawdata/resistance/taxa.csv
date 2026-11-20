@@ -41,3 +41,14 @@ helicoverpa_armigera,Helicoverpa armigera,,オオタバコガ,昆虫,日本応�
 helicoverpa_assulta,Helicoverpa assulta,,タバコガ,昆虫,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-11-03,学名・和名は名鑑によるとしたが、本と照らし合わせていない (Claude の記憶)
 pseudococcus_comstocki,Pseudococcus comstocki,,クワコナカイガラムシ,昆虫,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-11-03,学名・和名は名鑑によるとしたが、本と照らし合わせていない (Claude の記憶)
 niphe_elongata,Niphe elongata,,イネカメムシ,昆虫,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-11-03,学名・和名は名鑑によるとしたが、本と照らし合わせていない (Claude の記憶)
+cladosporium_carpophilum,Cladosporium carpophilum,Fusicladium carpophilum,,糸状菌,関西病虫研報 64 pp.75-80（2022） 原著 DOI: 10.4165/kapps.64.75,AI照合 (Claude Sonnet 5.5),2026-11-20,原著が Fusicladium carpophilum を同種のシノニムとしている。テレオモルフは Venturia carpophila
+trialeurodes_vaporariorum,Trialeurodes vaporariorum,,オンシツコナジラミ,昆虫,九州病害虫研究会報 56: 83-87 (2010) DOI 10.4241/kyubyochu.56.83 (学名 Trialeurodes vaporariorum (Westwood) は論文本文、和名は論文題名),AI照合 (Claude Sonnet 5.5),2026-11-20,大分県のイチゴ・トマトの個体群を COI 領域の塩基配列でオンシツコナジラミと確認 (候補 18)
+monilinia_fructicola,Monilinia fructicola,,,糸状菌,北日本病害虫研究会報 2014 pp.98-100（2014） 原著 DOI: 10.11455/kitanihon.2014.65_98,AI照合 (Claude Sonnet 5.5),2026-11-20,原著にこの学名の記載あり (題名・要旨・本文)
+cercospora_apii,Cercospora apii,,,糸状菌,北日本病害虫研究会報 2009 pp.77-81（2009） 原著 DOI: 10.11455/kitanihon.2009.60_77,AI照合 (Claude Sonnet 5.5),2026-11-20,原著の題名 (英文) と本文に学名の記載あり
+nectria_cinnabarina,Nectria cinnabarina,,,糸状菌,北日本病害虫研究会報 2009 pp.148-150（2009） 原著 DOI: 10.11455/kitanihon.2009.60_148,AI照合 (Claude Sonnet 5.5),2026-11-20,原著の題名・要旨に学名の記載あり。ニホンナシ紅粒がんしゅ病菌
+homona_magnanima,Homona magnanima,,チャハマキ,昆虫,関東東山病害虫研究会報 60 pp.139-142（2013） 原著 DOI: 10.11337/ktpps.2013.139,AI照合 (Claude Sonnet 5.5),2026-11-20,論文の題名・本文に Homona magnanima Diakonoff（チャハマキ）とある
+didymella_bryoniae,Didymella bryoniae,,,糸状菌,関東東山病害虫研究会報 60 pp.31-33（2013） 原著 DOI: 10.11337/ktpps.2013.31,AI照合 (Claude Sonnet 5.5),2026-11-20,論文の英題・本文に Didymella bryoniae（ウリ類つる枯病菌）とある。異名は論文に無いので空
+pythium_arrhenomanes,Pythium arrhenomanes,,,卵菌,関東東山病害虫研究会報 59 pp.127-130 (2012) DOI: 10.11337/ktpps.2012.127,AI照合 (Claude Sonnet 5.5),2026-11-20,論文本文の学名 (形態とITS-RFLPで21菌株を同定)
+adoxophyes_orana_fasciata,Adoxophyes orana fasciata,,リンゴコカクモンハマキ,昆虫,関東東山病害虫研究会報 57 pp.85-87 (2010) DOI: 10.11337/ktpps.2010.85,AI照合 (Claude Sonnet 5.5),2026-11-20,論文本文の学名と和名 (Adoxophyes orana fasciata WALSINGHAM)
+blumeria_graminis_tritici,Blumeria graminis f. sp. tritici,,,糸状菌,関西病虫研報 65 pp.35-41 (2023) DOI: 10.4165/kapps.65.35,AI照合 (Claude Sonnet 5.5),2026-11-20,論文本文の学名 (略称 Bgt)。コムギうどんこ病菌
+fusarium_graminearum_sc,Fusarium graminearum 種複合体,,,糸状菌,関西病虫害研究会報 51 pp.37-38 (2009) 原著 DOI: 10.4165/kapps.51.37,AI照合 (Claude Sonnet 5.5),2026-11-20,原著は全菌株を F. graminearum と判断し、遺伝子診断した13菌株は系統6 (F. asiaticum) と記す。種複合体としてまとめた
