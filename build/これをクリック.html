@@ -26177,7 +26177,7 @@ const RESISTANCE_LEVELS = {
   field_failure: { label: "効果低下", rank: 4 },
   resistant: { label: "抵抗性あり", rank: 3 },
   reduced: { label: "感受性低下", rank: 2 },
-  not_detected: { label: "検出されず", rank: 1 },
+  not_detected: { label: "低下なし", rank: 1 },
 };
 
 // 成分名の名寄せで無視してよい語尾 (scripts/build_resistance.py の SALT_SUFFIXES と同じ)
@@ -26345,7 +26345,7 @@ function recordsByRacCode(rx, taxonIds, crop, opts = {}) {
 
 /**
  * 報告の一覧 (findResistance などの戻り値) をまとめる。
- * maxLevel: 最も強い程度 (「検出されず」だけなら not_detected、報告が無ければ null)
+ * maxLevel: 最も強い程度 (「低下なし」だけなら not_detected、報告が無ければ null)
  * prefs: 都道府県コードごとの最も強い程度 (Map)、countries: 海外の国の Set、latestYear: 最新の年
  */
 function summarizeResistance(hits) {

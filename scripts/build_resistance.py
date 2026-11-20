@@ -48,7 +48,7 @@ INGREDIENT_EN_COLUMNS = ["english", "ingredient", "note"]
 # 種類 → RAC の系統 (IRAC=I / FRAC=F / HRAC=H)。成分の RAC コードのうち、どの系統のコードと照合するかを決める
 KIND_SYSTEM = {"昆虫": "I", "ダニ": "I", "線虫": "I", "糸状菌": "F", "卵菌": "F", "細菌": "F", "雑草": "H"}
 # 程度の 4 段階 (rawdata/resistance/README.md)。CSV には日本語の名前で書き、JSON にはキーで出す
-LEVELS = {"効果低下": "field_failure", "抵抗性あり": "resistant", "感受性低下": "reduced", "検出されず": "not_detected"}
+LEVELS = {"効果低下": "field_failure", "抵抗性あり": "resistant", "感受性低下": "reduced", "低下なし": "not_detected"}
 EVIDENCE = {"圃場での効果低下", "生物検定", "遺伝子診断", "データベースの記録"}
 JAPAN = "日本"
 
