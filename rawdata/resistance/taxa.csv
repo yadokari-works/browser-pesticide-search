@@ -33,3 +33,11 @@ podosphaera_xanthii,Podosphaera xanthii,,,糸状菌,関東東山病害虫研究�
 laodelphax_striatellus,Laodelphax striatellus,,ヒメトビウンカ,昆虫,関東東山病害虫研究会報 2015 pp.116-118（2015） 原著 DOI: 10.11337/ktpps.2015.116,AI照合 (GPT-6.1 Terra),2026-11-19,
 mycovellosiella_nattrassii,Mycovellosiella nattrassii,,,糸状菌,関西病虫害研究会報 67 pp.73-80（2025） 原著 DOI: 10.4165/kapps.67.73,AI照合 (GPT-6.1 Terra),2026-11-19,
 tetranychus_kanzawai,Tetranychus kanzawai,,カンザワハダニ,ダニ,関西病虫害研究会報 66 pp.92-98（2024） 原著 DOI: 10.4165/kapps.66.92,AI照合 (GPT-6.1 Terra),2026-11-19,
+spodoptera_exigua,Spodoptera exigua,,シロイチモジヨトウ,昆虫,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-11-03,学名・和名は名鑑によるとしたが、本と照らし合わせていない (Claude の記憶)
+panonychus_ulmi,Panonychus ulmi,,リンゴハダニ,ダニ,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-11-03,学名・和名は名鑑によるとしたが、本と照らし合わせていない (Claude の記憶)
+rhizoglyphus_robini,Rhizoglyphus robini,,ロビンネダニ,ダニ,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-11-03,学名・和名は名鑑によるとしたが、本と照らし合わせていない (Claude の記憶)。茨城の報告は「日本産土壌動物」(青木淳一 編著) で同定
+cosmoglyphus_unspecified,Cosmoglyphus,,Cosmoglyphus 属のネダニ類 (報告に種名なし),ダニ,茨城県農業総合センター園芸研究所 令和 7 年度 技術情報「ネギを加害するネダニ類に対する有効薬剤」(「日本産土壌動物」で属まで同定),AI照合 (Claude Haiku・Claude Opus),2026-11-03,報告が属までしか同定していないので属だけにした
+helicoverpa_armigera,Helicoverpa armigera,,オオタバコガ,昆虫,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-11-03,学名・和名は名鑑によるとしたが、本と照らし合わせていない (Claude の記憶)
+helicoverpa_assulta,Helicoverpa assulta,,タバコガ,昆虫,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-11-03,学名・和名は名鑑によるとしたが、本と照らし合わせていない (Claude の記憶)
+pseudococcus_comstocki,Pseudococcus comstocki,,クワコナカイガラムシ,昆虫,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-11-03,学名・和名は名鑑によるとしたが、本と照らし合わせていない (Claude の記憶)
+niphe_elongata,Niphe elongata,,イネカメムシ,昆虫,日本応用動物昆虫学会 編『農林有害動物・昆虫名鑑 増補改訂版』(2006),AI照合 (Claude Haiku・Claude Opus),2026-11-03,学名・和名は名鑑によるとしたが、本と照らし合わせていない (Claude の記憶)
