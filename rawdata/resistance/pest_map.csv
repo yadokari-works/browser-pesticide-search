@@ -11,7 +11,7 @@
 コナジラミ類,すいか,bemisia_tabaci,熊本県病害虫防除所 技術情報第 16・17 号、愛媛県 タバココナジラミの薬剤感受性 (この作物のタバココナジラミを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
 タバココナジラミ類(シルバーリーフコナジラミを含む),*,bemisia_tabaci,病害虫名そのもの (シルバーリーフコナジラミはタバココナジラミの旧称),AI照合 (Claude Haiku・Claude Opus),2026-10-25,病害虫名から種が決まるので全作物で対応させた
 タバココナジラミ類幼虫(シルバーリーフコナジラミ幼虫を含む),*,bemisia_tabaci,病害虫名そのもの (シルバーリーフコナジラミはタバココナジラミの旧称),AI照合 (Claude Haiku・Claude Opus),2026-10-25,病害虫名から種が決まるので全作物で対応させた
-炭疽病,いちご,colletotrichum_fructicola;colletotrichum_gloeosporioides_sc;colletotrichum_unspecified,日本植物病名データベース (農研機構 ジーンバンク) id=3501,AI照合 (Claude Haiku・Claude Opus),2026-10-25,データベースには C. acutatum、C. nymphaeae なども載る。報告のある種と、種名の無い報告だけを対応させた
+炭疽病,いちご,colletotrichum_fructicola;colletotrichum_gloeosporioides_sc;colletotrichum_unspecified;colletotrichum_aenigma;colletotrichum_siamense;colletotrichum_gloeosporioides_ss,日本植物病名データベース id=3501・日本植物病名目録 第3版 p.1284・新旧対照表 p.34・茨城県園芸研究所 令和2年度技術情報,AI照合 (Claude Haiku・Claude Opus・Antigravity),2026-11-21,データベースには C. acutatum、C. nymphaeae なども載る。報告のある種と、種名の無い報告だけを対応させた
 灰色かび病,いちご,botrytis_cinerea,日本植物病名データベース (農研機構 ジーンバンク) id=3483,AI照合 (Claude Haiku・Claude Opus),2026-10-25,
 灰色かび病,トマト,botrytis_cinerea,日本植物病名データベース (農研機構 ジーンバンク) id=3564,AI照合 (Claude Haiku・Claude Opus),2026-10-25,
 葉かび病,トマト,passalora_fulva,日本植物病名データベース (農研機構 ジーンバンク) id=3565,AI照合 (Claude Haiku・Claude Opus),2026-10-25,
@@ -29,7 +29,7 @@
 べと病,ぶどう,plasmopara_viticola,九州病害虫研究会報 60 pp.43-47（2014） 原著 DOI: 10.4241/kyubyochu.60.43,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
 輪斑病,茶,pestalotiopsis_longiseta,九州病害虫研究会報 55 pp.83-88（2009） 原著 DOI: 10.4241/kyubyochu.55.83,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
 すすかび病,なす,mycovellosiella_nattrassii,関西病虫害研究会報 67 pp.73-80（2025） 原著 DOI: 10.4165/kapps.67.73,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
-炭疽病,なし,colletotrichum_fructicola;colletotrichum_aenigma,原著 DOI: 10.11337/ktpps.69.38,AI照合 (GPT-6.1 Terra・Codex),2026-11-19,原著で同定が確認された種。ほかの病原種も存在しうる。
+炭疽病,なし,colletotrichum_fructicola;colletotrichum_aenigma;colletotrichum_siamense,原著 DOI: 10.11337/ktpps.69.38・日本植物病名目録 第3版 p.1345・茨城県園芸研究所 令和3年度技術情報,AI照合 (Claude Haiku・Claude Opus・Antigravity),2026-11-21,原著で同定が確認された種。ほかの病原種も存在しうる。
 うどんこ病,メロン,podosphaera_xanthii,原著 DOI: 10.11337/ktpps.68.1,AI照合 (GPT-6.1 Terra・Codex),2026-11-19,原著で同定が確認された種。ほかの病原種も存在しうる。
 うどんこ病,きゅうり,podosphaera_xanthii,原著 DOI: 10.11337/ktpps.68.1,AI照合 (GPT-6.1 Terra・Codex),2026-11-19,原著で同定が確認された種。ほかの病原種も存在しうる。
 うどんこ病,なす,podosphaera_xanthii,原著 DOI: 10.11337/ktpps.68.1,AI照合 (GPT-6.1 Terra・Codex),2026-11-19,原著で同定が確認された種。ほかの病原種も存在しうる。
@@ -55,3 +55,7 @@
 ハマキムシ類,なし,adoxophyes_orana_fasciata,関東東山病害虫研究会報 57 pp.85-87 (2010) DOI: 10.11337/ktpps.2010.85,AI照合 (Claude Sonnet 5.5),2026-11-20,なしのハマキムシ類をリンゴコカクモンハマキだけに対応させた (論文の検定対象)。FAMICのなしに「ハマキムシ類」がある
 うどんこ病,小麦,blumeria_graminis_tritici,関西病虫研報 65 pp.35-41 (2023) DOI: 10.4165/kapps.65.35,AI照合 (Claude Sonnet 5.5),2026-11-20,FAMICの小麦に「うどんこ病」がある。論文はコムギうどんこ病菌 Bgt を検定
 赤かび病,小麦,fusarium_graminearum_sc,関西病虫害研究会報 51 pp.37-38 (2009) 原著 DOI: 10.4165/kapps.51.37,AI照合 (Claude Sonnet 5.5),2026-11-20,原著のコムギ赤かび病と FAMIC の適用名 (小麦・赤かび病) を照合
+べと病,メロン,pseudoperonospora_cubensis,日本植物病名目録 第3版 (2025年12月) p.431,AI照合 (Claude Haiku・Claude Opus・Antigravity),2026-11-21,
+褐斑病,ぶどう,pseudocercospora_vitis,日本植物病名目録 第3版 (2025年12月) p.1560,AI照合 (Claude Haiku・Claude Opus・Antigravity),2026-11-21,
+斑点病,ピーマン,cercospora_capsici,日本植物病名目録 第3版 (2025年12月) p.1455 (トウガラシ/ピーマン),AI照合 (Claude Haiku・Claude Opus・Antigravity),2026-11-21,
+つる割病,かんしょ,fusarium_oxysporum_batatas,日本植物病名目録 第3版 (2025年12月) p.398・茨城県農業研究所 平成29年度技術情報,AI照合 (Claude Haiku・Claude Opus・Antigravity),2026-11-21,報告で Fusarium oxysporum f. sp. batatas を同定記載
