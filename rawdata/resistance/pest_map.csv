@@ -1,10 +1,10 @@
 ﻿pest,crop,taxon_ids,source,verified_by,verified_at,note
-ハダニ類,いちご,tetranychus_urticae;tetranychus_kanzawai,熊本県病害虫防除所 2025・栃木県農業環境指導センター 2023・長崎県病害虫防除所 令和2年度 のいちごのナミハダニの薬剤感受性検定 (いちごのハダニとしてナミハダニを扱う)・関東東山病害虫研究会年報 35:173 (1988),AI照合 (Orchestrator),2026-11-21,いちごの「ハダニ類」にはナミハダニだけを対応させる。カンザワハダニなどは、報告を入れるときに足す。「ナミハダニ」「コナガ」は和名が FAMIC の病害虫名と同じなので、この表に行が無くても引ける
+ハダニ類,いちご,tetranychus_urticae;tetranychus_kanzawai,熊本県病害虫防除所 2025・栃木県農業環境指導センター 2023・長崎県病害虫防除所 令和2年度 のいちごのナミハダニの薬剤感受性検定 (いちごのハダニとしてナミハダニを扱う)・関東東山病害虫研究会年報 35:173 (1988),AI照合 (Gemini Neon),2026-11-21,いちごの「ハダニ類」にはナミハダニだけを対応させる。カンザワハダニなどは、報告を入れるときに足す。「ナミハダニ」「コナガ」は和名が FAMIC の病害虫名と同じなので、この表に行が無くても引ける
 アザミウマ類,いちご,frankliniella_intonsa,山口県 イチゴのアザミウマ類の薬剤感受性検定 (令和３年。イチゴハウスのアザミウマ類の 83% がヒラズハナアザミウマ),AI照合 (Claude Haiku・Claude Opus),2026-10-25,ハナアザミウマ (17%) は報告を入れるときに足す
 アザミウマ類,たまねぎ,thrips_tabaci,香川県病害虫防除所 令和３年度 病害虫発生調査速報 第３号・第７号 (この作物のネギアザミウマを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
 アザミウマ類,ねぎ,thrips_tabaci,香川県病害虫防除所 令和３年度 病害虫発生調査速報 第３号・第７号 (この作物のネギアザミウマを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
 アザミウマ類,アスパラガス,thrips_tabaci,香川県病害虫防除所 令和３年度 病害虫発生調査速報 第３号・第７号 (この作物のネギアザミウマを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
-コナジラミ類,トマト,bemisia_tabaci;trialeurodes_vaporariorum,熊本県病害虫防除所 技術情報第 16・17 号、愛媛県 タバココナジラミの薬剤感受性 (この作物のタバココナジラミを検定)・千葉県農林総合研究センター研究報告 17: 26-33 (2025) DOI: 10.82686/cafrc.2025.17_26・FAMIC登録適用データ,AI照合 (Orchestrator),2026-11-22,
+コナジラミ類,トマト,bemisia_tabaci;trialeurodes_vaporariorum,熊本県病害虫防除所 技術情報第 16・17 号、愛媛県 タバココナジラミの薬剤感受性 (この作物のタバココナジラミを検定)・千葉県農林総合研究センター研究報告 17: 26-33 (2025) DOI: 10.82686/cafrc.2025.17_26・FAMIC登録適用データ,AI照合 (Gemini Neon),2026-11-22,
 コナジラミ類,ミニトマト,bemisia_tabaci,熊本県病害虫防除所 技術情報第 16・17 号、愛媛県 タバココナジラミの薬剤感受性 (この作物のタバココナジラミを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
 コナジラミ類,きゅうり,bemisia_tabaci,熊本県病害虫防除所 技術情報第 16・17 号、愛媛県 タバココナジラミの薬剤感受性 (この作物のタバココナジラミを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
 コナジラミ類,メロン,bemisia_tabaci,熊本県病害虫防除所 技術情報第 16・17 号、愛媛県 タバココナジラミの薬剤感受性 (この作物のタバココナジラミを検定),AI照合 (Claude Haiku・Claude Opus),2026-10-25,
@@ -29,15 +29,15 @@
 べと病,ぶどう,plasmopara_viticola,九州病害虫研究会報 60 pp.43-47（2014） 原著 DOI: 10.4241/kyubyochu.60.43,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
 輪斑病,茶,pestalotiopsis_longiseta,九州病害虫研究会報 55 pp.83-88（2009） 原著 DOI: 10.4241/kyubyochu.55.83,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
 すすかび病,なす,mycovellosiella_nattrassii,関西病虫害研究会報 67 pp.73-80（2025） 原著 DOI: 10.4165/kapps.67.73,AI照合 (GPT-6.1 Terra),2026-11-19,原著の作物・病名・病原菌の記載とFAMICの適用名を照合
-炭疽病,なし,colletotrichum_fructicola;colletotrichum_aenigma;colletotrichum_siamense;colletotrichum_gloeosporioides_sc,原著 DOI: 10.11337/ktpps.69.38・日本植物病名目録 第3版 p.1345・茨城県園芸研究所 令和3年度技術情報・栃木県農業環境指導センター「ナシ炭疽病の薬剤感受性検定結果」(2022)・日本植物病名目録 第3版 p.1345,AI照合 (Orchestrator),2026-11-22,原著で同定が確認された種。ほかの病原種も存在しうる。
+炭疽病,なし,colletotrichum_fructicola;colletotrichum_aenigma;colletotrichum_siamense;colletotrichum_gloeosporioides_sc,原著 DOI: 10.11337/ktpps.69.38・日本植物病名目録 第3版 p.1345・茨城県園芸研究所 令和3年度技術情報・栃木県農業環境指導センター「ナシ炭疽病の薬剤感受性検定結果」(2022)・日本植物病名目録 第3版 p.1345,AI照合 (Gemini Neon),2026-11-22,原著で同定が確認された種。ほかの病原種も存在しうる。
 うどんこ病,メロン,podosphaera_xanthii,原著 DOI: 10.11337/ktpps.68.1,AI照合 (GPT-6.1 Terra・Codex),2026-11-19,原著で同定が確認された種。ほかの病原種も存在しうる。
 うどんこ病,きゅうり,podosphaera_xanthii,原著 DOI: 10.11337/ktpps.68.1,AI照合 (GPT-6.1 Terra・Codex),2026-11-19,原著で同定が確認された種。ほかの病原種も存在しうる。
 うどんこ病,なす,podosphaera_xanthii,原著 DOI: 10.11337/ktpps.68.1,AI照合 (GPT-6.1 Terra・Codex),2026-11-19,原著で同定が確認された種。ほかの病原種も存在しうる。
-アザミウマ類,ピーマン,frankliniella_intonsa;frankliniella_occidentalis;echinothrips_americanus,関東東山病害虫研究会報60集 p.157（2013年）・九州病害虫研究会報60号 pp.79–83（2014年）・九州病害虫研究会報 61: 57-61 (2015) DOI: 10.4241/kyubyochu.61.57,AI照合 (Orchestrator),2026-11-21,ピーマンで公表された報告と照合できる種。アザミウマ類の全種を列挙したものではない。
+アザミウマ類,ピーマン,frankliniella_intonsa;frankliniella_occidentalis;echinothrips_americanus,関東東山病害虫研究会報60集 p.157（2013年）・九州病害虫研究会報60号 pp.79–83（2014年）・九州病害虫研究会報 61: 57-61 (2015) DOI: 10.4241/kyubyochu.61.57,AI照合 (Gemini Neon),2026-11-21,ピーマンで公表された報告と照合できる種。アザミウマ類の全種を列挙したものではない。
 アザミウマ類,きゅうり,thrips_palmi,関東東山病害虫研究会報65集 pp.115–117（2018年）・関西病虫研報62号 pp.193–195（2020年）,AI照合 (Codex),2026-11-20,当該作物から採集され、感受性検定が報告された種との対応。
 アザミウマ類,なす,thrips_palmi,関西病虫研報56号 pp.131–133（2014年）・65号 pp.99–101（2023年）,AI照合 (Codex),2026-11-20,当該作物から採集され、感受性検定が報告された種との対応。
 ハダニ類,なし,tetranychus_kanzawai;tetranychus_urticae,茨城県病害虫防除所 防除所レポート (病害虫発生予報 平成 28 年 1 月号)「県内のナシに発生するハダニ類は，主にカンザワハダニとナミハダニ」,AI照合 (Claude Haiku・Claude Opus),2026-11-03,
-ハダニ類,りんご,panonychus_ulmi;tetranychus_urticae,茨城県病害虫防除所 防除所レポート (病害虫発生予報 平成 29 年 1 月号)「リンゴハダニは，県内のリンゴ産地で問題となる害虫の一つ」・富山県農業技術センター研究報告 17:1-7 (1997),AI照合 (Orchestrator),2026-11-21,りんごではナミハダニも主な種だが、茨城の報告はリンゴハダニだけ。ナミハダニも対応させるか
+ハダニ類,りんご,panonychus_ulmi;tetranychus_urticae,茨城県病害虫防除所 防除所レポート (病害虫発生予報 平成 29 年 1 月号)「リンゴハダニは，県内のリンゴ産地で問題となる害虫の一つ」・富山県農業技術センター研究報告 17:1-7 (1997),AI照合 (Gemini Neon),2026-11-21,りんごではナミハダニも主な種だが、茨城の報告はリンゴハダニだけ。ナミハダニも対応させるか
 アザミウマ類,にら,thrips_tabaci,茨城県農業総合センター園芸研究所研究報告 第 20 号 (2013)、ニラの重要害虫としてネギアザミウマを検定,AI照合 (Claude Haiku・Claude Opus),2026-11-03,
 コナジラミ類,ピーマン,bemisia_tabaci,茨城県農業総合センター園芸研究所 平成 28 年度 技術情報 (ピーマンのタバココナジラミ バイオタイプQ),AI照合 (Claude Haiku・Claude Opus),2026-11-03,
 ネダニ類,ねぎ,rhizoglyphus_robini;cosmoglyphus_unspecified,茨城県農業総合センター園芸研究所 令和 7 年度 技術情報 (県内 8 個体群のうち 5 個体群でロビンネダニ、3 個体群で Cosmoglyphus 属が優占),AI照合 (Claude Haiku・Claude Opus),2026-11-03,
@@ -59,101 +59,101 @@
 褐斑病,ぶどう,pseudocercospora_vitis,日本植物病名目録 第3版 (2025年12月) p.1560,AI照合 (Claude Haiku・Claude Opus・Antigravity),2026-11-21,
 斑点病,ピーマン,cercospora_capsici,日本植物病名目録 第3版 (2025年12月) p.1455 (トウガラシ/ピーマン),AI照合 (Claude Haiku・Claude Opus・Antigravity),2026-11-21,
 つる割病,かんしょ,fusarium_oxysporum_batatas,日本植物病名目録 第3版 (2025年12月) p.398・茨城県農業研究所 平成29年度技術情報,AI照合 (Claude Haiku・Claude Opus・Antigravity),2026-11-21,報告で Fusarium oxysporum f. sp. batatas を同定記載
-かいよう病,かんきつ,xanthomonas_citri_citri,日本植物病名目録 第3版 (2025年12月) p.1385・沖縄県農業研究センター研究報告 18: 1-5 (2025),AI照合 (Orchestrator),2026-11-21,FAMICのかんきつ(みかん・天草・ぶんたん等を含む作物群)・かいよう病と対応。
-軟腐病,だいこん,pectobacterium_carotovorum,日本植物病名目録 第3版 (2025年12月) p.328・九州病害虫研究会報 33: 53-56 (1987) DOI: 10.4241/kyubyochu.33.53,AI照合 (Orchestrator),2026-11-21,FAMICのだいこん・軟腐病と対応。
-アザミウマ類,きく,thrips_nigropilosus,日本応用動物昆虫学会誌 58(3): 275-279 (2014) DOI: 10.1303/jjaez.2014.275,AI照合 (Orchestrator),2026-11-21,報告されたクロゲハナアザミウマを対応。他種報告追加時に拡張可能。
-ハダニ類,かんきつ,eutetranychus_africanus;panonychus_citri,九州病害虫研究会報 57: 72-76 (2011) DOI: 10.4241/kyubyochu.57.72,AI照合 (Orchestrator),2026-11-21,原著の沖縄県カンキツ類加害ハダニ2種 (トウヨウハダニ・ミカンハダニ) と対応。crop=かんきつ でみかん・ぶんたん等も照合。
-ハダニ類,パパイヤ,eutetranychus_africanus,九州病害虫研究会報 57: 72-76 (2011) DOI: 10.4241/kyubyochu.57.72,AI照合 (Orchestrator),2026-11-21,原著の本部町パパイヤ採集トウヨウハダニと対応。
-ハダニ類,なす,tetranychus_evansi;tetranychus_urticae;tetranychus_kanzawai,日本応用動物昆虫学会誌 56(2): 74-77 (2012) DOI: 10.1303/jjaez.2012.74・関東東山病害虫研究会年報 35:173 (1988)・関西病虫害研究会報 63: 119-121 (2021) DOI: 10.4165/kapps.63.119,AI照合 (Orchestrator),2026-11-21,原著の沖縄県ナス圃場採集ミツユビナミハダニと対応。他種報告追加時に拡張可能。
-アブラムシ類,きゅうり,aphis_gossypii,九州病害虫研究会報 63: 62-70 (2017),AI照合 (Orchestrator),2026-11-21,きゅうりでのアブラムシ類登録 (FAMIC) とワタアブラムシ報告を照合。他種報告追加時に拡張可能。
-アブラムシ類,ぶどう,aphis_gossypii,九州病害虫研究会報 63: 62-70 (2017),AI照合 (Orchestrator),2026-11-21,ぶどうでのアブラムシ類登録 (FAMIC) とワタアブラムシ報告を照合。
-褐条病,稲,acidovorax_avenae_avenae,北陸病害虫研究会報 53:5-11 (2004)・日本植物病名目録 第3版 p.1109,AI照合 (Orchestrator),2026-11-21,イネ褐条病の単一病原種
-もみ枯細菌病,稲,burkholderia_glumae,北陸病害虫研究会報 53:5-11 (2004)・日本植物病名目録 第3版 p.1109,AI照合 (Orchestrator),2026-11-21,原著でもみ枯細菌病の病原菌として検定された種。目録第3版 p.1109 には Burkholderia gladioli も記載
-苗腐敗症(もみ枯細菌病菌),稲,burkholderia_glumae,北陸病害虫研究会報 53:5-11 (2004)（本文に「もみ枯細菌病(苗腐敗症)」と記載）,AI照合 (Orchestrator),2026-11-21,FAMIC適用病害虫名に対応
-幼苗腐敗症(もみ枯細菌病菌),稲,burkholderia_glumae,北陸病害虫研究会報 53:5-11 (2004)・FAMIC適用名,AI照合 (Orchestrator),2026-11-21,FAMIC適用病害虫名に対応
-幼苗腐敗症(イネもみ枯細菌病菌),稲,burkholderia_glumae,北陸病害虫研究会報 53:5-11 (2004)・FAMIC適用名,AI照合 (Orchestrator),2026-11-21,FAMIC適用病害虫名に対応
-苗立枯細菌病,稲,burkholderia_plantarii,日本植物病名目録 第3版 p.1109・北陸病害虫研究会報 53:5-11 (2004),AI照合 (Orchestrator),2026-11-21,目録第3版 p.1109 でイネ苗立枯細菌病の単一病原種
-球根腐敗病,チューリップ,fusarium_oxysporum_tulipae,日本植物病名目録 第3版 p.792・富山県令和5年度農業分野試験研究の成果と普及 p.47,AI照合 (Orchestrator),2026-11-21,チューリップ球根腐敗病の主病原菌 (目録備考には F. solani f. sp. radicicola の記載もあり)
-アカヒゲホソミドリカスミカメ,稲,trigonotylus_caelestialium,北陸病害虫研究会報 69:1-5 (2020)・70:19-25 (2021),AI照合 (Orchestrator),2026-11-21,FAMICの稲適用名と一致
-カメムシ類,稲,trigonotylus_caelestialium;niphe_elongata;cletus_punctiger;leptocorisa_chinensis;eysarcoris_aeneus;stenotus_rubrovittatus,北陸病害虫研究会報 69:1-5 (2020)・70:19-25 (2021)（ジノテフラン・クロチアニジン登録名「カメムシ類」）・関西病虫害研究会報 62: 169-172 (2020)・同 67: 10-14 (2025),AI照合 (Orchestrator),2026-11-21,斑点米カメムシ類の主要種として検定報告があるアカヒゲホソミドリカスミカメを対応。イネには他のカメムシ類も発生しうる
-カスミカメムシ類,稲,trigonotylus_caelestialium;stenotus_rubrovittatus,北陸病害虫研究会報 69:1-5 (2020)・70:19-25 (2021)・北日本病害虫研究会報 72: 99-103 (2021) RN/2010940709,AI照合 (Orchestrator),2026-11-22,斑点米カメムシ類の主要種として報告のある種を対応
-ウコンノメイガ,だいず,pleuroptya_ruralis,富山県農林水産総合技術センター農業研究所研究報告 1:27-31 (2009),AI照合 (Orchestrator),2026-11-21,FAMICの適用病害虫名・作物名と一致
-スギナ,*,equisetum_arvense,雑草研究 45(4):244-249 (2000)・FAMIC適用名「スギナ」,AI照合 (Orchestrator),2026-11-21,和名がFAMICの適用名と一致
-一年生雑草,*,eleusine_indica;youngia_japonica;erigeron_sumatrensis;alopecurus_aequalis;lolium_multiflorum,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025),AI照合 (Orchestrator),2026-11-21,FAMIC適用一覧に個別種名がないため、抵抗性報告がある一年生/越年生雑草種を対応 (他の雑草種も存在しうる)
-一年生及び多年生雑草,*,eleusine_indica;youngia_japonica;erigeron_sumatrensis;alopecurus_aequalis;erigeron_philadelphicus;lolium_multiflorum,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・35(1):13-19 (1990)・草と緑 17:1-12 (2025),AI照合 (Orchestrator),2026-11-21,FAMIC適用名に対応 (他の雑草種も存在しうる)
-一年生雑草及び多年生雑草,*,eleusine_indica;youngia_japonica;erigeron_sumatrensis;alopecurus_aequalis;erigeron_philadelphicus;lolium_multiflorum,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・35(1):13-19 (1990)・草と緑 17:1-12 (2025),AI照合 (Orchestrator),2026-11-21,FAMIC適用名に対応
-一年生雑草及び多年生広葉雑草,*,eleusine_indica;youngia_japonica;erigeron_sumatrensis;erigeron_philadelphicus,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・66(1):11-15 (2021)・雑草研究 35(1):13-19 (1990),AI照合 (Orchestrator),2026-11-21,FAMIC適用名に対応
-一年生雑草及び多年生イネ科雑草,*,eleusine_indica;youngia_japonica;erigeron_sumatrensis;alopecurus_aequalis;lolium_multiflorum,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025),AI照合 (Orchestrator),2026-11-21,FAMIC適用名に対応
-畑地一年生雑草,*,eleusine_indica;youngia_japonica;erigeron_sumatrensis;alopecurus_aequalis;lolium_multiflorum,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025),AI照合 (Orchestrator),2026-11-21,FAMIC適用名に対応
-一年生イネ科雑草,*,eleusine_indica;alopecurus_aequalis;lolium_multiflorum,雑草研究 66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025),AI照合 (Orchestrator),2026-11-21,オヒシバ (一年生イネ科雑草) に対応
-一年生及び多年生イネ科雑草,*,eleusine_indica;alopecurus_aequalis;lolium_multiflorum,雑草研究 66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025),AI照合 (Orchestrator),2026-11-21,オヒシバに対応
-畑地一年生イネ科雑草,*,eleusine_indica;alopecurus_aequalis;lolium_multiflorum,雑草研究 66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025),AI照合 (Orchestrator),2026-11-21,オヒシバに対応
-一年生広葉雑草,*,youngia_japonica;erigeron_sumatrensis,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989),AI照合 (Orchestrator),2026-11-21,キク科の越年生広葉雑草オニタビラコ・オオアレチノギクに対応
-一年生及び多年生広葉雑草,*,youngia_japonica;erigeron_sumatrensis;erigeron_philadelphicus,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・雑草研究 35(1):13-19 (1990),AI照合 (Orchestrator),2026-11-21,キク科の越年生広葉雑草に対応
-畑地一年生広葉雑草,*,youngia_japonica;erigeron_sumatrensis,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989),AI照合 (Orchestrator),2026-11-21,キク科の越年生広葉雑草に対応
-広葉雑草,*,youngia_japonica;erigeron_sumatrensis;erigeron_philadelphicus,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・雑草研究 35(1):13-19 (1990),AI照合 (Orchestrator),2026-11-21,キク科の広葉雑草に対応
-ハダニ類,きゅうり,tetranychus_urticae,関東東山病害虫研究会年報 35:173 (1988),AI照合 (Orchestrator),2026-11-21,埼玉県のキュウリのハダニ類としてナミハダニを検定。他種も発生しうる
-アブラムシ類,なし,aphis_gossypii,関東東山病害虫研究会年報 42:255-257 (1995),AI照合 (Orchestrator),2026-11-21,埼玉県のナシのワタアブラムシの報告と照合。ナシには他のアブラムシ類も発生しうる
-腐敗病,たまねぎ,burkholderia_cepacia;burkholderia_cenocepacia,日本植物病名目録 第3版 (2025年12月) p.43・滋賀県農業技術振興センター成果情報 (2024),AI照合 (Orchestrator),2026-11-21,"タマネギ腐敗病の病原細菌として分離・検定された2種。FAMICの(腐敗病, たまねぎ)と対応。"
-りん片腐敗病,たまねぎ,burkholderia_gladioli,日本植物病名目録 第3版 (2025年12月) p.43・滋賀県農業技術振興センター成果情報 (2024),AI照合 (Orchestrator),2026-11-21,"タマネギりん片腐敗病の病原細菌。FAMICの(りん片腐敗病, たまねぎ)と対応。"
-ハダニ類,あずき,tetranychus_kanzawai;tetranychus_urticae,関西病虫害研究会報 63: 119-121 (2021) DOI: 10.4165/kapps.63.119,AI照合 (Orchestrator),2026-11-21,"アズキに発生するカンザワハダニおよびナミハダニ(FAMICでナミハダニ・ハダニ類の両名義あり)を(ハダニ類, あずき)へ対応。"
-ミズアオイ,*,monochoria_korsakowii,農業および園芸 90(1): 165-173 (2015)・FAMIC適用病害虫名「ミズアオイ」(移植水稲),AI照合 (Orchestrator),2026-11-21,"種名そのもののため全作物(*)で対応。FAMIC適用一覧の(ミズアオイ, 移植水稲)と和名一致。"
-コナギ,*,monochoria_vaginalis,農業および園芸 90(1): 165-173 (2015)・FAMIC適用病害虫名「コナギ」(移植水稲),AI照合 (Orchestrator),2026-11-21,"種名そのもののため全作物(*)で対応。FAMIC適用一覧の(コナギ, 移植水稲)と和名一致。"
-水田一年生雑草,移植水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides,農業および園芸 90(1): 165-173 (2015)・FAMIC水稲除草剤適用名・徳島県立農林水産総合技術支援センター農業研究所研究報告 5: 1-6 (2008)・日本雑草学会 雑草名リスト・雑草研究 68(3):125-132 (2023)・62(3):126-133 (2017)・66(4):175-179 (2021),AI照合 (Orchestrator),2026-11-21,FAMIC水稲除草剤(ベンスルフロンメチル等)の適用「水田一年生雑草 (移植水稲)」とミズアオイ・コナギ報告を照合。他水田一年生雑草追加時はpromote時にマージ。
-一年生雑草,移植水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides,農業および園芸 90(1): 165-173 (2015)・FAMIC水稲除草剤適用名・徳島県立農林水産総合技術支援センター農業研究所研究報告 5: 1-6 (2008)・日本雑草学会 雑草名リスト・雑草研究 68(3):125-132 (2023)・62(3):126-133 (2017)・66(4):175-179 (2021),AI照合 (Orchestrator),2026-11-21,FAMIC水稲除草剤の適用「一年生雑草 (移植水稲)」とミズアオイ・コナギ報告を照合。他雑草種追加時はpromote時にマージ。
-一年生雑草,水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides,農業および園芸 90(1): 165-173 (2015)・FAMIC水稲除草剤適用名・徳島県立農林水産総合技術支援センター農業研究所研究報告 5: 1-6 (2008)・日本雑草学会 雑草名リスト・雑草研究 68(3):125-132 (2023)・62(3):126-133 (2017)・66(4):175-179 (2021),AI照合 (Orchestrator),2026-11-21,FAMIC水稲除草剤の適用「一年生雑草 (水稲)」とミズアオイ・コナギ報告を照合。他雑草種追加時はpromote時にマージ。
-一年生広葉雑草,移植水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens,農業および園芸 90(1): 165-173 (2015)・FAMIC水稲除草剤適用名・徳島県立農林水産総合技術支援センター農業研究所研究報告 5: 1-6 (2008)・日本雑草学会 雑草名リスト,AI照合 (Orchestrator),2026-11-21,FAMIC水稲除草剤の適用「一年生広葉雑草 (移植水稲)」と水田一年生広葉雑草ミズアオイ・コナギ報告を照合。
-水田一年生雑草,直播水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides,農業および園芸 90(1): 165-173 (2015)・FAMIC水稲除草剤適用名・徳島県立農林水産総合技術支援センター農業研究所研究報告 5: 1-6 (2008)・日本雑草学会 雑草名リスト・雑草研究 68(3):125-132 (2023)・62(3):126-133 (2017)・66(4):175-179 (2021),AI照合 (Orchestrator),2026-11-21,FAMIC水稲除草剤の適用「水田一年生雑草 (直播水稲)」とミズアオイ・コナギ報告を照合。
-一年生雑草,直播水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides,農業および園芸 90(1): 165-173 (2015)・FAMIC水稲除草剤適用名・徳島県立農林水産総合技術支援センター農業研究所研究報告 5: 1-6 (2008)・日本雑草学会 雑草名リスト・雑草研究 68(3):125-132 (2023)・62(3):126-133 (2017)・66(4):175-179 (2021),AI照合 (Orchestrator),2026-11-21,FAMIC水稲除草剤の適用「一年生雑草 (直播水稲)」とミズアオイ・コナギ報告を照合。
-チャノキイロアザミウマ,*,scirtothrips_dorsalis,茶業研究報告 92: 1-8 (2001) DOI: 10.5979/cha.2001.92_1・FAMIC適用病害虫名「チャノキイロアザミウマ」(茶等14作物),AI照合 (Orchestrator),2026-11-21,種名そのもののため全作物(*)で対応。FAMICで「茶」の適用病害虫名は「チャノキイロアザミウマ」(「アザミウマ類」は茶に適用登録なし)。
-ウンカ類,稲,laodelphax_striatellus;nilaparvata_lugens;sogatella_furcifera,日本応用動物昆虫学会誌 27(1): 55-62 (1983) 原著 DOI: 10.1303/jjaez.27.55・既存ヒメトビウンカ報告・九州病害虫研究会報 65:90-93 (2019),AI照合 (Orchestrator),2026-11-22,FAMICで稲の「ウンカ類」として登録される剤（MEP・マラソン等）と既収載のヒメトビウンカ及び今回追加のトビイロウンカを対応。他ウンカ種追加時に拡張可能。
-コナジラミ類,なす,bemisia_tabaci,徳島県みどり戦略推進課 令和6年度消費・安全対策交付金について（資料3）(2025),AI照合 (Orchestrator),2026-11-21,FAMICのなす・コナジラミ類登録と徳島県のナス タバココナジラミ検定報告を照合。既存のトマト等コナジラミ類定義と同形式。
-ネコブセンチュウ,ピーマン,meloidogyne_incognita,"Pest Management Science (2024/2025) DOI: 10.1002/ps.8468・FAMIC適用名 (ネコブセンチュウ, ピーマン)",AI照合 (Orchestrator),2026-11-21,茨城県神栖市のピーマン圃場から分離・PCR-RFLP同定されたサツマイモネコブセンチュウの報告とFAMIC適用名を照合。他種報告追加時に拡張可能。
-ネコブセンチュウ,たばこ,meloidogyne_incognita,"Pest Management Science (2024/2025) DOI: 10.1002/ps.8468・FAMIC適用名 (ネコブセンチュウ, たばこ)",AI照合 (Orchestrator),2026-11-21,愛知県田原市のたばこ圃場から分離・PCR-RFLP同定されたサツマイモネコブセンチュウ (感受性対照個体群) とFAMIC適用名を照合。フルオピラム粒剤・ホスチアゼート粒剤等が登録。
-ネコブセンチュウ,きゅうり,meloidogyne_incognita,"関東東山病害虫研究会年報 29: 168 (1982) DOI: 10.11337/ktpps1954.1982.168・FAMIC適用名 (ネコブセンチュウ, きゅうり)",AI照合 (Orchestrator),2026-11-21,神奈川県藤沢市の施設キュウリ圃場から採取されたサツマイモネコブセンチュウの報告とFAMIC適用名を照合。他種報告追加時に拡張可能。
-ネコブセンチュウ,すいか,meloidogyne_incognita,"関東東山病害虫研究会年報 29: 168 (1982) DOI: 10.11337/ktpps1954.1982.168・FAMIC適用名 (ネコブセンチュウ, すいか)",AI照合 (Orchestrator),2026-11-21,神奈川県三浦市のスイカ寄生サツマイモネコブセンチュウ (対照個体群) の報告とFAMIC適用名を照合。他種報告追加時に拡張可能。
-センチュウ類,ピーマン,meloidogyne_incognita,"Pest Management Science (2024/2025) DOI: 10.1002/ps.8468・FAMIC適用名 (センチュウ類, ピーマン)",AI照合 (Orchestrator),2026-11-21,FAMICで「センチュウ類」名義の適用を持つ殺線虫剤とピーマンのサツマイモネコブセンチュウ報告を照合。他種報告追加時に拡張可能。
-センチュウ類,たばこ,meloidogyne_incognita,"Pest Management Science (2024/2025) DOI: 10.1002/ps.8468・FAMIC適用名 (センチュウ類, たばこ)",AI照合 (Orchestrator),2026-11-21,FAMICで「センチュウ類」名義の適用を持つ殺線虫剤とたばこのサツマイモネコブセンチュウ報告を照合。他種報告追加時に拡張可能。
-センチュウ類,きゅうり,meloidogyne_incognita,"関東東山病害虫研究会年報 29: 168 (1982) DOI: 10.11337/ktpps1954.1982.168・FAMIC適用名 (センチュウ類, きゅうり)",AI照合 (Orchestrator),2026-11-21,FAMICで「センチュウ類」名義の適用を持つ殺線虫剤 (D-D油剤等) ときゅうりのサツマイモネコブセンチュウ報告を照合。
-センチュウ類,すいか,meloidogyne_incognita,"関東東山病害虫研究会年報 29: 168 (1982) DOI: 10.11337/ktpps1954.1982.168・FAMIC適用名 (センチュウ類, すいか)",AI照合 (Orchestrator),2026-11-21,FAMICで「センチュウ類」名義の適用を持つ殺線虫剤 (D-D油剤等) とすいかのサツマイモネコブセンチュウ報告を照合。
-疫病,ばれいしょ,phytophthora_infestans,日本植物病名目録 第3版 (2025年12月) p.1492 (ジャガイモ 疫病)・九州病害虫研究会報 46: 27-30 (2000),AI照合 (Orchestrator),2026-11-21,FAMICのばれいしょ・疫病と単一病原種 Phytophthora infestans を照合。
-べと病,きゅうり,pseudoperonospora_cubensis,日本植物病名目録 第3版 (2025年12月) p.424 (キュウリ べと病)・日本植物病理学会報 56(5): 684-686 (1990),AI照合 (Orchestrator),2026-11-21,FAMICのきゅうり・べと病と単一病原種 Pseudoperonospora cubensis を照合。
-ホタルイ,*,schoenoplectiella_juncoides,雑草研究 68(3):125-132 (2023)・62(3):126-133 (2017)・66(4):175-179 (2021)・FAMIC水稲除草剤適用名「ホタルイ」,AI照合 (Orchestrator),2026-11-21,FAMIC水稲除草剤の適用病害虫名「ホタルイ」は水田雑草イヌホタルイに対応。全作物(*)で照合。
-オモダカ,*,sagittaria_trifolia,雑草研究 62(3):117-125 (2017)・FAMIC適用名「オモダカ」,AI照合 (Orchestrator),2026-11-21,種名そのもののため全作物(*)で対応。FAMIC適用病害虫名「オモダカ」と和名一致。
-スズメノテッポウ,*,alopecurus_aequalis,雑草研究 59(3):157-166 (2014)・FAMIC適用名「スズメノテッポウ」,AI照合 (Orchestrator),2026-11-21,種名そのもののため全作物(*)で対応。FAMIC適用病害虫名「スズメノテッポウ」(小麦・大麦等)と和名一致。
-ネズミムギ,*,lolium_multiflorum,草と緑 17:1-12 (2025)・FAMIC適用名「ネズミムギ」,AI照合 (Orchestrator),2026-11-21,種名そのもののため全作物(*)で対応。FAMIC適用病害虫名「ネズミムギ」と和名一致。
-水田一年生カヤツリグサ科雑草,移植水稲,schoenoplectiella_juncoides,雑草研究 68(3):125-132 (2023)・62(3):126-133 (2017)・FAMIC適用名,AI照合 (Orchestrator),2026-11-21,カヤツリグサ科の水田雑草イヌホタルイを対応。他カヤツリグサ科雑草追加時に拡張可能。
-多年生雑草,移植水稲,sagittaria_trifolia;schoenoplectiella_juncoides,雑草研究 62(3):117-125 (2017)・62(3):126-133 (2017)・FAMIC水稲除草剤適用名,AI照合 (Orchestrator),2026-11-21,水田多年生雑草として報告のあるオモダカおよびイヌホタルイを対応（他種も存在しうる）。
-多年生雑草,直播水稲,sagittaria_trifolia;schoenoplectiella_juncoides,雑草研究 62(3):117-125 (2017)・62(3):126-133 (2017)・FAMIC水稲除草剤適用名,AI照合 (Orchestrator),2026-11-21,水田多年生雑草として報告のあるオモダカおよびイヌホタルイを対応。
-多年生広葉雑草,移植水稲,sagittaria_trifolia,雑草研究 62(3):117-125 (2017)・FAMIC水稲除草剤適用名（124製剤）,AI照合 (Orchestrator),2026-11-21,移植水稲の多年生広葉雑草としてオモダカを対応（畑地(*)のハルジオンへの誤フォールバックを防止）。
-一年生雑草及び多年生広葉雑草,移植水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides;sagittaria_trifolia,雑草研究 62(3):117-125 (2017)・68(3):125-132 (2023)・既収載水田雑草群・FAMIC水稲除草剤適用名（43製剤）,AI照合 (Orchestrator),2026-11-21,移植水稲の湛水除草剤適用名に既収載水田一年生雑草3種＋イヌホタルイ＋オモダカを対応（畑地(*)への誤フォールバック防止）。
-一年生雑草及び多年生広葉雑草,直播水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides;sagittaria_trifolia,雑草研究 62(3):117-125 (2017)・68(3):125-132 (2023)・既収載水田雑草群・FAMIC水稲除草剤適用名,AI照合 (Orchestrator),2026-11-21,直播水稲の除草剤適用名に水田雑草5種を対応（畑地(*)への誤フォールバック防止）。
-一年生及び多年生雑草,移植水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides;sagittaria_trifolia,雑草研究 62(3):117-125 (2017)・68(3):125-132 (2023)・既収載水田雑草群・FAMIC水稲除草剤適用名（36製剤）,AI照合 (Orchestrator),2026-11-21,移植水稲の一年生及び多年生雑草に水田雑草5種を対応（畑地(*)への誤フォールバック防止）。
-一年生及び多年生雑草,直播水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides;sagittaria_trifolia,雑草研究 62(3):117-125 (2017)・68(3):125-132 (2023)・既収載水田雑草群・FAMIC水稲除草剤適用名,AI照合 (Orchestrator),2026-11-21,直播水稲の一年生及び多年生雑草に水田雑草5種を対応（畑地(*)への誤フォールバック防止）。
-一年生雑草及び多年生雑草,移植水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides;sagittaria_trifolia,雑草研究 62(3):117-125 (2017)・68(3):125-132 (2023)・既収載水田雑草群・FAMIC水稲除草剤適用名,AI照合 (Orchestrator),2026-11-21,移植水稲の一年生雑草及び多年生雑草に水田雑草5種を対応（畑地(*)への誤フォールバック防止）。
-一年生雑草,麦類,alopecurus_aequalis;lolium_multiflorum;eleusine_indica,雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025)・雑草研究 66(1):11-15 (2021),AI照合 (Orchestrator),2026-11-21,ムギ類除草剤（トリフルラリン・ペンディメタリン・リニュロン等）の適用名「一年生雑草 (麦類)」にスズメノテッポウ・ネズミムギおよび既収載の小麦圃場オヒシバを対応。
-一年生雑草,小麦,alopecurus_aequalis;lolium_multiflorum;eleusine_indica,雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025)・雑草研究 66(1):11-15 (2021),AI照合 (Orchestrator),2026-11-21,小麦除草剤の適用名「一年生雑草 (小麦)」にスズメノテッポウ・ネズミムギおよび既収載のオヒシバを対応。
-一年生雑草,大麦,alopecurus_aequalis,雑草研究 59(3):157-166 (2014)・FAMIC適用名,AI照合 (Orchestrator),2026-11-21,大麦除草剤の適用名「一年生雑草 (大麦)」に大麦圃場採集報告のあるスズメノテッポウを対応。
-一年生イネ科雑草,麦類,alopecurus_aequalis;lolium_multiflorum;eleusine_indica,雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025)・雑草研究 66(1):11-15 (2021),AI照合 (Orchestrator),2026-11-21,ムギ類除草剤の適用名「一年生イネ科雑草 (麦類)」にイネ科雑草3種を対応。
-一年生イネ科雑草,小麦,alopecurus_aequalis;lolium_multiflorum;eleusine_indica,雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025)・雑草研究 66(1):11-15 (2021),AI照合 (Orchestrator),2026-11-21,小麦除草剤の適用名「一年生イネ科雑草 (小麦)」にイネ科雑草3種を対応。
-一年生イネ科雑草,大麦,alopecurus_aequalis,雑草研究 59(3):157-166 (2014)・FAMIC適用名,AI照合 (Orchestrator),2026-11-21,大麦除草剤の適用名「一年生イネ科雑草 (大麦)」にスズメノテッポウを対応。
-多年生雑草,*,erigeron_philadelphicus,雑草研究 35(1):13-19 (1990)・FAMIC適用名（パラコート等）,AI照合 (Orchestrator),2026-11-21,多年生広葉雑草ハルジオンに対応（水田の多年生雑草は作物指定行が優先）。他種も存在しうる。
-多年生広葉雑草,*,erigeron_philadelphicus,雑草研究 35(1):13-19 (1990)・FAMIC適用名,AI照合 (Orchestrator),2026-11-21,キク科多年生広葉雑草ハルジオンに対応。
-畑地多年生雑草,*,erigeron_philadelphicus,雑草研究 35(1):13-19 (1990)・FAMIC適用名,AI照合 (Orchestrator),2026-11-21,桑園・樹園の多年生広葉雑草ハルジオンに対応。
-赤焼病,茶,pseudomonas_syringae_theae,日本植物病名目録 第3版 (2025年12月) p.1514 (PDF p.1518)・茶業研究報告 100: 11-19 (2005) DOI: 10.5979/cha.2005.100_11,AI照合 (Orchestrator),2026-11-21,"チャ赤焼病の単一病原細菌 Pseudomonas syringae pv. theae と FAMIC 適用名 (赤焼病, 茶) を照合。"
-せん孔細菌病,もも,xanthomonas_arboricola_pruni;pseudomonas_syringae_syringae,日本植物病名目録 第3版 (2025年12月) p.1322 (PDF p.1326)・東京農業大学農学集報 59(1): 74-80 (2014),AI照合 (Orchestrator),2026-11-21,"モモせん孔細菌病の病原細菌のうち感受性検定報告がある2種 (主病原 X. arboricola pv. pruni および P. syringae pv. syringae) を FAMIC 適用名 (せん孔細菌病, もも) と照合。目録には Brenneria nigrifluens も記載されるが原著では未分離。"
-せん孔細菌病,もも類,xanthomonas_arboricola_pruni;pseudomonas_syringae_syringae,"日本植物病名目録 第3版 (2025年12月) p.1322 (PDF p.1326)・東京農業大学農学集報 59(1): 74-80 (2014)・FAMIC適用名 (せん孔細菌病, もも類)",AI照合 (Orchestrator),2026-11-21,FAMIC で作物名「もも類」としてせん孔細菌病に登録がある剤とモモせん孔細菌病菌2種の報告を照合。
-灰斑病,びわ,pestalotia_eriobotrifolia;pestalotiopsis_neglecta,日本植物病名目録 第3版 (2025年12月) p.1274 (PDF p.1278)・九州病害虫研究会報 45: 38-44 (1999) DOI: 10.4241/kyubyochu.45.38,AI照合 (Orchestrator),2026-11-21,"ビワ灰斑病の病原糸状菌のうち薬剤感受性検定が報告された2種 (Pestalotia eriobotrifolia・Pestalotiopsis neglecta) を FAMIC 適用名 (灰斑病, びわ) と照合。目録には Neopestalotiopsis spp. 等も記載される。"
-灰色腐敗病,たまねぎ,botrytis_aclada;botrytis_allii,日本植物病名目録 第3版 (2025年12月) p.46 (タマネギ 灰色腐敗病)・FAMIC登録適用データ,AI照合 (Orchestrator),2026-11-22,"タマネギ灰色腐敗病の病原糸状菌として目録第3版 p.46 に記載される Botrytis aclada および Botrytis allii を一括対応。FAMIC適用表 (灰色腐敗病, たまねぎ) と直接一致。"
-赤かび病,麦類,fusarium_graminearum_sc,"日本植物病名目録 第3版 (2025年12月)・J. Pestic. Sci. 35(4): 419-430 (2010)・関西病虫害研究会報 66: 20-26 (2024)・FAMIC適用名 (赤かび病, 麦類)",AI照合 (Orchestrator),2026-11-22,FAMIC で作物名「麦類」として赤かび病に登録がある剤とコムギ・オオムギ赤かび病菌種複合体 (Fusarium graminearum species complex) の報告を照合。
-ナモグリバエ,さやえんどう,chromatomyia_horticola,"Appl. Entomol. Zool. 39(2): 203-208 (2004)・FAMIC適用名 (ナモグリバエ, さやえんどう)",AI照合 (Orchestrator),2026-11-22,FAMIC で作物名「さやえんどう」としてナモグリバエに登録がある剤と Chromatomyia horticola の報告を照合。
-タバコシバンムシ,葉たばこ,lasioderma_serricorne,"J. Pestic. Sci. 46(4): 360-365 (2021)・FAMIC適用名 (タバコシバンムシ, 葉たばこ)",AI照合 (Orchestrator),2026-11-22,FAMIC で作物名「葉たばこ」としてタバコシバンムシに登録がある剤と Lasioderma serricorne の報告を照合。
-アブラムシ類,いちご,aphis_gossypii,栃木県農業総合研究センター「いちごに発生したワタアブラムシに対する主要薬剤の殺虫効果」(2025)・FAMIC適用名「アブラムシ類」(いちご),AI照合 (Orchestrator),2026-11-22,いちごのアブラムシ類登録剤とワタアブラムシ検定報告を照合。他種追加時に拡張可能。
-ハダニ類,きく,tetranychus_urticae,栃木県農業環境指導センター「園芸作物に発生したナミハダニの薬剤感受性検定結果」(2024)・FAMIC適用名「ハダニ類」(きく),AI照合 (Orchestrator),2026-11-22,きくのハダニ類登録剤とナミハダニ検定報告を照合。他種追加時に拡張可能。
-カメムシ類,なし,plautia_stali,栃木県農業総合研究センター「令和6(2024)年に異常発生したチャバネアオカメムシに対する主要薬剤の殺虫効果」(2025)・FAMIC適用名「カメムシ類」(なし),AI照合 (Orchestrator),2026-11-22,なしのチャバネアオカメムシ防除に登録される「カメムシ類」適用剤（MEP・ペルメトリン・クロチアニジン・シクラニリプロール）と照合。他種追加時に拡張可能。
-オンシツコナジラミ幼虫,*,trialeurodes_vaporariorum,千葉県農林総合研究センター研究報告 17: 26-33 (2025)・FAMIC登録適用データ (オンシツコナジラミ幼虫),AI照合 (Orchestrator),2026-11-22,FAMIC登録適用表の虫態別適用名「オンシツコナジラミ幼虫」をオンシツコナジラミ (trialeurodes_vaporariorum) に対応。成虫名「オンシツコナジラミ」は和名一致で解決。
-ハマキムシ類,茶,homona_magnanima;adoxophyes_honmai,日本応用動物昆虫学会誌 65(2): 87-97 (2021) DOI: 10.1303/jjaez.2021.87・FAMIC登録適用データ・日本応用動物昆虫学会誌 61(2):109-117 (2017),AI照合 (Orchestrator),2026-11-22,FAMICで作物「茶」にハマキムシ類として登録される薬剤と鹿児島県チャ園のチャハマキ (Homona magnanima) 報告を照合。他種追加時に拡張可能。
-ハモグリバエ類,ねぎ,liriomyza_chinensis,関東東山病害虫研究会報 69: 80-84 (2022) DOI: 10.11337/ktpps.69.80・FAMIC登録適用データ,AI照合 (Orchestrator),2026-11-22,FAMICで作物「ねぎ」にハモグリバエ類として登録される薬剤 (スピネトラム、ジノテフラン、フルキサメタミド等) とネギハモグリバエ報告を照合。
-アザミウマ類,メロン,thrips_palmi,関東東山病害虫研究会報 63:65-68 (2016),AI照合 (Orchestrator),2026-11-22,メロン温室で発生したミナミキイロアザミウマ。FAMIC 登録名「アザミウマ類」「ミナミキイロアザミウマ」に対応。
-灰色かび病,レタス,botrytis_cinerea,四国植物防疫研究 51:15-21 (2017),AI照合 (Orchestrator),2026-11-22,レタス灰色かび病菌 Botrytis cinerea。
-茎枯病,アスパラガス,phomopsis_asparagi,岡山県農林水産総合センター農業研究所研究報告 11:29-36 (2020)・日本植物病名目録 第3版 (p.157),AI照合 (Orchestrator),2026-11-22,アスパラガス茎枯病菌 Phomopsis asparagi。
+かいよう病,かんきつ,xanthomonas_citri_citri,日本植物病名目録 第3版 (2025年12月) p.1385・沖縄県農業研究センター研究報告 18: 1-5 (2025),AI照合 (Gemini Neon),2026-11-21,FAMICのかんきつ(みかん・天草・ぶんたん等を含む作物群)・かいよう病と対応。
+軟腐病,だいこん,pectobacterium_carotovorum,日本植物病名目録 第3版 (2025年12月) p.328・九州病害虫研究会報 33: 53-56 (1987) DOI: 10.4241/kyubyochu.33.53,AI照合 (Gemini Neon),2026-11-21,FAMICのだいこん・軟腐病と対応。
+アザミウマ類,きく,thrips_nigropilosus,日本応用動物昆虫学会誌 58(3): 275-279 (2014) DOI: 10.1303/jjaez.2014.275,AI照合 (Gemini Neon),2026-11-21,報告されたクロゲハナアザミウマを対応。他種報告追加時に拡張可能。
+ハダニ類,かんきつ,eutetranychus_africanus;panonychus_citri,九州病害虫研究会報 57: 72-76 (2011) DOI: 10.4241/kyubyochu.57.72,AI照合 (Gemini Neon),2026-11-21,原著の沖縄県カンキツ類加害ハダニ2種 (トウヨウハダニ・ミカンハダニ) と対応。crop=かんきつ でみかん・ぶんたん等も照合。
+ハダニ類,パパイヤ,eutetranychus_africanus,九州病害虫研究会報 57: 72-76 (2011) DOI: 10.4241/kyubyochu.57.72,AI照合 (Gemini Neon),2026-11-21,原著の本部町パパイヤ採集トウヨウハダニと対応。
+ハダニ類,なす,tetranychus_evansi;tetranychus_urticae;tetranychus_kanzawai,日本応用動物昆虫学会誌 56(2): 74-77 (2012) DOI: 10.1303/jjaez.2012.74・関東東山病害虫研究会年報 35:173 (1988)・関西病虫害研究会報 63: 119-121 (2021) DOI: 10.4165/kapps.63.119,AI照合 (Gemini Neon),2026-11-21,原著の沖縄県ナス圃場採集ミツユビナミハダニと対応。他種報告追加時に拡張可能。
+アブラムシ類,きゅうり,aphis_gossypii,九州病害虫研究会報 63: 62-70 (2017),AI照合 (Gemini Neon),2026-11-21,きゅうりでのアブラムシ類登録 (FAMIC) とワタアブラムシ報告を照合。他種報告追加時に拡張可能。
+アブラムシ類,ぶどう,aphis_gossypii,九州病害虫研究会報 63: 62-70 (2017),AI照合 (Gemini Neon),2026-11-21,ぶどうでのアブラムシ類登録 (FAMIC) とワタアブラムシ報告を照合。
+褐条病,稲,acidovorax_avenae_avenae,北陸病害虫研究会報 53:5-11 (2004)・日本植物病名目録 第3版 p.1109,AI照合 (Gemini Neon),2026-11-21,イネ褐条病の単一病原種
+もみ枯細菌病,稲,burkholderia_glumae,北陸病害虫研究会報 53:5-11 (2004)・日本植物病名目録 第3版 p.1109,AI照合 (Gemini Neon),2026-11-21,原著でもみ枯細菌病の病原菌として検定された種。目録第3版 p.1109 には Burkholderia gladioli も記載
+苗腐敗症(もみ枯細菌病菌),稲,burkholderia_glumae,北陸病害虫研究会報 53:5-11 (2004)（本文に「もみ枯細菌病(苗腐敗症)」と記載）,AI照合 (Gemini Neon),2026-11-21,FAMIC適用病害虫名に対応
+幼苗腐敗症(もみ枯細菌病菌),稲,burkholderia_glumae,北陸病害虫研究会報 53:5-11 (2004)・FAMIC適用名,AI照合 (Gemini Neon),2026-11-21,FAMIC適用病害虫名に対応
+幼苗腐敗症(イネもみ枯細菌病菌),稲,burkholderia_glumae,北陸病害虫研究会報 53:5-11 (2004)・FAMIC適用名,AI照合 (Gemini Neon),2026-11-21,FAMIC適用病害虫名に対応
+苗立枯細菌病,稲,burkholderia_plantarii,日本植物病名目録 第3版 p.1109・北陸病害虫研究会報 53:5-11 (2004),AI照合 (Gemini Neon),2026-11-21,目録第3版 p.1109 でイネ苗立枯細菌病の単一病原種
+球根腐敗病,チューリップ,fusarium_oxysporum_tulipae,日本植物病名目録 第3版 p.792・富山県令和5年度農業分野試験研究の成果と普及 p.47,AI照合 (Gemini Neon),2026-11-21,チューリップ球根腐敗病の主病原菌 (目録備考には F. solani f. sp. radicicola の記載もあり)
+アカヒゲホソミドリカスミカメ,稲,trigonotylus_caelestialium,北陸病害虫研究会報 69:1-5 (2020)・70:19-25 (2021),AI照合 (Gemini Neon),2026-11-21,FAMICの稲適用名と一致
+カメムシ類,稲,trigonotylus_caelestialium;niphe_elongata;cletus_punctiger;leptocorisa_chinensis;eysarcoris_aeneus;stenotus_rubrovittatus,北陸病害虫研究会報 69:1-5 (2020)・70:19-25 (2021)（ジノテフラン・クロチアニジン登録名「カメムシ類」）・関西病虫害研究会報 62: 169-172 (2020)・同 67: 10-14 (2025),AI照合 (Gemini Neon),2026-11-21,斑点米カメムシ類の主要種として検定報告があるアカヒゲホソミドリカスミカメを対応。イネには他のカメムシ類も発生しうる
+カスミカメムシ類,稲,trigonotylus_caelestialium;stenotus_rubrovittatus,北陸病害虫研究会報 69:1-5 (2020)・70:19-25 (2021)・北日本病害虫研究会報 72: 99-103 (2021) RN/2010940709,AI照合 (Gemini Neon),2026-11-22,斑点米カメムシ類の主要種として報告のある種を対応
+ウコンノメイガ,だいず,pleuroptya_ruralis,富山県農林水産総合技術センター農業研究所研究報告 1:27-31 (2009),AI照合 (Gemini Neon),2026-11-21,FAMICの適用病害虫名・作物名と一致
+スギナ,*,equisetum_arvense,雑草研究 45(4):244-249 (2000)・FAMIC適用名「スギナ」,AI照合 (Gemini Neon),2026-11-21,和名がFAMICの適用名と一致
+一年生雑草,*,eleusine_indica;youngia_japonica;erigeron_sumatrensis;alopecurus_aequalis;lolium_multiflorum,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025),AI照合 (Gemini Neon),2026-11-21,FAMIC適用一覧に個別種名がないため、抵抗性報告がある一年生/越年生雑草種を対応 (他の雑草種も存在しうる)
+一年生及び多年生雑草,*,eleusine_indica;youngia_japonica;erigeron_sumatrensis;alopecurus_aequalis;erigeron_philadelphicus;lolium_multiflorum,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・35(1):13-19 (1990)・草と緑 17:1-12 (2025),AI照合 (Gemini Neon),2026-11-21,FAMIC適用名に対応 (他の雑草種も存在しうる)
+一年生雑草及び多年生雑草,*,eleusine_indica;youngia_japonica;erigeron_sumatrensis;alopecurus_aequalis;erigeron_philadelphicus;lolium_multiflorum,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・35(1):13-19 (1990)・草と緑 17:1-12 (2025),AI照合 (Gemini Neon),2026-11-21,FAMIC適用名に対応
+一年生雑草及び多年生広葉雑草,*,eleusine_indica;youngia_japonica;erigeron_sumatrensis;erigeron_philadelphicus,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・66(1):11-15 (2021)・雑草研究 35(1):13-19 (1990),AI照合 (Gemini Neon),2026-11-21,FAMIC適用名に対応
+一年生雑草及び多年生イネ科雑草,*,eleusine_indica;youngia_japonica;erigeron_sumatrensis;alopecurus_aequalis;lolium_multiflorum,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025),AI照合 (Gemini Neon),2026-11-21,FAMIC適用名に対応
+畑地一年生雑草,*,eleusine_indica;youngia_japonica;erigeron_sumatrensis;alopecurus_aequalis;lolium_multiflorum,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025),AI照合 (Gemini Neon),2026-11-21,FAMIC適用名に対応
+一年生イネ科雑草,*,eleusine_indica;alopecurus_aequalis;lolium_multiflorum,雑草研究 66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025),AI照合 (Gemini Neon),2026-11-21,オヒシバ (一年生イネ科雑草) に対応
+一年生及び多年生イネ科雑草,*,eleusine_indica;alopecurus_aequalis;lolium_multiflorum,雑草研究 66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025),AI照合 (Gemini Neon),2026-11-21,オヒシバに対応
+畑地一年生イネ科雑草,*,eleusine_indica;alopecurus_aequalis;lolium_multiflorum,雑草研究 66(1):11-15 (2021)・雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025),AI照合 (Gemini Neon),2026-11-21,オヒシバに対応
+一年生広葉雑草,*,youngia_japonica;erigeron_sumatrensis,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989),AI照合 (Gemini Neon),2026-11-21,キク科の越年生広葉雑草オニタビラコ・オオアレチノギクに対応
+一年生及び多年生広葉雑草,*,youngia_japonica;erigeron_sumatrensis;erigeron_philadelphicus,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・雑草研究 35(1):13-19 (1990),AI照合 (Gemini Neon),2026-11-21,キク科の越年生広葉雑草に対応
+畑地一年生広葉雑草,*,youngia_japonica;erigeron_sumatrensis,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989),AI照合 (Gemini Neon),2026-11-21,キク科の越年生広葉雑草に対応
+広葉雑草,*,youngia_japonica;erigeron_sumatrensis;erigeron_philadelphicus,雑草研究 34(2):163-168 (1989)・34(3):210-214 (1989)・雑草研究 35(1):13-19 (1990),AI照合 (Gemini Neon),2026-11-21,キク科の広葉雑草に対応
+ハダニ類,きゅうり,tetranychus_urticae,関東東山病害虫研究会年報 35:173 (1988),AI照合 (Gemini Neon),2026-11-21,埼玉県のキュウリのハダニ類としてナミハダニを検定。他種も発生しうる
+アブラムシ類,なし,aphis_gossypii,関東東山病害虫研究会年報 42:255-257 (1995),AI照合 (Gemini Neon),2026-11-21,埼玉県のナシのワタアブラムシの報告と照合。ナシには他のアブラムシ類も発生しうる
+腐敗病,たまねぎ,burkholderia_cepacia;burkholderia_cenocepacia,日本植物病名目録 第3版 (2025年12月) p.43・滋賀県農業技術振興センター成果情報 (2024),AI照合 (Gemini Neon),2026-11-21,"タマネギ腐敗病の病原細菌として分離・検定された2種。FAMICの(腐敗病, たまねぎ)と対応。"
+りん片腐敗病,たまねぎ,burkholderia_gladioli,日本植物病名目録 第3版 (2025年12月) p.43・滋賀県農業技術振興センター成果情報 (2024),AI照合 (Gemini Neon),2026-11-21,"タマネギりん片腐敗病の病原細菌。FAMICの(りん片腐敗病, たまねぎ)と対応。"
+ハダニ類,あずき,tetranychus_kanzawai;tetranychus_urticae,関西病虫害研究会報 63: 119-121 (2021) DOI: 10.4165/kapps.63.119,AI照合 (Gemini Neon),2026-11-21,"アズキに発生するカンザワハダニおよびナミハダニ(FAMICでナミハダニ・ハダニ類の両名義あり)を(ハダニ類, あずき)へ対応。"
+ミズアオイ,*,monochoria_korsakowii,農業および園芸 90(1): 165-173 (2015)・FAMIC適用病害虫名「ミズアオイ」(移植水稲),AI照合 (Gemini Neon),2026-11-21,"種名そのもののため全作物(*)で対応。FAMIC適用一覧の(ミズアオイ, 移植水稲)と和名一致。"
+コナギ,*,monochoria_vaginalis,農業および園芸 90(1): 165-173 (2015)・FAMIC適用病害虫名「コナギ」(移植水稲),AI照合 (Gemini Neon),2026-11-21,"種名そのもののため全作物(*)で対応。FAMIC適用一覧の(コナギ, 移植水稲)と和名一致。"
+水田一年生雑草,移植水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides,農業および園芸 90(1): 165-173 (2015)・FAMIC水稲除草剤適用名・徳島県立農林水産総合技術支援センター農業研究所研究報告 5: 1-6 (2008)・日本雑草学会 雑草名リスト・雑草研究 68(3):125-132 (2023)・62(3):126-133 (2017)・66(4):175-179 (2021),AI照合 (Gemini Neon),2026-11-21,FAMIC水稲除草剤(ベンスルフロンメチル等)の適用「水田一年生雑草 (移植水稲)」とミズアオイ・コナギ報告を照合。他水田一年生雑草追加時はpromote時にマージ。
+一年生雑草,移植水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides,農業および園芸 90(1): 165-173 (2015)・FAMIC水稲除草剤適用名・徳島県立農林水産総合技術支援センター農業研究所研究報告 5: 1-6 (2008)・日本雑草学会 雑草名リスト・雑草研究 68(3):125-132 (2023)・62(3):126-133 (2017)・66(4):175-179 (2021),AI照合 (Gemini Neon),2026-11-21,FAMIC水稲除草剤の適用「一年生雑草 (移植水稲)」とミズアオイ・コナギ報告を照合。他雑草種追加時はpromote時にマージ。
+一年生雑草,水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides,農業および園芸 90(1): 165-173 (2015)・FAMIC水稲除草剤適用名・徳島県立農林水産総合技術支援センター農業研究所研究報告 5: 1-6 (2008)・日本雑草学会 雑草名リスト・雑草研究 68(3):125-132 (2023)・62(3):126-133 (2017)・66(4):175-179 (2021),AI照合 (Gemini Neon),2026-11-21,FAMIC水稲除草剤の適用「一年生雑草 (水稲)」とミズアオイ・コナギ報告を照合。他雑草種追加時はpromote時にマージ。
+一年生広葉雑草,移植水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens,農業および園芸 90(1): 165-173 (2015)・FAMIC水稲除草剤適用名・徳島県立農林水産総合技術支援センター農業研究所研究報告 5: 1-6 (2008)・日本雑草学会 雑草名リスト,AI照合 (Gemini Neon),2026-11-21,FAMIC水稲除草剤の適用「一年生広葉雑草 (移植水稲)」と水田一年生広葉雑草ミズアオイ・コナギ報告を照合。
+水田一年生雑草,直播水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides,農業および園芸 90(1): 165-173 (2015)・FAMIC水稲除草剤適用名・徳島県立農林水産総合技術支援センター農業研究所研究報告 5: 1-6 (2008)・日本雑草学会 雑草名リスト・雑草研究 68(3):125-132 (2023)・62(3):126-133 (2017)・66(4):175-179 (2021),AI照合 (Gemini Neon),2026-11-21,FAMIC水稲除草剤の適用「水田一年生雑草 (直播水稲)」とミズアオイ・コナギ報告を照合。
+一年生雑草,直播水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides,農業および園芸 90(1): 165-173 (2015)・FAMIC水稲除草剤適用名・徳島県立農林水産総合技術支援センター農業研究所研究報告 5: 1-6 (2008)・日本雑草学会 雑草名リスト・雑草研究 68(3):125-132 (2023)・62(3):126-133 (2017)・66(4):175-179 (2021),AI照合 (Gemini Neon),2026-11-21,FAMIC水稲除草剤の適用「一年生雑草 (直播水稲)」とミズアオイ・コナギ報告を照合。
+チャノキイロアザミウマ,*,scirtothrips_dorsalis,茶業研究報告 92: 1-8 (2001) DOI: 10.5979/cha.2001.92_1・FAMIC適用病害虫名「チャノキイロアザミウマ」(茶等14作物),AI照合 (Gemini Neon),2026-11-21,種名そのもののため全作物(*)で対応。FAMICで「茶」の適用病害虫名は「チャノキイロアザミウマ」(「アザミウマ類」は茶に適用登録なし)。
+ウンカ類,稲,laodelphax_striatellus;nilaparvata_lugens;sogatella_furcifera,日本応用動物昆虫学会誌 27(1): 55-62 (1983) 原著 DOI: 10.1303/jjaez.27.55・既存ヒメトビウンカ報告・九州病害虫研究会報 65:90-93 (2019),AI照合 (Gemini Neon),2026-11-22,FAMICで稲の「ウンカ類」として登録される剤（MEP・マラソン等）と既収載のヒメトビウンカ及び今回追加のトビイロウンカを対応。他ウンカ種追加時に拡張可能。
+コナジラミ類,なす,bemisia_tabaci,徳島県みどり戦略推進課 令和6年度消費・安全対策交付金について（資料3）(2025),AI照合 (Gemini Neon),2026-11-21,FAMICのなす・コナジラミ類登録と徳島県のナス タバココナジラミ検定報告を照合。既存のトマト等コナジラミ類定義と同形式。
+ネコブセンチュウ,ピーマン,meloidogyne_incognita,"Pest Management Science (2024/2025) DOI: 10.1002/ps.8468・FAMIC適用名 (ネコブセンチュウ, ピーマン)",AI照合 (Gemini Neon),2026-11-21,茨城県神栖市のピーマン圃場から分離・PCR-RFLP同定されたサツマイモネコブセンチュウの報告とFAMIC適用名を照合。他種報告追加時に拡張可能。
+ネコブセンチュウ,たばこ,meloidogyne_incognita,"Pest Management Science (2024/2025) DOI: 10.1002/ps.8468・FAMIC適用名 (ネコブセンチュウ, たばこ)",AI照合 (Gemini Neon),2026-11-21,愛知県田原市のたばこ圃場から分離・PCR-RFLP同定されたサツマイモネコブセンチュウ (感受性対照個体群) とFAMIC適用名を照合。フルオピラム粒剤・ホスチアゼート粒剤等が登録。
+ネコブセンチュウ,きゅうり,meloidogyne_incognita,"関東東山病害虫研究会年報 29: 168 (1982) DOI: 10.11337/ktpps1954.1982.168・FAMIC適用名 (ネコブセンチュウ, きゅうり)",AI照合 (Gemini Neon),2026-11-21,神奈川県藤沢市の施設キュウリ圃場から採取されたサツマイモネコブセンチュウの報告とFAMIC適用名を照合。他種報告追加時に拡張可能。
+ネコブセンチュウ,すいか,meloidogyne_incognita,"関東東山病害虫研究会年報 29: 168 (1982) DOI: 10.11337/ktpps1954.1982.168・FAMIC適用名 (ネコブセンチュウ, すいか)",AI照合 (Gemini Neon),2026-11-21,神奈川県三浦市のスイカ寄生サツマイモネコブセンチュウ (対照個体群) の報告とFAMIC適用名を照合。他種報告追加時に拡張可能。
+センチュウ類,ピーマン,meloidogyne_incognita,"Pest Management Science (2024/2025) DOI: 10.1002/ps.8468・FAMIC適用名 (センチュウ類, ピーマン)",AI照合 (Gemini Neon),2026-11-21,FAMICで「センチュウ類」名義の適用を持つ殺線虫剤とピーマンのサツマイモネコブセンチュウ報告を照合。他種報告追加時に拡張可能。
+センチュウ類,たばこ,meloidogyne_incognita,"Pest Management Science (2024/2025) DOI: 10.1002/ps.8468・FAMIC適用名 (センチュウ類, たばこ)",AI照合 (Gemini Neon),2026-11-21,FAMICで「センチュウ類」名義の適用を持つ殺線虫剤とたばこのサツマイモネコブセンチュウ報告を照合。他種報告追加時に拡張可能。
+センチュウ類,きゅうり,meloidogyne_incognita,"関東東山病害虫研究会年報 29: 168 (1982) DOI: 10.11337/ktpps1954.1982.168・FAMIC適用名 (センチュウ類, きゅうり)",AI照合 (Gemini Neon),2026-11-21,FAMICで「センチュウ類」名義の適用を持つ殺線虫剤 (D-D油剤等) ときゅうりのサツマイモネコブセンチュウ報告を照合。
+センチュウ類,すいか,meloidogyne_incognita,"関東東山病害虫研究会年報 29: 168 (1982) DOI: 10.11337/ktpps1954.1982.168・FAMIC適用名 (センチュウ類, すいか)",AI照合 (Gemini Neon),2026-11-21,FAMICで「センチュウ類」名義の適用を持つ殺線虫剤 (D-D油剤等) とすいかのサツマイモネコブセンチュウ報告を照合。
+疫病,ばれいしょ,phytophthora_infestans,日本植物病名目録 第3版 (2025年12月) p.1492 (ジャガイモ 疫病)・九州病害虫研究会報 46: 27-30 (2000),AI照合 (Gemini Neon),2026-11-21,FAMICのばれいしょ・疫病と単一病原種 Phytophthora infestans を照合。
+べと病,きゅうり,pseudoperonospora_cubensis,日本植物病名目録 第3版 (2025年12月) p.424 (キュウリ べと病)・日本植物病理学会報 56(5): 684-686 (1990),AI照合 (Gemini Neon),2026-11-21,FAMICのきゅうり・べと病と単一病原種 Pseudoperonospora cubensis を照合。
+ホタルイ,*,schoenoplectiella_juncoides,雑草研究 68(3):125-132 (2023)・62(3):126-133 (2017)・66(4):175-179 (2021)・FAMIC水稲除草剤適用名「ホタルイ」,AI照合 (Gemini Neon),2026-11-21,FAMIC水稲除草剤の適用病害虫名「ホタルイ」は水田雑草イヌホタルイに対応。全作物(*)で照合。
+オモダカ,*,sagittaria_trifolia,雑草研究 62(3):117-125 (2017)・FAMIC適用名「オモダカ」,AI照合 (Gemini Neon),2026-11-21,種名そのもののため全作物(*)で対応。FAMIC適用病害虫名「オモダカ」と和名一致。
+スズメノテッポウ,*,alopecurus_aequalis,雑草研究 59(3):157-166 (2014)・FAMIC適用名「スズメノテッポウ」,AI照合 (Gemini Neon),2026-11-21,種名そのもののため全作物(*)で対応。FAMIC適用病害虫名「スズメノテッポウ」(小麦・大麦等)と和名一致。
+ネズミムギ,*,lolium_multiflorum,草と緑 17:1-12 (2025)・FAMIC適用名「ネズミムギ」,AI照合 (Gemini Neon),2026-11-21,種名そのもののため全作物(*)で対応。FAMIC適用病害虫名「ネズミムギ」と和名一致。
+水田一年生カヤツリグサ科雑草,移植水稲,schoenoplectiella_juncoides,雑草研究 68(3):125-132 (2023)・62(3):126-133 (2017)・FAMIC適用名,AI照合 (Gemini Neon),2026-11-21,カヤツリグサ科の水田雑草イヌホタルイを対応。他カヤツリグサ科雑草追加時に拡張可能。
+多年生雑草,移植水稲,sagittaria_trifolia;schoenoplectiella_juncoides,雑草研究 62(3):117-125 (2017)・62(3):126-133 (2017)・FAMIC水稲除草剤適用名,AI照合 (Gemini Neon),2026-11-21,水田多年生雑草として報告のあるオモダカおよびイヌホタルイを対応（他種も存在しうる）。
+多年生雑草,直播水稲,sagittaria_trifolia;schoenoplectiella_juncoides,雑草研究 62(3):117-125 (2017)・62(3):126-133 (2017)・FAMIC水稲除草剤適用名,AI照合 (Gemini Neon),2026-11-21,水田多年生雑草として報告のあるオモダカおよびイヌホタルイを対応。
+多年生広葉雑草,移植水稲,sagittaria_trifolia,雑草研究 62(3):117-125 (2017)・FAMIC水稲除草剤適用名（124製剤）,AI照合 (Gemini Neon),2026-11-21,移植水稲の多年生広葉雑草としてオモダカを対応（畑地(*)のハルジオンへの誤フォールバックを防止）。
+一年生雑草及び多年生広葉雑草,移植水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides;sagittaria_trifolia,雑草研究 62(3):117-125 (2017)・68(3):125-132 (2023)・既収載水田雑草群・FAMIC水稲除草剤適用名（43製剤）,AI照合 (Gemini Neon),2026-11-21,移植水稲の湛水除草剤適用名に既収載水田一年生雑草3種＋イヌホタルイ＋オモダカを対応（畑地(*)への誤フォールバック防止）。
+一年生雑草及び多年生広葉雑草,直播水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides;sagittaria_trifolia,雑草研究 62(3):117-125 (2017)・68(3):125-132 (2023)・既収載水田雑草群・FAMIC水稲除草剤適用名,AI照合 (Gemini Neon),2026-11-21,直播水稲の除草剤適用名に水田雑草5種を対応（畑地(*)への誤フォールバック防止）。
+一年生及び多年生雑草,移植水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides;sagittaria_trifolia,雑草研究 62(3):117-125 (2017)・68(3):125-132 (2023)・既収載水田雑草群・FAMIC水稲除草剤適用名（36製剤）,AI照合 (Gemini Neon),2026-11-21,移植水稲の一年生及び多年生雑草に水田雑草5種を対応（畑地(*)への誤フォールバック防止）。
+一年生及び多年生雑草,直播水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides;sagittaria_trifolia,雑草研究 62(3):117-125 (2017)・68(3):125-132 (2023)・既収載水田雑草群・FAMIC水稲除草剤適用名,AI照合 (Gemini Neon),2026-11-21,直播水稲の一年生及び多年生雑草に水田雑草5種を対応（畑地(*)への誤フォールバック防止）。
+一年生雑草及び多年生雑草,移植水稲,monochoria_korsakowii;monochoria_vaginalis;lindernia_procumbens;schoenoplectiella_juncoides;sagittaria_trifolia,雑草研究 62(3):117-125 (2017)・68(3):125-132 (2023)・既収載水田雑草群・FAMIC水稲除草剤適用名,AI照合 (Gemini Neon),2026-11-21,移植水稲の一年生雑草及び多年生雑草に水田雑草5種を対応（畑地(*)への誤フォールバック防止）。
+一年生雑草,麦類,alopecurus_aequalis;lolium_multiflorum;eleusine_indica,雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025)・雑草研究 66(1):11-15 (2021),AI照合 (Gemini Neon),2026-11-21,ムギ類除草剤（トリフルラリン・ペンディメタリン・リニュロン等）の適用名「一年生雑草 (麦類)」にスズメノテッポウ・ネズミムギおよび既収載の小麦圃場オヒシバを対応。
+一年生雑草,小麦,alopecurus_aequalis;lolium_multiflorum;eleusine_indica,雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025)・雑草研究 66(1):11-15 (2021),AI照合 (Gemini Neon),2026-11-21,小麦除草剤の適用名「一年生雑草 (小麦)」にスズメノテッポウ・ネズミムギおよび既収載のオヒシバを対応。
+一年生雑草,大麦,alopecurus_aequalis,雑草研究 59(3):157-166 (2014)・FAMIC適用名,AI照合 (Gemini Neon),2026-11-21,大麦除草剤の適用名「一年生雑草 (大麦)」に大麦圃場採集報告のあるスズメノテッポウを対応。
+一年生イネ科雑草,麦類,alopecurus_aequalis;lolium_multiflorum;eleusine_indica,雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025)・雑草研究 66(1):11-15 (2021),AI照合 (Gemini Neon),2026-11-21,ムギ類除草剤の適用名「一年生イネ科雑草 (麦類)」にイネ科雑草3種を対応。
+一年生イネ科雑草,小麦,alopecurus_aequalis;lolium_multiflorum;eleusine_indica,雑草研究 59(3):157-166 (2014)・草と緑 17:1-12 (2025)・雑草研究 66(1):11-15 (2021),AI照合 (Gemini Neon),2026-11-21,小麦除草剤の適用名「一年生イネ科雑草 (小麦)」にイネ科雑草3種を対応。
+一年生イネ科雑草,大麦,alopecurus_aequalis,雑草研究 59(3):157-166 (2014)・FAMIC適用名,AI照合 (Gemini Neon),2026-11-21,大麦除草剤の適用名「一年生イネ科雑草 (大麦)」にスズメノテッポウを対応。
+多年生雑草,*,erigeron_philadelphicus,雑草研究 35(1):13-19 (1990)・FAMIC適用名（パラコート等）,AI照合 (Gemini Neon),2026-11-21,多年生広葉雑草ハルジオンに対応（水田の多年生雑草は作物指定行が優先）。他種も存在しうる。
+多年生広葉雑草,*,erigeron_philadelphicus,雑草研究 35(1):13-19 (1990)・FAMIC適用名,AI照合 (Gemini Neon),2026-11-21,キク科多年生広葉雑草ハルジオンに対応。
+畑地多年生雑草,*,erigeron_philadelphicus,雑草研究 35(1):13-19 (1990)・FAMIC適用名,AI照合 (Gemini Neon),2026-11-21,桑園・樹園の多年生広葉雑草ハルジオンに対応。
+赤焼病,茶,pseudomonas_syringae_theae,日本植物病名目録 第3版 (2025年12月) p.1514 (PDF p.1518)・茶業研究報告 100: 11-19 (2005) DOI: 10.5979/cha.2005.100_11,AI照合 (Gemini Neon),2026-11-21,"チャ赤焼病の単一病原細菌 Pseudomonas syringae pv. theae と FAMIC 適用名 (赤焼病, 茶) を照合。"
+せん孔細菌病,もも,xanthomonas_arboricola_pruni;pseudomonas_syringae_syringae,日本植物病名目録 第3版 (2025年12月) p.1322 (PDF p.1326)・東京農業大学農学集報 59(1): 74-80 (2014),AI照合 (Gemini Neon),2026-11-21,"モモせん孔細菌病の病原細菌のうち感受性検定報告がある2種 (主病原 X. arboricola pv. pruni および P. syringae pv. syringae) を FAMIC 適用名 (せん孔細菌病, もも) と照合。目録には Brenneria nigrifluens も記載されるが原著では未分離。"
+せん孔細菌病,もも類,xanthomonas_arboricola_pruni;pseudomonas_syringae_syringae,"日本植物病名目録 第3版 (2025年12月) p.1322 (PDF p.1326)・東京農業大学農学集報 59(1): 74-80 (2014)・FAMIC適用名 (せん孔細菌病, もも類)",AI照合 (Gemini Neon),2026-11-21,FAMIC で作物名「もも類」としてせん孔細菌病に登録がある剤とモモせん孔細菌病菌2種の報告を照合。
+灰斑病,びわ,pestalotia_eriobotrifolia;pestalotiopsis_neglecta,日本植物病名目録 第3版 (2025年12月) p.1274 (PDF p.1278)・九州病害虫研究会報 45: 38-44 (1999) DOI: 10.4241/kyubyochu.45.38,AI照合 (Gemini Neon),2026-11-21,"ビワ灰斑病の病原糸状菌のうち薬剤感受性検定が報告された2種 (Pestalotia eriobotrifolia・Pestalotiopsis neglecta) を FAMIC 適用名 (灰斑病, びわ) と照合。目録には Neopestalotiopsis spp. 等も記載される。"
+灰色腐敗病,たまねぎ,botrytis_aclada;botrytis_allii,日本植物病名目録 第3版 (2025年12月) p.46 (タマネギ 灰色腐敗病)・FAMIC登録適用データ,AI照合 (Gemini Neon),2026-11-22,"タマネギ灰色腐敗病の病原糸状菌として目録第3版 p.46 に記載される Botrytis aclada および Botrytis allii を一括対応。FAMIC適用表 (灰色腐敗病, たまねぎ) と直接一致。"
+赤かび病,麦類,fusarium_graminearum_sc,"日本植物病名目録 第3版 (2025年12月)・J. Pestic. Sci. 35(4): 419-430 (2010)・関西病虫害研究会報 66: 20-26 (2024)・FAMIC適用名 (赤かび病, 麦類)",AI照合 (Gemini Neon),2026-11-22,FAMIC で作物名「麦類」として赤かび病に登録がある剤とコムギ・オオムギ赤かび病菌種複合体 (Fusarium graminearum species complex) の報告を照合。
+ナモグリバエ,さやえんどう,chromatomyia_horticola,"Appl. Entomol. Zool. 39(2): 203-208 (2004)・FAMIC適用名 (ナモグリバエ, さやえんどう)",AI照合 (Gemini Neon),2026-11-22,FAMIC で作物名「さやえんどう」としてナモグリバエに登録がある剤と Chromatomyia horticola の報告を照合。
+タバコシバンムシ,葉たばこ,lasioderma_serricorne,"J. Pestic. Sci. 46(4): 360-365 (2021)・FAMIC適用名 (タバコシバンムシ, 葉たばこ)",AI照合 (Gemini Neon),2026-11-22,FAMIC で作物名「葉たばこ」としてタバコシバンムシに登録がある剤と Lasioderma serricorne の報告を照合。
+アブラムシ類,いちご,aphis_gossypii,栃木県農業総合研究センター「いちごに発生したワタアブラムシに対する主要薬剤の殺虫効果」(2025)・FAMIC適用名「アブラムシ類」(いちご),AI照合 (Gemini Neon),2026-11-22,いちごのアブラムシ類登録剤とワタアブラムシ検定報告を照合。他種追加時に拡張可能。
+ハダニ類,きく,tetranychus_urticae,栃木県農業環境指導センター「園芸作物に発生したナミハダニの薬剤感受性検定結果」(2024)・FAMIC適用名「ハダニ類」(きく),AI照合 (Gemini Neon),2026-11-22,きくのハダニ類登録剤とナミハダニ検定報告を照合。他種追加時に拡張可能。
+カメムシ類,なし,plautia_stali,栃木県農業総合研究センター「令和6(2024)年に異常発生したチャバネアオカメムシに対する主要薬剤の殺虫効果」(2025)・FAMIC適用名「カメムシ類」(なし),AI照合 (Gemini Neon),2026-11-22,なしのチャバネアオカメムシ防除に登録される「カメムシ類」適用剤（MEP・ペルメトリン・クロチアニジン・シクラニリプロール）と照合。他種追加時に拡張可能。
+オンシツコナジラミ幼虫,*,trialeurodes_vaporariorum,千葉県農林総合研究センター研究報告 17: 26-33 (2025)・FAMIC登録適用データ (オンシツコナジラミ幼虫),AI照合 (Gemini Neon),2026-11-22,FAMIC登録適用表の虫態別適用名「オンシツコナジラミ幼虫」をオンシツコナジラミ (trialeurodes_vaporariorum) に対応。成虫名「オンシツコナジラミ」は和名一致で解決。
+ハマキムシ類,茶,homona_magnanima;adoxophyes_honmai,日本応用動物昆虫学会誌 65(2): 87-97 (2021) DOI: 10.1303/jjaez.2021.87・FAMIC登録適用データ・日本応用動物昆虫学会誌 61(2):109-117 (2017),AI照合 (Gemini Neon),2026-11-22,FAMICで作物「茶」にハマキムシ類として登録される薬剤と鹿児島県チャ園のチャハマキ (Homona magnanima) 報告を照合。他種追加時に拡張可能。
+ハモグリバエ類,ねぎ,liriomyza_chinensis,関東東山病害虫研究会報 69: 80-84 (2022) DOI: 10.11337/ktpps.69.80・FAMIC登録適用データ,AI照合 (Gemini Neon),2026-11-22,FAMICで作物「ねぎ」にハモグリバエ類として登録される薬剤 (スピネトラム、ジノテフラン、フルキサメタミド等) とネギハモグリバエ報告を照合。
+アザミウマ類,メロン,thrips_palmi,関東東山病害虫研究会報 63:65-68 (2016),AI照合 (Gemini Neon),2026-11-22,メロン温室で発生したミナミキイロアザミウマ。FAMIC 登録名「アザミウマ類」「ミナミキイロアザミウマ」に対応。
+灰色かび病,レタス,botrytis_cinerea,四国植物防疫研究 51:15-21 (2017),AI照合 (Gemini Neon),2026-11-22,レタス灰色かび病菌 Botrytis cinerea。
+茎枯病,アスパラガス,phomopsis_asparagi,岡山県農林水産総合センター農業研究所研究報告 11:29-36 (2020)・日本植物病名目録 第3版 (p.157),AI照合 (Gemini Neon),2026-11-22,アスパラガス茎枯病菌 Phomopsis asparagi。
