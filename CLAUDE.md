@@ -61,7 +61,7 @@ scripts/install_auto_update_mac.sh install|run|status|uninstall
   - 用途が殺虫・殺菌・除草のどれでもない剤は捨てる。ただし用途「農薬肥料」は、成分が用途 1 つだけの現行剤で使われている用途から推定して取り込む (`infer_categories_from_ingredients`。`original_category` は「農薬肥料」のまま。成分が植調剤のウニコナゾールP だけの剤は推定できず捨てる)。用途「その他」は取り込まない。
   - `formulation` は FAMIC の剤型名 (乳剤・液剤・くん蒸剤など) を使い、商品名の末尾でフロアブル剤・ジャンボ剤・ベイト剤を分ける。
   - `total_usage_names`: 適用部の「有効成分①〜⑤を含む農薬の総使用回数」の①〜⑤が指す成分名 (基本部の成分の行の順)。
-- `src/data/applications.json`: `applications[登録番号の文字列] = [{crop, place, pest, purpose, dosage, spray, timing, count, method, fumi_time, fumi_temp, soil, zone, totals}]`。有効剤のみ。**空の項目は書き出さない** (読む側は `a.place` などが無い前提で書く)。`totals` は成分ごとの総使用回数の配列で、どの成分も本剤の使用回数と同じ行では省き、総使用回数が無い行は `[]` にする (`app.js` の `totalUsageHtml` がこの約束で表示する)。
+- `src/data/applications.json`: `applications[登録番号の文字列] = [{crop, place, pest, purpose, dosage, spray, timing, count, method, fumi_time, fumi_temp, soil, zone, totals}]`。有効剤のみ。**空の項目は書き出さない** (読む側は `a.place` などが無い前提で書く)。`totals` は成分ごとの総使用回数の配列で、どの成分も本剤の使用回数と同じ行では省き、総使用回数が無い行は `[]` にする (`src/js/core/usage.js` の `totalUsageFor` がこの約束で読む)。
 
 RAC コードは CropLife の表を優先し、表に無い成分は `rawdata/rac_manual.json` で補う (`rac_code` か、`rac_status` = `out_of_scope` / `legacy` / `recent`)。成分名での名寄せは完全一致と、塩・水和物の語尾を除いた一致だけ (部分一致は使わない)。CropLife の表の「-」(CLI で認定されていない)・「-(植)」(植物成長調整剤)・「-(生)」(生物剤・天敵剤) はコードではないので、`parse_rac_cell` が取り除く (`"「-」(I*),19(F*)"` → `"19(F*)"`)。コードが残らず「-(植)」「-(生)」があった成分は `rac_status` = `out_of_scope` にする (手動ラベルがあればそちらを優先)。`rac_code` は `"UN(I*), M2(F*)"` のような複合表記を含み、`normalize.js` の `splitRacCode` が IRAC/FRAC/HRAC に振り分ける。印の無いコードは商品の用途すべてに振り分けるので、用途が 2 つ以上の剤 (殺虫殺菌剤など) では `tag_rac_systems` が、用途 1 つの現行剤での成分の用途から系統の印を付ける (タネサンGT のダイアジノン → `1B(I*)`)。
 
@@ -105,7 +105,9 @@ RAC コードは CropLife の表を優先し、表に無い成分は `rawdata/ra
 
 `app.js` は、`attachCropsPests` (`buildIndex` の `norm_crops` / `crop_members` / `app_entries` を `_crops_norm` / `_crop_members` / `_app_pairs` として付ける) と、filter.js の `attachBrandedFlags` (`_branded`、同じ種類名・同じ成分構成の中で他商品名を末尾に含む商品。`_group` にグループのキー) で、商品オブジェクトに派生欄を付ける。`filter.js` はこれらの欄を前提にしている。テストでフィルタを再現するときは、この付与処理も再現する (`test_search.mjs` の冒頭)。
 
-詳細の適用表は `buildRowCondition` / `filterApplications` で、指定した作物・病害虫の行だけに絞って表示する。列は `APP_COLUMNS` で、適用場所・散布液量・総使用回数・条件 (使用目的・適用地帯・適用土壌・くん蒸) は、表示する行のどれにも値 (「-」以外) が無ければ出さない。
+詳細の適用表は `buildRowCondition` / `filterApplications` で、指定した作物・病害虫の行だけに絞って表示する。列は `APP_COLUMNS` で、適用場所・散布液量・収穫前日数・成分ごとの総使用回数・条件 (使用目的・適用地帯・適用土壌・くん蒸) は、表示する行のどれにも値 (「-」以外) が無ければ出さない。総使用回数は `total_usage_names` の成分ごとに 1 列ずつ並べる (`totalUsageColumns`)。収穫前日数は `usage.js` の `preharvestText` が使用時期の文から取り出す (「収穫N日前」「収穫前日」= 1日、「収穫開始N日前」「収穫開始N年前」は「(収穫開始前)」を付ける。「収穫後」「収穫直前」などは取り出さない)。
+
+検索結果の一覧のカードには、作物か病害虫の条件 (`hasRowCondition`) があるときだけ、その条件に当たる適用行の収穫前日数・本剤の使用回数・成分ごとの総使用回数のまとめ (`usage.js` の `summarizeUsage`、`app.js` の `usageSummaryHtml`) を出す。まとめる商品は、詳細を開いたとき最初に適用表を出す商品と同じ選び方 (`productWithRows`) で決める。FAMIC が使用時期・使用回数をすべて「-」としている剤 (無機銅剤・マシン油乳剤など) は「使用時期・使用回数の記載なし」と出す。
 
 検索対象は商品名・成分名・会社名・種類名・作物・病害虫・RAC コードだけで、**登録番号 (`reg_no`) は検索対象に入っていない**。`test_search.mjs` の登録番号ケースは `expectSomeMatch: "maybe"` で、結果にかかわらず合格になる。
 

@@ -26,6 +26,7 @@ JS_ORDER = [
     "js/core/search.js",
     "js/core/filter.js",
     "js/core/resistance.js",
+    "js/core/usage.js",
     "js/io/export.js",
     "js/io/applications.js",
     "js/io/resistance_data.js",

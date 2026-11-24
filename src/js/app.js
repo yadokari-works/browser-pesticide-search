@@ -6,6 +6,7 @@ import { buildIndex, search, buildRowCondition, hasRowCondition, filterApplicati
 import { applyFilters, DEFAULT_FILTERS, countFormulations, attachBrandedFlags, groupKeyOf } from "./core/filter.js";
 import { splitRacCode, stripCompanyFromName, expandSearchableCrops, searchablePest, normalize, cropGroupMembers, appEntry, entryHasCrop } from "./core/normalize.js";
 import { buildResistanceIndex, resolveTaxa, findResistance, recordsByRacCode, summarizeResistance, pestNamesForTaxa, isOverseasRecord, RESISTANCE_LEVELS, RES_PREFECTURES } from "./core/resistance.js";
+import { preharvestText, totalUsageFor, summarizeUsage } from "./core/usage.js";
 import { exportTSV, exportCSV, exportMarkdown, exportJSON, download } from "./io/export.js";
 import { loadApplications, getApplicationsFor } from "./io/applications.js";
 import { loadResistance } from "./io/resistance_data.js";
@@ -320,7 +321,8 @@ function renderResults(groups, productCount) {
   }
   const MAX = 500;
   const shown = groups.slice(0, MAX);
-  resultList.innerHTML = shown.map(renderGroupCard).join("");
+  const cond = currentRowCondition();
+  resultList.innerHTML = shown.map((g, i) => renderGroupCard(g, i, cond)).join("");
   if (groups.length > MAX) {
     resultList.innerHTML += `<div class="empty" style="padding:20px;">上位 ${MAX} 種類を表示。絞り込みで件数を減らしてください。</div>`;
   }
@@ -329,7 +331,7 @@ function renderResults(groups, productCount) {
   );
 }
 
-function renderGroupCard(g, idx) {
+function renderGroupCard(g, idx, cond) {
   const rep = g.products.find(p => p.status !== "失効") || g.products[0];
   // グループ内の全商品のカテゴリを和集合 (殺虫殺菌両用剤や混在グループの正確な表示)
   const catOrder = ["殺虫剤", "殺菌剤", "除草剤"];
@@ -375,8 +377,50 @@ function renderGroupCard(g, idx) {
         ${formText ? `<span>·</span><span>${escapeHtml(formText)}</span>` : ""}
       </div>
       <div class="result-ingredients">${ingBadges}</div>
+      ${usageSummaryHtml(g, rep, cond)}
     </div>
   `;
+}
+
+/** 一覧のまとめで、値を 3 つまで並べる (残りは件数だけ) */
+function usageListText(values) {
+  const head = values.slice(0, 3).join(" / ");
+  return values.length > 3 ? `${head} / ほか ${values.length - 3}` : head;
+}
+
+/** 一覧のまとめで、収穫前日数を書いていない使用時期を 2 つまで短く並べる */
+function usageTimingText(timings) {
+  const cut = t => (t.length > 20 ? `${t.slice(0, 20)}…` : t);
+  const head = timings.slice(0, 2).map(cut).join(" / ");
+  return timings.length > 2 ? `${head} など` : head;
+}
+
+/**
+ * 検索結果のカードに出す、検索した作物・病害虫に当たる適用行の収穫前日数・本剤の使用回数・成分ごとの総使用回数。
+ * 作物・病害虫を指定していない検索では出さない (剤の全登録をまとめても比べられないため)。
+ * まとめる商品は、詳細を開いたとき最初に適用表を出す商品と同じ選び方で決める。
+ */
+function usageSummaryHtml(g, rep, cond) {
+  if (!cond || !hasRowCondition(cond)) return "";
+  const { product, rows } = productWithRows(g, rep, cond);
+  if (!rows.length) return "";
+  const s = summarizeUsage(rows, product.total_usage_names || []);
+  const item = (label, value) =>
+    `<span class="usage-item"><span class="usage-label">${escapeHtml(label)}</span> ${escapeHtml(value)}</span>`;
+  const parts = [];
+  if (s.days) {
+    parts.push(item("収穫前日数", s.days + (s.otherTimings.length ? ` (ほかに ${usageTimingText(s.otherTimings)})` : "")));
+  } else if (s.otherTimings.length) {
+    parts.push(item("使用時期", usageTimingText(s.otherTimings)));
+  }
+  if (s.counts.length) parts.push(item("本剤の使用回数", usageListText(s.counts)));
+  for (const t of s.totals) parts.push(item(`総使用回数 (${t.name})`, usageListText(t.values)));
+  // 無機銅剤・マシン油乳剤など、FAMIC が使用時期・使用回数を「-」としている剤
+  if (!parts.length) parts.push(`<span class="usage-label">使用時期・使用回数の記載なし</span>`);
+  const note = [];
+  if (s.rows > 1) note.push(`該当 ${s.rows} 行`);
+  if (product !== rep) note.push(product.product_name);
+  return `<div class="result-usage">${parts.join("")}${note.length ? `<span class="usage-note">${escapeHtml(note.join(" · "))}</span>` : ""}</div>`;
 }
 
 async function openGroupDetail(groupIdx) {
@@ -488,22 +532,32 @@ function currentRowCondition() {
 function initialDetailProduct(g, rep) {
   const cond = currentRowCondition();
   if (state.appScope !== "specified" || !hasRowCondition(cond)) return rep;
-  const hasRows = p => filterApplications(getApplicationsFor(p.reg_no) || [], cond, p.original_category === "農薬肥料").length > 0;
-  if (hasRows(rep)) return rep;
-  return g.products.find(p => p.status !== "失効" && hasRows(p)) || rep;
+  return productWithRows(g, rep, cond).product;
 }
 
 /**
- * 有効成分ごとの総使用回数 (例 "ダイアジノン: 2回以内")。applications.json は、どの成分の総使用回数も
- * 本剤の使用回数と同じ行の totals を省いているので、そのときは本剤の使用回数を出す。
+ * 条件に当たる適用行を持つ商品とその行。代表商品 (rep) に無ければ、同じグループで行を持つ有効な商品にする。
+ * どれにも無ければ代表商品と空の配列を返す。
  */
-function totalUsageHtml(a, p) {
-  const names = p.total_usage_names;
-  if (!names || !names.length) return "";
-  const totals = a.totals || names.map(() => a.count || "");
-  return totals
-    .map((t, i) => t ? `${escapeHtml(names[i] || "")}: ${escapeHtml(t)}` : "")
-    .filter(Boolean).join("<br>");
+function productWithRows(g, rep, cond) {
+  const rowsOf = p => filterApplications(getApplicationsFor(p.reg_no) || [], cond, p.original_category === "農薬肥料");
+  const repRows = rowsOf(rep);
+  if (repRows.length) return { product: rep, rows: repRows };
+  for (const p of g.products) {
+    if (p === rep || p.status === "失効") continue;
+    const rows = rowsOf(p);
+    if (rows.length) return { product: p, rows };
+  }
+  return { product: rep, rows: [] };
+}
+
+/** 適用表の、成分ごとの総使用回数の列 (商品の total_usage_names の順に 1 成分 1 列) */
+function totalUsageColumns(p) {
+  return (p.total_usage_names || []).map((name, i) => ({
+    head: `総使用回数<br><span class="th-sub">${escapeHtml(name)}</span>`,
+    optional: true,
+    cell: a => escapeHtml(totalUsageFor(a, i)),
+  }));
 }
 
 /** 使用目的・適用地帯・適用土壌・くん蒸の条件 (値のあるものだけ) */
@@ -516,7 +570,8 @@ function conditionHtml(a) {
   return parts.map(escapeHtml).join("<br>");
 }
 
-// 適用表の列。optional の列は、表示する行のどれにも値が無ければ出さない (スマホで表が広がりすぎないように)
+// 適用表の列。optional の列は、表示する行のどれにも値が無ければ出さない (スマホで表が広がりすぎないように)。
+// totalUsage の位置には、成分ごとの総使用回数の列 (totalUsageColumns) を商品ごとに並べる
 const APP_COLUMNS = [
   { head: "作物名", cell: a => escapeHtml(a.crop) },
   { head: "適用場所", cell: a => escapeHtml(a.place), optional: true },
@@ -524,8 +579,9 @@ const APP_COLUMNS = [
   { head: "希釈倍数・使用量", cell: a => escapeHtml(a.dosage) },
   { head: "散布液量", cell: a => escapeHtml(a.spray), optional: true },
   { head: "使用時期", cell: a => escapeHtml(a.timing) },
+  { head: "収穫前日数", cell: a => escapeHtml(preharvestText(a.timing)), optional: true },
   { head: "本剤の使用回数", cell: a => escapeHtml(a.count) },
-  { head: "総使用回数", cell: totalUsageHtml, optional: true },
+  { totalUsage: true },
   { head: "使用方法", cell: a => escapeHtml(a.method) },
   { head: "条件", cell: conditionHtml, optional: true },
 ];
@@ -557,6 +613,7 @@ function showGroupProductApplications(regNo) {
     ? `指定した条件に該当する適用行はありません (全登録 ${allApps.length} 行は、サイドバーの「適用情報の表示範囲」で表示できます)`
     : `適用情報なし (失効剤には適用情報がありません)`;
   const cols = APP_COLUMNS
+    .flatMap(c => (c.totalUsage ? totalUsageColumns(p) : [c]))
     .map(c => ({ head: c.head, optional: c.optional, cells: apps.map(a => c.cell(a, p)) }))
     .filter(c => !c.optional || c.cells.some(v => v && v !== "-"));  // FAMIC は値が無いことを "-" で表す
   const appTableHtml = apps.length === 0

@@ -393,6 +393,24 @@ button.primary:hover { background: var(--accent-hover); }
   margin-top: 4px;
 }
 
+/* 検索した作物・病害虫に当たる適用行の収穫前日数・使用回数 (一覧のカード) */
+.result-usage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text);
+}
+.usage-label {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.usage-note {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
 .badge {
   display: inline-block;
   padding: 2px 8px;
@@ -547,6 +565,12 @@ button.primary:hover { background: var(--accent-hover); }
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.app-table th .th-sub {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .app-table tbody tr:hover { background: var(--bg); }

@@ -743,6 +743,81 @@ console.log("--- レビュー指摘 (2026-10-18) ---");
   }
 }
 
+// ===== 収穫前日数・使用回数 (適用表の列と、検索結果の一覧のまとめ) =====
+console.log();
+console.log("--- 収穫前日数・使用回数 ---");
+{
+  const check = (ok, label) => { if (ok) pass++; else fail++; console.log(`${ok ? "✓" : "✗"} ${label}`); };
+  const { preharvestText, totalUsageFor, summarizeUsage } = await import("../src/js/core/usage.js");
+  const { buildRowCondition, filterApplications } = await import("../src/js/core/search.js");
+
+  // 使用時期の文から収穫前日数を取り出す。収穫の後の時期や「直前」は日数にしない
+  for (const [timing, want] of [
+    ["収穫7日前まで", "7日"],
+    ["収穫前日まで", "1日"],
+    ["果実肥大期(大豆大期)~収穫前日", "1日"],
+    ["稲1葉期~ノビエ2.5葉期 ただし、収穫90日前まで", "90日"],
+    ["収穫14日前まで(ただし、露地栽培については発芽期から開花期を除く)", "14日"],
+    ["収穫開始14日前まで", "14日 (収穫開始前)"],
+    ["植付後 但し、収穫開始1年前まで", "1年 (収穫開始前)"],
+    ["は種直後~ノビエ1葉期、ただし、収穫90日前まで(近畿では、ただし、収穫90日前まで)", "90日"],
+    ["収穫7日前まで(ただし、露地は収穫14日前まで)", "7日・14日"],
+    ["収穫後~発芽前", ""], ["収穫終了後", ""], ["収穫直前まで", ""], ["は種前", ""], ["", ""],
+  ]) {
+    check(preharvestText(timing) === want, `収穫前日数 "${timing}" → "${preharvestText(timing)}" (期待 "${want}")`);
+  }
+
+  // 実データ: 収穫からの日数を書いた使用時期は、すべて日数を取り出せる。取り出した行の使用時期には必ず「収穫」がある
+  {
+    const dayRe = /収穫(開始)?(\d+(日|年)前|前日)/;
+    let rows = 0, missed = [], stray = [];
+    for (const list of Object.values(applications)) {
+      for (const a of list) {
+        const t = a.timing || "";
+        const s = preharvestText(t);
+        if (s) rows++;
+        if (dayRe.test(t) && !s) missed.push(t);
+        if (s && !t.includes("収穫")) stray.push(t);
+      }
+    }
+    check(rows > 0 && missed.length === 0 && stray.length === 0,
+      `実データ: 収穫前日数を取り出した行 ${rows}、取り出し漏れ ${missed.length}、収穫の無い使用時期から取り出した行 ${stray.length}` +
+      (missed.length ? ` /* 例: ${missed[0]} */` : ""));
+  }
+
+  // 成分ごとの総使用回数: totals が無い行は本剤の使用回数と同じ、空の配列の行は値なし、短い配列の残りは値なし
+  check(totalUsageFor({ count: "2回以内" }, 1) === "2回以内" &&
+    totalUsageFor({ count: "2回以内", totals: [] }, 0) === "" &&
+    totalUsageFor({ count: "2回以内", totals: ["4回以内"] }, 0) === "4回以内" &&
+    totalUsageFor({ count: "2回以内", totals: ["4回以内"] }, 1) === "",
+  "総使用回数: totals の省略・空の配列・短い配列の読み方");
+
+  // 一覧のまとめ: 日数は最小〜最大、収穫開始からの日数が混ざれば並べる。"-" は値にしない
+  {
+    const s = summarizeUsage([
+      { timing: "収穫前日まで", count: "3回以内" },
+      { timing: "収穫7日前まで", count: "3回以内", totals: ["4回以内", "-"] },
+      { timing: "定植時", count: "1回", totals: ["4回以内", "2回以内"] },
+    ], ["成分A", "成分B"]);
+    const ok = s.rows === 3 && s.days === "1〜7日" && s.otherTimings.join() === "定植時" &&
+      s.counts.join() === "3回以内,1回" &&
+      s.totals.length === 2 && s.totals[0].values.join() === "3回以内,4回以内" && s.totals[1].values.join() === "3回以内,2回以内";
+    check(ok, `一覧のまとめ (架空データ): ${JSON.stringify(s)}`);
+    const m = summarizeUsage([{ timing: "収穫開始14日前まで" }, { timing: "収穫7日前まで" }, { timing: "収穫開始1年前まで" }]);
+    check(m.days === "7日・14日 (収穫開始前)・1年 (収穫開始前)" && m.counts.length === 0 && m.totals.length === 0,
+      `一覧のまとめ: 収穫開始からの日数が混ざる → "${m.days}"`);
+  }
+
+  // 実データ: 作物×病害虫の検索結果は、どの剤にも一覧のまとめに使う適用行がある (検索と適用行の絞り込みが食い違わない)
+  for (const q of ["なす アブラムシ", "キャベツ コナガ", "稲 いもち病", "トマト"]) {
+    const res = run(q, "and");
+    const cond = buildRowCondition(q, index.lexicon, "and", {});
+    const empty = res.filter(p => filterApplications(applications[String(p.reg_no)] || [], cond, p.original_category === "農薬肥料").length === 0);
+    check(res.length > 0 && empty.length === 0,
+      `"${q}" の ${res.length} 件すべてに、まとめに使う適用行がある` + (empty.length ? ` /* 無い: ${empty.slice(0, 3).map(p => p.product_name).join(", ")} */` : ""));
+  }
+}
+
 console.log();
 console.log(`Result: ${pass} pass / ${fail} fail`);
 if (fail > 0) process.exit(1);
